@@ -1,0 +1,62 @@
+{% extends "administrador/baseadmin.html" %}
+{% block title %}
+  {{ administrador if administrador else 'Administrador' }}
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/static/css/posicionesadmin.css">
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text">
+            <i class="fa-solid fa-trophy"></i> Ranking de Promedios
+            {% if evento %}
+                <small class="text-muted d-block" style="font-size: 1rem;">{{ evento.nombre }}</small>
+            {% endif %}
+        </h2>
+    </div>
+    <div class="d-flex justify-content-end mt-3 p-2">
+        <a href="{{ url_for('administrador.ranking_evento', evento_id=evento.id) }}/pdf" class="btn btn-outline-success me-2" target="_blank">
+            <i class="fa-solid fa-file-pdf"></i> Descargar Ranking (PDF)
+        </a>
+    </div>
+    
+    <div class="table-responsive shadow rounded-3 overflow-hidden">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Participante</th>
+                    <th scope="col">Promedio</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in ranking %}
+                <tr>
+                    <td><strong>{{ loop.index }}</strong></td>
+                    <td>{{ p.nombre }}</td>
+                    <td>
+                        <span class="badge bg-success fs-6">
+                            {{ '%.2f' % p.promedio }}
+                        </span>
+                    </td>
+                    <td>
+                        <a  href="{{ url_for('administrador.detalle_calificaciones_participante', participante_id=p.id, evento_id=evento.id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fa-solid fa-eye"></i> Ver Detalles    
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-circle-info"></i> Aún no hay calificaciones registradas para este evento.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

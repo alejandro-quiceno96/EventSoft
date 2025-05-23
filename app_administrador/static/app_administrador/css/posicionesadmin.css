@@ -1,0 +1,8 @@
+:root {
+    --color-naranja: #FF5800;
+    --color-texto: #ffffff;
+}
+
+.text{
+    color: var(--color-naranja);
+}

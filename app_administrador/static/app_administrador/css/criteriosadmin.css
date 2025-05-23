@@ -1,0 +1,123 @@
+/* static/css/criterios.css */
+.contenedor-criterios {
+    width: 90%;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #ccc;
+}
+
+.nuevo-criterio {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.nuevo-criterio input {
+    padding: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.tabla-criterios {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-criterios th, .tabla-criterios td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+
+.tabla-criterios input {
+    width: 90%;
+    padding: 5px;
+    border-radius: 6px;
+    border: 1px solid #aaa;
+}
+
+.btn-modificar {
+    background-color: #FF5800;
+    color: white;
+}
+
+.btn-eliminar {
+    background-color: #cc0000;
+    color: white;
+    margin-left: 5px;
+}
+/* Agrega esto a tu archivo de estilos o vincula uno nuevo */
+#form-criterios .input-grupos input {
+    max-width: 900px;
+    margin-right: 10px;
+}
+
+#tabla-criterios td input {
+    width: 100%;
+}
+.form-control{
+    width: 80%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.form-control_porcentaje{
+    width: 20%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.input-grupos {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 1000px;
+}
+
+.columna-porcentaje {
+    width: 100px;
+    max-width: 100px;
+    text-align: center;
+}
+.columna-porcentaje input {
+    width: 70px;
+    text-align: center;
+}
+
+.acciones {/* suficiente para ambos botones */
+    display: flex;
+    gap: 5px; /* espacio entre botones */
+    justify-content: center;
+    align-items: center;
+}
+
+.acciones button {
+    padding: 5px 10px;
+    font-size: 0.875rem;
+    border: none;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.btn-modificar {
+    background-color: #FF5800;
+    color: white;
+}
+
+.btn-eliminar {
+    background-color: #cc0000;
+    color: white;
+}
+
+.criterios-tr{
+    width: 70%;
+}
+
+
+
