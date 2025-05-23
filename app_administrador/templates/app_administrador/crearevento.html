@@ -1,0 +1,134 @@
+{% extends "administrador/baseadmin.html" %}
+{% block title %}
+  {{ administrador if administrador else 'Administrador' }}
+{% endblock %}
+{% block content %}
+<div class="contenedor-principal-crear">
+    <div class="contenedor-crear-evento">
+        <h2>Nuevo Evento</h2>
+        <form action="/administracion/crearEvento" method="POST" enctype="multipart/form-data">
+            <div id="pagina1" class="pagina pagina-activa">
+                
+                <div class="div contenedor-input-1">
+                    <label for="nombre_evento">Nombre del Evento:</label>
+                    <input type="text" name="nombre_evento" id="nombre_evento" maxlength="100" oninput="actualizarContaNombre()">
+                    <small id="contador_nombre">0 / 100</small>
+                </div>
+                <div class="div contenedor-input-2">
+                    <label for="descripcion_evento">Descripción:</label>
+                    <textarea id="mensaje" name="descripcion_evento" placeholder="Escribe aquí..." maxlength="400" oninput="actualizarContador()"></textarea>
+                    <small id="contador">0 / 400</small>
+                </div>
+                <div  class="div contenedor-input-3">
+                    <div class="div-1">
+                        <label for="ciudad">Ciudad:</label>
+                        <input type="text" name="ciudad">
+                    </div>
+                    <div class="div-2">
+                        <label for="lugar">Lugar:</label>
+                        <input type="text" name="lugar">
+                    </div>
+                </div>
+                <div class="div contenedor-input-4">
+                    <div class="div-3">
+                        <label for="fecha_inicio">Fecha de inicio:</label>
+                        <input type="datetime-local" name="fecha_inicio">
+                    </div>
+                    <div class="div-4">
+                        <label for="fecha_fin">Fecha de fin:</label>
+                        <input type="datetime-local" name="fecha_fin">
+                    </div>
+                    
+                </div>
+                <div  class="div contenedor-input-5">
+                    <div class="boton-continuar">
+                        <input type="button" value="Continuar" onclick="siguiente(2)">
+                        <img src="/static/images/flecha-derecha.png" alt="flecha-derecha" onclick="siguiente(2)">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="pagina2" class="pagina pagina-inactiva">
+
+                <div  class="div contenedor-input-6">
+                    <div>
+                        <label  for="area">Area:</label>
+                        <select id="area" required >
+                            <option value="">Seleccione un área</option>
+                            {% for area in areas %}
+                                <option value="{{ area.are_codigo }}">{{ area.are_nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label  for="categoria" >Categoría:</label>
+                        <select id="categoria" required name="categoria">
+                            <option value="">Seleccione una categoría</option>
+                        </select>
+
+                    </div>
+                    
+                    
+                </div>
+                <div class="div contenedor-input-11">
+                    <div >
+                        <label for="permitir_participantes">¿Tiene Cupo limite?</label>
+                        <select id="permitir_participantes" name="permitir_participantes" onchange="toggleCantidadParticipantes()">
+                          <option value="0">No</option>
+                          <option value="1">Sí</option>
+                        </select>
+                      </div>
+                    <div id="cantidad_participantes_div">
+                        <label for="">Aforo Máximo:</label>
+                        <input type="number" min="0" value="1" name="cantidad_personas">
+                    </div>
+                </div>
+                <div  class="div contenedor-input-7">
+                    <div>
+                        <label  for="inscripcion">Costo de inscripción:</label>
+                        <select class="dropdown" name="inscripcion" id="">
+                            <option value="">Seleccionar una opción</option>
+                            <option value="Si">Si</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label  for="estado_evento">Estado del evento</label>
+                        <select class="dropdown" name="estado_evento" id="">
+                            <option value="">Seleccionar una opción</option>
+                            <option value="inactivo">Inactivo</option>
+                            <option value="activo">Activo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="div contenedor-input-10">
+                    <div class="mb-3">
+                        <label for="imagen_evento">Imagen del Evento:</label>
+                        <img id="previewImagen" src="" alt="Imagen del evento" width="200">
+                        <!-- Input para subir una nueva imagen -->
+                        <input type="file" name="imagen_evento" id="imagen_evento" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <label for="formFileMultiple" class="form-label">Subir Programación del Evento </label>
+                        <iframe id="previewDocumento" style="display: none;" width="50%" height="300px"></iframe>
+                        <input type="file" name="documento_evento" id="documento_evento" accept=".pdf">
+                    </div>
+                </div>
+                <div  class="div contenedor-input-9">
+                    <div class="boton-continuar">
+                        <img src="/static/images/atras.png" alt="flecha-izquierda" onclick="volver(1)">
+                        <input type="button" value="Volver" onclick="volver(1)">
+                    </div>
+                    <div class="boton-continuar">
+                        <input type="submit" value="Crear Evento">
+                        <img src="/static/images/crear-img.png" alt="Crear">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/static/js/crearEvento.js"></script>
+<script src="/static/js/previaImagen.js"></script>
+{% endblock %}

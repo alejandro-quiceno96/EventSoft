@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Información del Participante</title>
+    <link rel="stylesheet" href="/static/css/styles_parti.css">
+    <style>
+      
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        /* Estilo para el encabezado */
+        header {
+            width: 100%;
+            padding: 15px;
+            background: #FF5800;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header span {
+            font-size: 20px;
+            font-weight: bold;
+            padding-left: 15px;
+        }
+
+        .btn-volver {
+            padding: 8px 15px;
+            background: white;
+            color: #FF5800;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-right: 15px;
+        }
+
+        .btn-volver:hover {
+            background: #e0e0e0;
+        }
+
+        /* Contenedor principal */
+        .container {
+            margin-top: 80px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+   
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 18px;
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #FF5800;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #FF5800;
+        }
+
+        /* Mensaje de error */
+        .mensaje {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Cuadro de información del participante */
+        .info-cuadro {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .info-cuadro h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #FF5800;
+        }
+
+        .info-cuadro p {
+            font-size: 16px;
+            margin: 5px 0;
+            color: #333;
+        }
+
+        .info-cuadro strong {
+            color: #ff6600;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <span>🔍 Ver datos</span>
+        <button class="btn-volver" onclick="window.location.href='/'">⬅ Volver</button>
+    </header>
+
+    <main class="container">
+        <!-- Formulario de Búsqueda -->
+        <section class="form-container">
+            <h1>Buscar Participante</h1>
+            <form id="buscar-form" action="{{ url_for('participante.ver_info') }}" method="post">
+                <label for="cedula">Cédula:</label>
+                <input type="text" id="cedula" name="cedula" value="{{ cedula or '' }}" required>
+                <button type="submit">Buscar</button>
+            </form>
+
+            {% if mensaje %}
+            <p class="mensaje">{{ mensaje }}</p>
+            {% endif %}
+        </section>
+
+        <!-- Datos del Participante en un cuadro blanco -->
+        {% if participante %}
+        <section class="form-container">
+            <div class="info-cuadro">
+                <h2>Datos del Participante</h2>
+                <p><strong>Cédula:</strong> {{ participante['par_id'] if participante['par_id'] else participante['as_id'] }}</p>
+                <p><strong>Nombre:</strong> {{ participante['par_nombre'] if participante['par_nombre'] else participante['as_nombre'] }}</p>
+                <p><strong>Correo:</strong> {{ participante['par_correo'] if participante['par_correo'] else participante['as_email'] }}</p>
+                <p><strong>Teléfono:</strong> {{ participante['par_telefono'] if participante['par_telefono'] else participante['as_telefono'] }}</p>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+</body>
+
+</html>

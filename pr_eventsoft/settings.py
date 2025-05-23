@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -64,7 +64,7 @@ ROOT_URLCONF = 'pr_eventsoft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -87,9 +87,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'eventsoft',
         'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'PASSWORD': 'Sebas123.',
+        'HOST': 'localhost',  # o la IP/host del servidor MySQL
+        'PORT': '3306',       # puerto por defecto de MySQL
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",}
     }
 }
 
@@ -125,7 +127,7 @@ USE_I18N = True
 USE_TZ = True
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -136,6 +138,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'app_administrador' / 'static',
 ]
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

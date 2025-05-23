@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatBot - EventSoft</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="static/css/style_visitante.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            🤖 Asistente Virtual de EventSoft
+        </div>
+
+        <div id="chatLog" class="chat-log"></div>
+
+        <div class="questions">
+            <button onclick="enviarPregunta('hola')">Hola</button>
+            <button onclick="enviarPregunta('que hace un participante?')">¿Qué hace un participante?</button>
+            <button onclick="enviarPregunta('que hace un asistente?')">¿Qué hace un asistente?</button>
+            <button onclick="enviarPregunta('cómo me inscribo?')">¿Cómo me inscribo?</button>
+            <button onclick="enviarPregunta('cuáles son los eventos disponibles?')">¿Cuáles son los eventos disponibles?</button>
+            <button onclick="enviarPregunta('documentos')">¿Qué documentos necesito?</button>
+        </div>
+    </div>
+
+    <script>
+        function enviarPregunta(pregunta) {
+            const log = document.getElementById("chatLog");
+
+            // Mostrar mensaje del usuario
+            const userMsg = document.createElement("p");
+            userMsg.className = "user-msg";
+            userMsg.textContent = "Tú: " + pregunta;
+            log.appendChild(userMsg);
+
+            fetch("/chatbot", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ mensaje: pregunta })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const botMsg = document.createElement("p");
+                botMsg.className = "bot-msg";
+                botMsg.textContent = "Bot: " + data.respuesta;
+                log.appendChild(botMsg);
+                log.scrollTop = log.scrollHeight;
+            })
+            .catch(() => {
+                const errorMsg = document.createElement("p");
+                errorMsg.className = "bot-msg";
+                errorMsg.textContent = "Bot: Ocurrió un error al contactar al servidor.";
+                log.appendChild(errorMsg);
+            });
+        }
+    </script>
+</body>
+</html>
