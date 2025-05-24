@@ -1,0 +1,259 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eef2f7;
+    background-image: url('/static/fnd2.jpg');
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    /* Centrar contenido vertical y horizontal */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding-top: 80px; /* espacio para header fijo */
+}
+
+
+form button {
+    margin-top: 25px;
+    padding: 15px;
+    background-color: #007BFF;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+body {
+    font-family: Arial, sans-serif;
+    background-color: #eef2f7;
+    background-image: url('/static/fnd2.jpg');
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+header {
+    background-color: #ff6600;
+    color: white;
+    padding: 15px 20px;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 60px;
+    z-index: 1000;
+}
+
+header img {
+    height: 40px;
+}
+
+form {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    margin-top: 100px; /* Asegura que el formulario no quede oculto detrás del header */
+}
+
+body {
+    background-image: url('/static/fnd2.jpg');
+}
+
+
+h1 {
+    text-align: center;
+    color: #222;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: bold;
+    display: block;
+    margin: 12px 0 6px;
+    color: #444;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border 0.3s ease-in-out;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #007BFF;
+    outline: none;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+textarea {
+    resize: vertical;
+}
+.btn-volver {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 10px 20px; /* Ajusta el tamaño del padding */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    display: inline-block;
+    width: auto; /* Asegura que el ancho se adapte al texto */
+    min-width: 120px; /* Opcional: tamaño mínimo */
+    max-width: 200px; 
+}
+.header img {
+    height: 40px;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+.search-section {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    background: white;
+}
+
+.search-section input {
+    width: 80%;
+    max-width: 400px;
+    padding: 8px;
+    border: 2px solid #ff6600;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.filters {
+    background: rgb(255, 255, 255);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    width: 285px;  
+    font-size: 14px;
+    min-height: 320px;  
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+}
+
+.filters h3 {
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.filters label {
+    font-weight: bold;
+    display: block;
+    margin-top: 8px;
+}
+
+.filters select,
+.filters input {
+    width: 90%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 2px solid #ff6600;
+    border-radius: 5px;
+    font-size: 12px;
+    align-items: center; 
+    
+}
+
+
+.content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 20px;
+}
+
+
+.event-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    flex-grow: 1;
+}
+
+
+.event-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 12px;
+    width: 240px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.event-card img {
+    width: 100%;
+    border-radius: 5px;
+}
+
+
+.filters button {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 20px;
+}
+.filters button:hover {
+    background-color: #e65c00;
+}

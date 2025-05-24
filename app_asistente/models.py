@@ -2,11 +2,10 @@ from django.db import models
 
 class Evento(models.Model):
     nombre = models.CharField(max_length=100)
-    # otros campos...
     categorias = models.ManyToManyField('Categoria', through='EventoCategoria', related_name='eventos')
 
 class Asistentes(models.Model):
-    id = models.CharField(max_length=20, primary_key=True)  # como en Flask
+    id = models.CharField(max_length=20, primary_key=True)  
     nombre = models.CharField(max_length=100)
     correo = models.EmailField(max_length=100, blank=True, null=True)
     telefono = models.CharField(max_length=45, blank=True, null=True)
@@ -24,7 +23,7 @@ class AsistenteEvento(models.Model):
     clave = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
-        unique_together = ('asistente', 'evento')  # clave primaria compuesta
+        unique_together = ('asistente', 'evento')  
 
 class Categoria(models.Model):
     nombre = models.CharField(max_length=100)
@@ -35,4 +34,4 @@ class EventoCategoria(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('evento', 'categoria')  # clave primaria compuesta
+        unique_together = ('evento', 'categoria')  

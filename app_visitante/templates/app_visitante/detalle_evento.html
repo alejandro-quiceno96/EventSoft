@@ -166,8 +166,8 @@
 
     <div class="container">
         <div class="info-section">
-            <img src="{{ evento.imagen_url }}" alt="Imagen del evento" class="event-image" style="width: 100%; height: 300px; object-fit: contain;">
-            <h2>{{ evento.eve_nombre }}</h2>
+            <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" style="height: 180px; object-fit: cover; width: 100%;">
+        <h2>{{ evento.eve_nombre }}</h2>
             <p>{{ evento.eve_descripcion }} el próximo {{ evento.eve_fecha_inicio }}, 
                 se realizará en {{ evento.eve_lugar }} en la ciudad de {{ evento.eve_ciudad }}.</p>
             <p>📍 Lugar: {{ evento.eve_lugar }}</p>
@@ -189,16 +189,28 @@
 
             <!-- Menú desplegable de pantalla completa -->
             <div id="fullScreenMenu" class="fullscreen-menu">
-                <button class="close-btn" onclick="closeMenu()">❌</button>
-                <div class="menu-content">
-                    <button class="close-options-btn" onclick="closeMenu()">🔙 Cerrar Opciones</button>
-                    <button onclick="window.location.href='/'">🏠 Volver</button>
-                    <button onclick="window.location.href='/participante/{{ evento.eve_id }}'">📝 Pre inscribirme como participante</button>
-                    <button onclick="window.location.href='/asistente/{{ evento.eve_id }}'">
-                        ✏️ Pre inscribirme como asistente
-                    </button>
-                    <button onclick="window.location.href='/modificar_participante'">✏️ Modificar datos</button>
-                    
+               <div class="btn-container">
+            <!-- Botón para abrir el menú -->
+            <button class="open-menu-btn" onclick="openMenu()">☰ Opciones</button>
+
+            <!-- Menú desplegable de pantalla completa -->
+            <div class="menu-content">
+    <button class="close-options-btn" onclick="closeMenu()">🔙 Cerrar Opciones</button>
+    
+    <!-- Volver al inicio -->
+    <button onclick="window.location.href='{% url "inicio_visitante" %}'">🏠 Volver</button>
+    
+    <!-- Preinscripción como participante -->
+   <button onclick="window.location.href='{% url 'preinscripcion_participante' evento.id %}'">
+    📝 Pre inscribirme como participante
+    </button>
+
+    <!-- Preinscripción como asistente -->
+    <button onclick="window.location.href='{% url "preinscripcion_asistente" evento.id %}'">✏️ Pre inscribirme como asistente</button>
+    
+    <!-- Modificar datos (sin ID, asumo acceso directo) -->
+    <button onclick="window.location.href='{% url "modificar_participante" %}'">✏️ Modificar datos</button>
+</div>
                     
                 </div>
             </div> 

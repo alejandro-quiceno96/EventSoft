@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Registro de Asistentes</title>
+    <link rel="stylesheet" href="{% static 'app_visitante/css/styles_parti.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+    <header class="header">
+        <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo" />
+        EventSoft
+        <div class="user-section">
+            <i class="fas fa-user-circle"></i>
+            <span></span>
+            <a href="{% url 'inicio_visitante' %}" class="btn-volver">Volver</a>
+        </div>
+    </header>
+
+    <main class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form action="{% url 'registrar_asistente' evento_id=evento.id %}" method="post" enctype="multipart/form-data">
+
+            {% csrf_token %}
+            <h1>Formulario de Registro de Asistente</h1>
+
+            <label for="asi_id">ID:</label>
+            <input type="text" id="asi_id" name="id" required>
+
+            <input type="hidden" id="eve_id" name="eve_id" value="{{ evento }}">
+
+            <label for="asi_nombre">Nombre completo:</label>
+            <input type="text" id="asi_nombre" name="nombre" required>
+
+            <label for="asi_correo">Correo electrónico:</label>
+            <input type="email" id="asi_correo" name="correo" required>
+
+            <label for="asi_telefono">Teléfono:</label>
+            <input type="text" id="asi_telefono" name="telefono" required>
+
+            {% if cobro == "Si" %}
+            <label for="comprobante_pago">Subir comprobante de pago (PDF o imagen):</label>
+            <input type="file" id="comprobante_pago" name="comprobante_pago" accept=".pdf,.png,.jpg,.jpeg" required>
+            {% endif %}
+
+            <button type="submit">Guardar Registro</button>
+        </form>
+    </main>
+
+    <script>
+        const comprobanteInput = document.getElementById("comprobante_pago");
+        if (comprobanteInput) {
+            comprobanteInput.addEventListener("change", function () {
+                var fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
+                alert("Archivo seleccionado: " + fileName);
+            });
+        }
+    </script>
+</body>
+
+</html>

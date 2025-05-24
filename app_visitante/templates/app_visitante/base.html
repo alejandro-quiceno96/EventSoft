@@ -26,7 +26,7 @@
                 <span class="tooltiptext">Menú</span>
             </button>
 
-            <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo">
+            <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo"> 
             <h2> EventSoft</h2>
         </div>
 
@@ -44,10 +44,14 @@
 
     <!-- Menú lateral izquierdo -->
     <div id="sidebarMenu" class="sidebar-menu">
-        <button class="close-btn" onclick="closeMenu()">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-        
+        <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
+        <div class="menu-content">
+            <button class="menu-item" onclick="location.href='{% url 'inicio_sesion_administrador' %}'">
+                <i class="fa-solid fa-user-tie"></i> Administrador
+            </button>
+            
+
+            
         </div>
     </div>
 
@@ -101,8 +105,8 @@
                             <i class="fa-solid fa-circle-check"></i> Evento Terminado
                         </button>
                         {% else %}
-                        
-                        {% endif %}
+                        <a href="{% url 'detalle_evento' evento.pk %}" class="btn btn-primary">Ver más</a>
+                    {% endif %}
                     </div>
                 </div>
                 {% endfor %}
@@ -187,6 +191,18 @@
                 });
         }
     </script>
+    <script>
+    function openMenu() {
+        document.getElementById("sidebarMenu").style.left = "0";
+        document.getElementById("overlay").style.display = "block";
+    }
+
+    function closeMenu() {
+        document.getElementById("sidebarMenu").style.left = "-250px";  // ajusta según tu CSS
+        document.getElementById("overlay").style.display = "none";
+    }
+</script>
+
 
 </body>
 

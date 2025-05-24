@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Preinscripción Participante</title>
+    <link rel="stylesheet" href="{% static 'app_visitante/css/styles_parti.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+    <header class="header">
+        <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo" />
+        EventSoft
+        <div class="user-section">
+            <i class="fas fa-user-circle"></i>
+            <span></span>
+            <a href="{% url 'inicio_visitante' %}" class="btn-volver">Volver</a>
+        </div>
+    </header>
+
+    <main class="form-container">
+        <form id="preinscripcion-form" action="{% url 'submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <h1>Formulario de Preinscripción</h1>
+
+            <label for="nombre">Nombre completo:</label>
+            <input type="text" id="nombre" name="par_nombre" required />
+
+            <label for="cedula">Cédula:</label>
+            <input type="text" id="cedula" name="par_cedula" required />
+
+            <label for="email">Correo electrónico:</label>
+            <input type="email" id="email" name="par_correo" required />
+
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" name="par_telefono" required />
+
+            <input type="hidden" id="evento_id" name="evento_id" value="{{ evento_id|default:evento.id }}" />
+
+            <label for="documento">Subir documentación (PDF):</label>
+            <input type="file" id="documento" name="documento" accept=".pdf" required />
+
+            <button type="submit">Enviar Preinscripción</button>
+        </form>
+    </main>
+</body>
+
+</html>
