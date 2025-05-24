@@ -55,7 +55,7 @@ def registrar_asistente(request):
         )
 
         messages.success(request, "Asistente registrado con éxito")
-        return redirect('/')
+        return redirect('/registrar_asistente/')
     else:
         return render(request, 'app_asistente/asistente.html')
 
