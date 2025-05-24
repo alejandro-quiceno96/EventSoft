@@ -36,11 +36,11 @@ def registrar_asistente(request):
         estado_asistente = 'Pendiente' if comprobante_data else 'Admitido'
 
         asistente, created = Asistentes.objects.get_or_create(
-            asi_cedula=asi_id,
+            id=asi_id,
             defaults={
-                'asi_nombre': asi_nombre,
-                'asi_correo': asi_correo,
-                'asi_telefono': asi_telefono
+                'nombre': asi_nombre,
+                'correo': asi_correo,
+                'telefono': asi_telefono
             }
         )
 

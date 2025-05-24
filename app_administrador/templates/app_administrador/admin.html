@@ -1,97 +1,170 @@
-{% extends "administrador/baseadmin.html" %}
+{% extends "app_administrador/baseadmin.html" %}
+{% load static %}
+
 {% block title %}
-  {{ administrador if administrador else 'Administrador' }}
+    {{ administrador|default:'Administrador' }}
 {% endblock %}
+
 {% block content %}
-<div class="contenedor-principal-de-eventos">
-    {% for evento in eventos %}
-    <div class="card" style="width: 18rem;">
-        <img src="{{ url_for('administrador.imagen_evento', id=evento.eve_codigo) }}" class="card-img-top" alt="{{ evento.eve_nombre }}" style="object-fit: cover; height: 200px;">
-        <div class="card-body">
-            <h5 class="card-title">{{evento.eve_nombre}}</h5>
-            <h6 class="card-subtitle mb-2 text-body-secondary"><i class="fa-solid fa-calendar"></i> {{evento.eve_fecha_inicio}} - {{evento.eve_fecha_fin}}</h6>
-            <p class="card-text">{{ evento.eve_descripcion | truncate(100, True, '...') }}</p>
-            <button class="btn-ver-mas" data-id="{{ evento.eve_codigo }}"><i class="fa-solid fa-eye"></i> Ver más</button>
-            <a href="#">
-                <button class="btn-ver_participantes" ><i class="fas fa-user-check"></i> Evaluadores</button>
-            </a>
-            
-            <a href="{{ url_for('administrador.ver_participantes', evento_id=evento.eve_codigo) }}">
-                <button class="btn-ver_participantes" ><i class="fa-solid fa-users"></i> Ver Participantes</button>
-            </a>
-            <a href="{{ url_for('administrador.ver_asistentes', evento_id=evento.eve_codigo) }}">
-                <button class="btn-ver_participantes" ><i class="fa-solid fa-users"></i> Ver Asistentes</button>
-            </a>
-            <a href="{{ url_for('administrador.ranking_evento', evento_id=evento.eve_codigo) }}">
-                <button class="btn-ver_participantes"><i class="fa-solid fa-trophy"></i> Tabla de Posiciones</button>
-            </a>
-            
+    <!-- Contenedor Principal de Eventos -->
+    <div class="contenedor-principal-de-eventos">
+        {% for evento in eventos %}
+            <div class="card" style="width: 18rem;">
+                <!-- Imagen del Evento -->
+                <img src="{% url 'imagen_evento' evento.eve_codigo %}" 
+                     class="card-img-top" 
+                     alt="{{ evento.eve_nombre }}" 
+                     style="object-fit: cover; height: 200px;">
+                
+                <!-- Cuerpo de la Card -->
+                <div class="card-body">
+                    <h5 class="card-title">{{ evento.eve_nombre }}</h5>
+                    <h6 class="card-subtitle mb-2 text-body-secondary">
+                        <i class="fa-solid fa-calendar"></i> 
+                        {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
+                    </h6>
+                    <p class="card-text">{{ evento.eve_descripcion|truncatechars:100 }}</p>
+                    
+                    <!-- Botones de Acción -->
+                    <div class="d-flex flex-column gap-2">
+                        <button class="btn-ver-mas" data-id="{{ evento.eve_codigo }}">
+                            <i class="fa-solid fa-eye"></i> Ver más
+                        </button>
+                        
+                        <a href="#" class="text-decoration-none">
+                            <button class="btn-ver_participantes w-100">
+                                <i class="fas fa-user-check"></i> Evaluadores
+                            </button>
+                        </a>
+                        
+                        <a href="{% url 'ver_participantes' evento.eve_codigo %}" class="text-decoration-none">
+                            <button class="btn-ver_participantes w-100">
+                                <i class="fa-solid fa-users"></i> Ver Participantes
+                            </button>
+                        </a>
+                        
+                        <a href="{% url 'ver_asistentes' evento.eve_codigo %}" class="text-decoration-none">
+                            <button class="btn-ver_participantes w-100">
+                                <i class="fa-solid fa-users"></i> Ver Asistentes
+                            </button>
+                        </a>
+                        
+                        <a href="{% url 'ranking_evento' evento.eve_codigo %}" class="text-decoration-none">
+                            <button class="btn-ver_participantes w-100">
+                                <i class="fa-solid fa-trophy"></i> Tabla de Posiciones
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">No hay eventos disponibles.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Modal de Detalles del Evento -->
+    <div class="modal fade" id="eventoModal" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <!-- Header del Modal -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Cuerpo del Modal -->
+                <div class="modal-body">
+                    <h5 id="modalNombre" class="mb-3"></h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
+                            <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
+                            <p><strong>Lugar:</strong> <span id="modalLugar"></span></p>
+                            <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
+                            <p><strong>Categoría:</strong> <span id="modalCategoria"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
+                            <p><strong>Inscripción:</strong> <span id="modalInscripcion"></span></p>
+                            <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
+                            <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Imagen del Evento -->
+                    <div class="text-center mt-3">
+                        <img id="modalImagen" 
+                             src="" 
+                             alt="Imagen del evento" 
+                             class="img-fluid rounded" 
+                             style="max-width: 100%; height: 300px; object-fit: contain;" />
+                    </div>
+                </div>
+                
+                <!-- Footer del Modal -->
+                <div class="modal-footer justify-content-between">
+                    <div>
+                        <a type="button"
+                           id="btnModificar"
+                           class="btn-ver-mas"
+                           data-bs-dismiss="modal"
+                           data-base-url="">
+                            <i class="fa-solid fa-edit"></i> Modificar información
+                        </a>
+                    </div>
+                    <div>
+                        <button type="button" id="btnCriterios" class="btn btn-warning me-2" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-list-check"></i> Criterios de Evaluación
+                        </button>
+                        <button type="button" id="btnAccion" class="btn btn-danger" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-trash"></i> Eliminar Evento
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    {% endfor %}
-    
-</div>
 
-
-
-<!-- Modal -->
-<div class="modal fade" id="eventoModal" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <h5 id="modalNombre"></h5>
-                <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
-                <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
-                <p><strong>Lugar:</strong> <span id="modalLugar"></span></p>
-                <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
-                <p><strong>Categoría:</strong> <span id="modalCategoria"></span></p>
-                <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
-                <p><strong>Inscripción:</strong> <span id="modalInscripcion"></span></p>
-                <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
-                <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
-                <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid" style="width: 100%;
-                height: 300px; object-fit: contain;" />
-            </div>
-            <div class="modal-footer">
-                <a type="button"
-                    id="btnModificar"
-                    class="btn-ver-mas"
-                    data-bs-dismiss="modal"
-                    data-base-url="{{ url_for('administrador.editar_evento', evento_id=0) | replace('0', '') }}">
-                    Modificar información
-                </a>
-                <button type="button"  id="btnCriterios" class="btn-eliminar" data-bs-dismiss="modal" >Criterios de Evaluación</button>
-                <button type="button" id="btnAccion" class="btn-eliminar" data-bs-dismiss="modal" >Eliminar Evento</button>
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Header del Modal -->
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="confirmarEliminarLabel">
+                        <i class="fa-solid fa-exclamation-triangle"></i> Confirmar Eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Cuerpo del Modal -->
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="fs-5">¿Estás seguro de que deseas eliminar este evento?</p>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                
+                <!-- Footer del Modal -->
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+{% endblock %}
 
-<!-- Modal de Confirmación -->
-<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmarEliminarLabel">Confirmar Eliminación</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                ¿Estás seguro de que deseas eliminar este evento?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<script src="/static/js/verEventos.js"></script>
-<script src="/static/js/modificarEventos.js"></script>
-<script src="/static/js/Eliminar.js"></script>
+{% block extra_js %}
+    <script src="{% static 'js/verEventos.js' %}"></script>
+    <script src="{% static 'js/modificarEventos.js' %}"></script>
+    <script src="{% static 'js/Eliminar.js' %}"></script>
 {% endblock %}
