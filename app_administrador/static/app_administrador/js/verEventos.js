@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".btn-ver-mas").forEach(button => {
         button.addEventListener("click", function () {
             let eventoId = this.getAttribute("data-id");
-
-            fetch(`/event/${eventoId}`)
+           let url = baseEventoDetalleUrl + eventoId;
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById("modalNombre").textContent = data.eve_nombre;
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("modalInscripcion").textContent = data.eve_costo;
                     document.getElementById("modalParticipantes").textContent = data.cantidad_participantes;
                     document.getElementById("modalAsistentes").textContent = data.cantidad_asistentes;
-                    document.getElementById("modalImagen").src = `data:image/jpeg;base64,${data.eve_imagen}`;
+                    document.getElementById("modalImagen").src = data.eve_imagen;
                     document.getElementById("btnAccion").setAttribute("data-id", data.eve_id);
                     document.getElementById("btnModificar").setAttribute("data-id", data.eve_id);
                     document.getElementById("btnCriterios").setAttribute("data-id", data.eve_id);

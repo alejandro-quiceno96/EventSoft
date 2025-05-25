@@ -4,14 +4,13 @@
 {% block title %}
     {{ administrador|default:'Administrador' }}
 {% endblock %}
-
 {% block content %}
     <!-- Contenedor Principal de Eventos -->
     <div class="contenedor-principal-de-eventos">
         {% for evento in eventos %}
             <div class="card" style="width: 18rem;">
                 <!-- Imagen del Evento -->
-                <img src="{% url 'imagen_evento' evento.eve_codigo %}" 
+                <img src="{{ evento.eve_imagen.url }}" 
                      class="card-img-top" 
                      alt="{{ evento.eve_nombre }}" 
                      style="object-fit: cover; height: 200px;">
@@ -26,8 +25,8 @@
                     <p class="card-text">{{ evento.eve_descripcion|truncatechars:100 }}</p>
                     
                     <!-- Botones de Acción -->
-                    <div class="d-flex flex-column gap-2">
-                        <button class="btn-ver-mas" data-id="{{ evento.eve_codigo }}">
+                    <div class="d-flex flex-column gap-1">
+                        <button class="btn-ver-mas" data-id="{{ evento.id }}">
                             <i class="fa-solid fa-eye"></i> Ver más
                         </button>
                         
@@ -37,19 +36,19 @@
                             </button>
                         </a>
                         
-                        <a href="{% url 'ver_participantes' evento.eve_codigo %}" class="text-decoration-none">
+                        <a href="" class="text-decoration-none">
                             <button class="btn-ver_participantes w-100">
                                 <i class="fa-solid fa-users"></i> Ver Participantes
                             </button>
                         </a>
                         
-                        <a href="{% url 'ver_asistentes' evento.eve_codigo %}" class="text-decoration-none">
+                        <a href="" class="text-decoration-none">
                             <button class="btn-ver_participantes w-100">
                                 <i class="fa-solid fa-users"></i> Ver Asistentes
                             </button>
                         </a>
                         
-                        <a href="{% url 'ranking_evento' evento.eve_codigo %}" class="text-decoration-none">
+                        <a href="" class="text-decoration-none">
                             <button class="btn-ver_participantes w-100">
                                 <i class="fa-solid fa-trophy"></i> Tabla de Posiciones
                             </button>
@@ -64,69 +63,40 @@
         {% endfor %}
     </div>
 
-    <!-- Modal de Detalles del Evento -->
-    <div class="modal fade" id="eventoModal" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <!-- Header del Modal -->
-                <div class="modal-header">
-                    <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                
-                <!-- Cuerpo del Modal -->
-                <div class="modal-body">
-                    <h5 id="modalNombre" class="mb-3"></h5>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
-                            <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
-                            <p><strong>Lugar:</strong> <span id="modalLugar"></span></p>
-                            <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
-                            <p><strong>Categoría:</strong> <span id="modalCategoria"></span></p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
-                            <p><strong>Inscripción:</strong> <span id="modalInscripcion"></span></p>
-                            <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
-                            <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
-                        </div>
-                    </div>
-                    
-                    <!-- Imagen del Evento -->
-                    <div class="text-center mt-3">
-                        <img id="modalImagen" 
-                             src="" 
-                             alt="Imagen del evento" 
-                             class="img-fluid rounded" 
-                             style="max-width: 100%; height: 300px; object-fit: contain;" />
-                    </div>
-                </div>
-                
-                <!-- Footer del Modal -->
-                <div class="modal-footer justify-content-between">
-                    <div>
-                        <a type="button"
-                           id="btnModificar"
-                           class="btn-ver-mas"
-                           data-bs-dismiss="modal"
-                           data-base-url="">
-                            <i class="fa-solid fa-edit"></i> Modificar información
-                        </a>
-                    </div>
-                    <div>
-                        <button type="button" id="btnCriterios" class="btn btn-warning me-2" data-bs-dismiss="modal">
-                            <i class="fa-solid fa-list-check"></i> Criterios de Evaluación
-                        </button>
-                        <button type="button" id="btnAccion" class="btn btn-danger" data-bs-dismiss="modal">
-                            <i class="fa-solid fa-trash"></i> Eliminar Evento
-                        </button>
-                    </div>
-                </div>
+   <div class="modal fade" id="eventoModal" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5 id="modalNombre"></h5>
+                <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
+                <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
+                <p><strong>Lugar:</strong> <span id="modalLugar"></span></p>
+                <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
+                <p><strong>Categoría:</strong> <span id="modalCategoria"></span></p>
+                <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
+                <p><strong>Inscripción:</strong> <span id="modalInscripcion"></span></p>
+                <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
+                <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
+                <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid" style="width: 100%;
+                height: 300px; object-fit: contain;" />
+            </div>
+            <div class="modal-footer">
+                <a type="button"
+                    id="btnModificar"
+                    class="btn-ver-mas"
+                    data-bs-dismiss="modal">
+                    Modificar información
+                </a>
+                <button type="button"  id="btnCriterios" class="btn-eliminar" data-bs-dismiss="modal" >Criterios de Evaluación</button>
+                <button type="button" id="btnAccion" class="btn-eliminar" data-bs-dismiss="modal" >Eliminar Evento</button>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Modal de Confirmación de Eliminación -->
     <div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarLabel" aria-hidden="true">
@@ -161,10 +131,13 @@
             </div>
         </div>
     </div>
+    <script>
+        const baseEventoDetalleUrl = "{% url 'administrador:evento_detalle' 0 %}".replace('0', '');
+        const baseEliminarUrl = "{% url 'administrador:eliminar_evento' 0 %}".replace('0', '');
+    </script>
+
+    <script src="{% static 'app_administrador/js/verEventos.js' %}"></script>
+    <script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>
+    <script src="{% static 'app_administrador/js/Eliminar.js' %}"></script>
 {% endblock %}
 
-{% block extra_js %}
-    <script src="{% static 'js/verEventos.js' %}"></script>
-    <script src="{% static 'js/modificarEventos.js' %}"></script>
-    <script src="{% static 'js/Eliminar.js' %}"></script>
-{% endblock %}

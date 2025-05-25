@@ -1,12 +1,16 @@
-{% extends "administrador/baseadmin.html" %}
+{% extends "app_administrador/baseadmin.html" %}
+{% load static %}
+
 {% block title %}
-  {{ administrador if administrador else 'Administrador' }}
+    {{ administrador|default:'Administrador' }}
 {% endblock %}
 {% block content %}
 <div class="contenedor-principal-crear">
     <div class="contenedor-crear-evento">
         <h2>Nuevo Evento</h2>
-        <form action="/administracion/crearEvento" method="POST" enctype="multipart/form-data">
+
+        <form action="{% url 'administrador:crear_evento' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
             <div id="pagina1" class="pagina pagina-activa">
                 
                 <div class="div contenedor-input-1">
@@ -32,18 +36,18 @@
                 <div class="div contenedor-input-4">
                     <div class="div-3">
                         <label for="fecha_inicio">Fecha de inicio:</label>
-                        <input type="datetime-local" name="fecha_inicio">
+                        <input type="date" name="fecha_inicio">
                     </div>
                     <div class="div-4">
                         <label for="fecha_fin">Fecha de fin:</label>
-                        <input type="datetime-local" name="fecha_fin">
+                        <input type="date" name="fecha_fin">
                     </div>
                     
                 </div>
                 <div  class="div contenedor-input-5">
                     <div class="boton-continuar">
                         <input type="button" value="Continuar" onclick="siguiente(2)">
-                        <img src="/static/images/flecha-derecha.png" alt="flecha-derecha" onclick="siguiente(2)">
+                        <img src="{% static 'app_administrador/image/flecha-derecha.png' %}" alt="flecha-derecha" onclick="siguiente(2)">
                     </div>
                 </div>
             </div>
@@ -56,7 +60,7 @@
                         <select id="area" required >
                             <option value="">Seleccione un área</option>
                             {% for area in areas %}
-                                <option value="{{ area.are_codigo }}">{{ area.are_nombre }}</option>
+                                <option value="{{ area.id }}">{{ area.are_nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -116,19 +120,22 @@
                 </div>
                 <div  class="div contenedor-input-9">
                     <div class="boton-continuar">
-                        <img src="/static/images/atras.png" alt="flecha-izquierda" onclick="volver(1)">
+                        <img src="{% static 'app_administrador/image/atras.png'%}" alt="flecha-izquierda" onclick="volver(1)">
                         <input type="button" value="Volver" onclick="volver(1)">
                     </div>
                     <div class="boton-continuar">
                         <input type="submit" value="Crear Evento">
-                        <img src="/static/images/crear-img.png" alt="Crear">
+                        <img src="{% static 'app_administrador/image/crear-img.png' %}" alt="Crear">
                     </div>
                 </div>
             </div>
         </form>
     </div>
 </div>
+<script>
+    const baseCategoriaUrl = "{% url 'administrador:get_categorias' 0 %}".replace('0', '');
+</script>
 
-<script src="/static/js/crearEvento.js"></script>
-<script src="/static/js/previaImagen.js"></script>
+<script src="{% static 'app_administrador/js/crearEvento.js' %}"></script>
+<script src="{% static 'app_administrador/js/previaImagen.js' %}"></script>
 {% endblock %}
