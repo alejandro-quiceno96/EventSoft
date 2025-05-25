@@ -15,7 +15,7 @@ body, html {
     padding: 0;
     overflow-x: hidden;
     font-family: "Noto Sans", sans-serif;
-    background-image: url(/static/images/fondo_admin.png);
+    background-image: url(/static/app_administrador/image/fondo_admin.png);
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -321,7 +321,6 @@ form {
 .card-body {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 
 .btn-ver-mas,
@@ -337,6 +336,7 @@ form {
     color: var(--color-texto);
     border: none;
     text-align: center;
+    padding: 5px;
     text-decoration: none;
 }
 

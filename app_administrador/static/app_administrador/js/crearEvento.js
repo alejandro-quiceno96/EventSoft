@@ -62,20 +62,25 @@ function volver(pagina) {
     paginaAnterior.classList.add("pagina-activa");
 }
 
-document.getElementById("area").addEventListener("change", function() {
+document.getElementById("area").addEventListener("change", function () {
     let areaId = this.value;
     let categoriaSelect = document.getElementById("categoria");
-    console.log(areaId)
     categoriaSelect.innerHTML = '<option value="">Selecciona una categoría</option>';
 
     if (areaId) {
-        fetch(`/get_categorias/${areaId}`)
+        let url = baseCategoriaUrl + areaId;
+
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 data.forEach(categoria => {
                     let option = new Option(categoria.cat_nombre, categoria.cat_codigo);
                     categoriaSelect.add(option);
                 });
+            })
+            .catch(error => {
+                console.error('Error al cargar categorías:', error);
+                categoriaSelect.innerHTML = '<option value="">Error al cargar categorías</option>';
             });
     }
 });
