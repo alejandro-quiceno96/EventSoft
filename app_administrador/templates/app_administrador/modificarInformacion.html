@@ -1,63 +1,71 @@
-{% extends "administrador/baseadmin.html" %}
+{% extends "app_administrador/baseadmin.html" %}
+{% load static %}
+
 {% block title %}
-  {{ administrador if administrador else 'Administrador' }}
+    {{ administrador|default:'Administrador' }}
 {% endblock %}
+
 {% block content %}
+
 <div class="contenedor-principal-crear">
     <div class="contenedor-crear-evento">
-        <h2>Modificar Evento  
-        </h2>
-        <form action="{{ url_for('administrador.editar_evento', evento_id=evento.id) }}" method="POST" enctype="multipart/form-data">
+        <h2>Modificar Evento</h2>
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
             <div id="pagina1" class="pagina pagina-activa">
-                
+
                 <div class="div contenedor-input-1">
                     <label for="nombre_evento">Nombre del Evento:</label>
-                    <input type="text" name="nombre_evento" id="nombre_evento" value="{{evento.nombre}}" maxlength="100" oninput="actualizarContaNombre()">
+                    <input type="text" name="nombre_evento" id="nombre_evento" value="{{evento.eve_nombre}}" maxlength="100" oninput="actualizarContaNombre()">
                     <small id="contador_nombre">0 / 100</small>
                 </div>
+
                 <div class="div contenedor-input-2">
                     <label for="descripcion_evento">Descripción:</label>
                     <textarea id="mensaje" name="descripcion_evento" placeholder="Escribe aquí..." maxlength="400" oninput="actualizarContador()"></textarea>
                     <small id="contador">0 / 400</small>
                 </div>
-                <div  class="div contenedor-input-3">
+
+                <div class="div contenedor-input-3">
                     <div class="div-1">
                         <label for="ciudad">Ciudad:</label>
-                        <input type="text" name="ciudad" value="{{evento.ciudad}}">
+                        <input type="text" name="ciudad" value="{{evento.eve_ciudad}}">
                     </div>
                     <div class="div-2">
                         <label for="lugar">Lugar:</label>
-                        <input type="text" name="lugar" value="{{evento.lugar}}">
+                        <input type="text" name="lugar" value="{{evento.eve_lugar}}">
                     </div>
                 </div>
+
                 <div class="div contenedor-input-4">
                     <div class="div-3">
                         <label for="fecha_inicio">Fecha de inicio:</label>
-                        <input type="datetime-local" name="fecha_inicio" value="{{evento.fecha_inicio}}">
+                        <input type="date" name="fecha_inicio" value="{{ evento.eve_fecha_inicio|date:'Y-m-d' }}">
+
                     </div>
                     <div class="div-4">
                         <label for="fecha_fin">Fecha de fin:</label>
-                        <input type="datetime-local" name="fecha_fin" value="{{evento.fecha_fin}}">
+                        <input type="date" name="fecha_fin" value="{{ evento.eve_fecha_fin|date:'Y-m-d' }}">
+
                     </div>
-                    
                 </div>
-                <div  class="div contenedor-input-5">
+
+                <div class="div contenedor-input-5">
                     <div class="boton-continuar">
                         <input type="button" value="Continuar" onclick="siguiente(2)">
-                        <img src="/static/images/flecha-derecha.png" alt="flecha-derecha" onclick="siguiente(2)">
+                        <img src="{% static 'app_administrador/image/flecha-derecha.png' %}" alt="flecha-derecha" onclick="siguiente(2)">
                     </div>
                 </div>
             </div>
-            
-            <div id="pagina2" class="pagina pagina-inactiva">
 
+            <div id="pagina2" class="pagina pagina-inactiva">
                 <div  class="div contenedor-input-6">
                     <div>
                         <label for="area">Área:</label>
                         <select id="area" name="area" required>
                             <option value="">Seleccione un área</option>
                             {% for area in areas %}
-                                <option value="{{ area.are_codigo }}" {% if area_seleccionada and area.are_codigo == area_seleccionada.codigo %}selected{% endif %}>
+                                <option value="{{ area.id }}" {% if area_seleccionada and area.id == area_seleccionada.id %}selected{% endif %}>
                                     {{ area.are_nombre }}
                                 </option>
                             {% endfor %}
@@ -67,49 +75,45 @@
                         <label for="categoria">Categoría:</label>
                         <select id="categoria" name="categoria">
                             {% for categoria in categorias %}
-                                <option value="{{ categoria.cat_codigo }}" {% if categoria_seleccionada and categoria.cat_codigo == categoria_seleccionada.codigo %}selected{% endif %}>
+                                <option value="{{ categoria.id }}" {% if categoria_seleccionada and categoria.id == categoria_seleccionada.id %}selected{% endif %}>
                                     {{ categoria.cat_nombre }}
                                 </option>
                             {% endfor %}
                         </select>
                     </div>
                 </div>
+
                 <div class="div contenedor-input-11">
                     <label for="permitir_participantes">¿Tiene cupo límite?</label>
                     <select id="permitir_participantes" name="permitir_participantes" onchange="toggleCantidadParticipantesModificar()">
-                        <option value="No" {{ 'selected' if evento.capacidad is none else '' }}>No</option>
-                        <option value="Si" {{ 'selected' if evento.capacidad is not none else '' }}>Sí</option>
+                        <option value="No" {% if not evento.eve_capacidad or evento.eve_capacidad == 0 %}selected{% endif %}>No</option>
+                        <option value="Si" {% if evento.eve_capacidad and evento.eve_capacidad > 0 %}selected{% endif %}>Sí</option>
                     </select>
-                
-                    <div id="cantidad_participantes_div" {% if evento.capacidad is none %}style="display: none;"{% endif %}>
+
+
+                    <div id="cantidad_participantes_div" {% if not evento.eve_capacidad or evento.eve_capacidad == 0 %}style="display: none;"{% endif %}>
                         <label for="cantidad_personas">Aforo Máximo:</label>
-                        <input type="number" min="0" id="cantidad_personas"
-                               value="{{ evento.capacidad or '' }}"
-                               name="cantidad_personas">
+                        <input type="number" min="0" id="cantidad_personas" name="cantidad_personas" value="{{ evento.eve_capacidad|default_if_none:'' }}">
                     </div>
                 </div>
-                
-                
-                
-                <div  class="div contenedor-input-7">
+
+                <div class="div contenedor-input-7">
                     <div>
-                        <label  for="">Costo de inscripción:</label>
-                        <select class="dropdown" name="inscripcion" id="">
-                            {% if evento['tiene_costo'] == 'Si' %}
+                        <label for="inscripcion">Costo de inscripción:</label>
+                        <select class="dropdown" name="inscripcion">
+                            {% if evento.eve_tienecosto == True %}
                                 <option value="Si">Si</option>
                                 <option value="No">No</option>
                             {% else %}
                                 <option value="No">No</option>
                                 <option value="Si">Si</option>
                             {% endif %}
-                            
-                            
                         </select>
                     </div>
                     <div>
-                        <label  for="estado_evento">Estado del evento</label>
-                        <select class="dropdown" name="estado_evento" id="">
-                            {% if evento['estado'] == 'activo' %}
+                        <label for="estado_evento">Estado del evento:</label>
+                        <select class="dropdown" name="estado_evento">
+                            {% if evento.eve_estado == 'activo' %}
                                 <option value="activo">Activo</option>
                                 <option value="inactivo">Inactivo</option>
                             {% else %}
@@ -119,47 +123,35 @@
                         </select>
                     </div>
                 </div>
+
                 <div class="div contenedor-input-8">
                     <label for="imagen_evento">Imagen del Evento:</label>
-                    
-                    <!-- Imagen actual del evento -->
-                    <img id="previewImagen" src="{{ url_for('administrador.imagen_evento', id=evento.id) }}" alt="Imagen del evento" width="200">
-                    
-                    <!-- Input para subir una nueva imagen -->
+                    <img id="previewImagen" src="{{ evento.eve_imagen.url }}" alt="evento.eve_nombre" width="200">
                     <input type="file" name="imagen_evento" id="imagen_evento" accept="image/*">
                 </div>
-                
+
                 <div class="div contenedor-input-10">
                     <label for="documento_evento">Documento del Evento:</label>
-                
-                    {% if evento['programacion'] %}
-                        <p>Documento actual: 
-                            <a href="{{ url_for('administrador.documento_evento', evento_id=evento.id) }}" target="_blank">
-                                Ver Documento
-                            </a>
+                    {% if evento.eve_programacion %}
+                        <p>Documento actual:
+                            <a href="{{evento.eve_programacion.url }}" target="_blank">Ver Documento</a>
                             <iframe id="previewDocumento" style="display: none;" width="50%" height="300px"></iframe>
                         </p>
                     {% else %}
                         <p>No hay documento disponible.</p>
                         <iframe id="previewDocumento" style="display: none;" width="300px" height="300px"></iframe>
                     {% endif %}
-                
                     <input type="file" name="documento_evento" id="documento_evento" accept=".pdf">
                 </div>
-                
-                
-                               
-                
-                
 
-                <div  class="div contenedor-input-9">
+                <div class="div contenedor-input-9">
                     <div class="boton-continuar">
-                        <img src="/static/images/atras.png" alt="flecha-izquierda" onclick="volver(1)">
+                        <img src="{% static 'app_administrador/image/atras.png'%}" alt="flecha-izquierda" onclick="volver(1)">
                         <input type="button" value="Volver" onclick="volver(1)">
                     </div>
                     <div class="boton-continuar">
                         <input type="submit" value="Modificar Evento">
-                        <img src="/static/images/crear-img.png" alt="Crear">
+                        <img src="{% static 'app_administrador/image/crear-img.png' %}" alt="Crear">
                     </div>
                 </div>
             </div>
@@ -167,11 +159,14 @@
     </div>
 </div>
 
+
+
 <script>
-    document.getElementById("mensaje").value = "{{evento['descripcion']}}";
+    document.getElementById("mensaje").value = "{{evento.eve_descripcion|default_if_none:''}}";
+    const baseCategoriaUrl = "{% url 'administrador:get_categorias' 0 %}".replace('0', '');
 </script>
-<script src="/static/js/modificarEventos.js"></script>
-<script src="/static/js/crearEvento.js"></script>
-<script src="/static/js/previaImagen.js"></script>
+<script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>
+<script src="{% static 'app_administrador/js/crearEvento.js' %}"></script>
+<script src="{% static 'app_administrador/js/previaImagen.js' %}"></script>
 
 {% endblock %}

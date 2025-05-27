@@ -35,8 +35,8 @@
             {% csrf_token %}
             <h1>Formulario de Registro de Asistente</h1>
 
-            <label for="asi_id">ID:</label>
-            <input type="text" id="asi_id" name="id" required>
+            <label for="asi_id">Numero de Identificación:</label>
+            <input type="text" id="asi_id" name="numero_identificacion" required>
 
             <input type="hidden" id="eve_id" name="eve_id" value="{{ evento }}">
 
@@ -49,7 +49,7 @@
             <label for="asi_telefono">Teléfono:</label>
             <input type="text" id="asi_telefono" name="telefono" required>
 
-            {% if cobro == "Si" %}
+            {% if evento.eve_tienecosto == True %}
             <label for="comprobante_pago">Subir comprobante de pago (PDF o imagen):</label>
             <input type="file" id="comprobante_pago" name="comprobante_pago" accept=".pdf,.png,.jpg,.jpeg" required>
             {% endif %}

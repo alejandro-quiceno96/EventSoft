@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 
@@ -10,8 +11,8 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url('/static/images/fondo_admin.png');
-            background-size: cover;
+            background-image: url(/static/app_administrador/image/fondo_admin.png);
+            background-repeat: no-repeat;
             padding: 20px;
         }
 
@@ -26,12 +27,12 @@
             left: 20px;
             text-decoration: none;
         }
-
-        h1 {
-            text-align: center;
-            margin-top: 50px;
-            color: #FF5800;
+        .btn-volver:hover {
+            background-color: #e04d00;
+            color: white;
+            transition: .5s ease;
         }
+
 
         .estado-asistentes {
             text-align: center;
@@ -52,148 +53,128 @@
         td {
             padding: 10px;
             text-align: center;
-            border: 1px solid black;
+            border: 0.5px solid black;
         }
 
         th {
             background-color: #FF5800;
             color: white;
         }
+        .container-titulos {
+            text-align: center;
+            margin-top: 50px;
+            color: #FF5800;
+        }
+
     </style>
 </head>
 
 <body>
-    <a href="/administracionEventos" class="btn btn-volver">Volver</a>
-    <h1>Participantes del Evento {{ evento_id }}</h1>
-
+    <a href="{%url 'administrador:index_administrador'%}" class="btn btn-volver">Volver</a>
+    <div class="container-titulos">
+        <h1>Participantes del Evento</h1>
+        <h4>{{ evento_nombre }}</h4>
+    </div>
+    
     <div class="estado-asistentes">
-        <a href="?estado=Pendiente" class="btn btn-primary">🕛 Pendientes</a>
-        <a href="?estado=Admitido" class="btn btn-success"> <i class="fa-solid fa-check"></i> Admitidos</a>
-        <a href="?estado=Rechazado" class="btn btn-danger">❌ Rechazados</a>
+        <a href="?estado=Pendiente" class="btn btn-primary"><i class="fa-regular fa-clock"></i> Pendientes</a>
+        <a href="?estado=Admitido" class="btn btn-success"><i class="fa-solid fa-check"></i> Admitidos</a>
+        <a href="?estado=Rechazado" class="btn btn-danger"><i class="fa-solid fa-x"></i> Rechazados</a>
     </div>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Proyecto</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for participante in participantes %}
-            <tr>
-                <td>{{ participante.par_id }}</td>
-                <td>{{ participante.par_nombre }}</td>
-                <td>{{ participante.par_correo }}</td>
-                <td>{{ participante.par_telefono }}</td>
-                <td>
-                    {% if participante.documentos %}
-                    <a class="btn btn-outline-primary"
-                        href="{{ url_for('administrador.comprobante_participante', participante_id=participante.par_id) }}"
-                        target="_blank">Ver</a>
-                    {% else %} Sin Comprobante {% endif %}
-                </td>
-                <td>
-                    {% if participante.estado == 'Pendiente' %}
-                    <button class="btn btn-success btn-admitir"
-                        data-participante-id="{{ participante.par_id }}"
-                        data-evento-id="{{ evento_id }}">
-                        ✔ Admitir
-                    </button>
-                    <button class="btn btn-danger btn-rechazar"
-                        data-participante-id="{{ participante.par_id }}"
-                        data-evento-id="{{ evento_id }}">
-                        Rechazar
-                    </button>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for participante in participantes %}
+    <div class="col">
+        <div class="card h-100 border-0 shadow-lg rounded-4 bg-light position-relative overflow-hidden">
+            <!-- Estado en la esquina superior -->
+            <div class="position-absolute top-0 end-0 p-2">
+                {% if participante.estado == 'Admitido' %}
+                    <span class="badge bg-success rounded-pill px-3 py-2 fs-6 shadow-sm">Admitido</span>
+                {% elif participante.estado == 'Pendiente' %}
+                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fs-6 shadow-sm">Pendiente</span>
+                {% else %}
+                    <span class="badge bg-danger rounded-pill px-3 py-2 fs-6 shadow-sm">Rechazado</span>
+                {% endif %}
+            </div>
 
-                    {% elif participante.estado == 'Rechazado' %}
-                    <button class="btn btn-success btn-admitir"
-                        data-participante-id="{{ participante.par_id }}"
-                        data-evento-id="{{ evento_id }}">
-                        ✔ Admitir
-                    </button>
+            <div class="card-body">
+                <h5 class="card-title  fw-bold mb-3">
+                    <i class="fa-solid fa-id-badge me-2"></i>{{ participante.par_nombre }}
+                </h5>
+                <p><strong><i class="fa-solid fa-id-card"></i> Numero de documento: </strong> {{ participante.par_cedula }}</p>
+                <p><i class="fa-solid fa-envelope me-2 text-secondary"></i><strong>Correo:</strong> {{ participante.par_correo }}</p>
+                <p><i class="fa-solid fa-phone me-2 text-secondary"></i><strong>Teléfono:</strong> {{ participante.par_telefono }}</p>
+                <p><i class="fa-solid fa-clock me-2 text-secondary"></i><strong>Hora de inscripción:</strong> {{ participante.hora_inscripcion }}</p>
 
-                    {% elif participante.estado == 'Admitido' %}
-                    <button class="btn btn-danger btn-rechazar"
-                        data-participante-id="{{ participante.par_id }}"
-                        data-evento-id="{{ evento_id }}">
-                        Rechazar
-                    </button>
-                    
+                {% if participante.documentos %}
+                        <a href="{{ participante.documentos.url }}" class="btn btn-outline-secondary w-100 mb-3" target="_blank">
+                            <i class="fa-solid fa-file me-2"></i> Ver Documento
+                        </a>
+                    {% else %}
+                        <p class="text-muted small text-center">Sin documento</p>
                     {% endif %}
-                </td>
 
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+                <!-- Botones -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    {% if participante.estado == 'Pendiente' or participante.estado == 'Rechazado' %}
+                        <button class="btn btn-success btn-sm px-3 btn-admitir"
+                            data-participante-id="{{ participante.par_id }}"
+                            data-evento-id="{{ evento_id }}"
+                            data-url="{% url 'administrador:actualizar_estado' 0 'estado-placeholder' %}">
+                            <i class="fa-solid fa-check me-1"></i> Admitir
+                        </button>
+                    {% endif %}
+                    
+                    {% if participante.estado == 'Pendiente' or participante.estado == 'Admitido' %}
+                        <button class="btn btn-danger btn-sm px-3 btn-rechazar"
+                            data-participante-id="{{ participante.par_id }}"
+                            data-evento-id="{{ evento_id }}"
+                            data-url="{% url 'administrador:actualizar_estado' 0 'estado-placeholder' %}">
+                            <i class="fa-solid fa-xmark me-1"></i> Rechazar
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+
+
 
 
     <div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalRechazoLabel">Confirmar Rechazo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="confirmarEliminarLabel">
+                        <i class="fa-solid fa-exclamation-triangle"></i> Rechazar Participante
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    ¿Estás seguro de que quieres rechazar a este participante?
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="fs-5">¿Estás seguro de que deseas Rechazar este a Participante?</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <form id="formRechazo" method="post">
+                    <form id="formRechazo" method="POST">
+                        {% csrf_token %}
                         <input type="hidden" name="evento_id" value="{{ evento_id }}">
-                        <button type="submit" class="btn btn-danger">Confirmar</button>
+                        <input type="hidden" id="participanteRechazoId" name="participante_id">
+                        <button id="btnRechazarConfirmacion" type="submit" class="btn btn-danger" data-url="{% url 'administrador:actualizar_estado' 0 'estado-placeholder' %}">Confirmar</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        function setRechazo(participanteId) {
-            let form = document.getElementById('formRechazo');
-            form.action = `/actualizar_estado/${participanteId}/Rechazado`;  // nota el prefijo '/participante' si así está registrado el blueprint
-        }
-        document.addEventListener('DOMContentLoaded', function () {
-    // Para admitir participantes
-    document.querySelectorAll('.btn-admitir').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const participanteId = this.dataset.participanteId;
-            const eventoId = this.dataset.eventoId;
-            actualizarEstado(participanteId, eventoId, 'Admitido');
-        });
-    });
-
-    // Para rechazar participantes
-    document.querySelectorAll('.btn-rechazar').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const participanteId = this.dataset.participanteId;
-            const eventoId = this.dataset.eventoId;
-            actualizarEstado(participanteId, eventoId, 'Rechazado');
-        });
-    });
-
-    function actualizarEstado(participanteId, eventoId, nuevoEstado) {
-        const formData = new FormData();
-        formData.append("evento_id", eventoId);
-
-        fetch(`/actualizar_estado/${participanteId}/${nuevoEstado}`, {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => res.ok ? location.reload() : Promise.reject(res))
-            .catch(err => {
-                alert("Error al actualizar estado");
-                console.error(err);
-            });
-        }
-    });
-    </script>
+    <script src="{% static 'app_administrador/js/aceptar_participante.js'%}"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

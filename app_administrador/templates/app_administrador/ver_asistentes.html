@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -11,7 +12,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-image: url('/static/images/fondo_admin.png');
+            background-image: url(/static/app_administrador/image/fondo_admin.png);
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -69,153 +70,97 @@
         .activo {
             display: block;
         }
+        .hover-card {
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .container-titulos {
+            text-align: center;
+            color: #FF5800;
+        }
+
     </style>
 </head>
 <body>  
     <div>
-        <a href="/administracionEventos" class="btn-volver"><i class="fa-solid fa-arrow-left"></i> Volver</a>
-        <h1>Asistentes del Evento {{ evento_id }}</h1>
+        <a href="{% url 'administrador:index_administrador' %}" class="btn-volver"><i class="fa-solid fa-arrow-left"></i> Volver</a>
+    </div>
+    <div class="container-titulos">
+        <h1>Asistentes del Evento</h1>
+        <h4>{{ evento_nombre }}</h4>
     </div>
     <div class="estado-asistentes">
-        <button type="button" class="btn btn-outline-primary" onclick="mostrarTabla('pendientes')"><i class="fa-solid fa-clock"></i> Pendientes</button>
-        <button class="btn btn-outline-success" onclick="mostrarTabla('admitidos')"><i class="fa-solid fa-check"></i> Admitidos</button>
-        <button class="btn btn-outline-danger" onclick="mostrarTabla('rechazados')"><i class="fa-solid fa-x"></i> Rechazados</button>
+        <a href="?estado=Pendiente" class="btn btn-primary"><i class="fa-regular fa-clock"></i> Pendientes</a>
+        <a href="?estado=Admitido" class="btn btn-success"><i class="fa-solid fa-check"></i> Admitidos</a>
+        <a href="?estado=Rechazado" class="btn btn-danger"><i class="fa-solid fa-x"></i> Rechazados</a>
     </div>
 
-    <div id="tabla-pendientes" class="contenedor-tablas activo">
-        {% if asistentes %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Comprobante</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for asistente in asistentes %}
-                        {% if asistente.estado == "Pendiente" %}
-                            <tr>
-                                <td>{{ asistente.asi_id }}</td>
-                                <td>{{ asistente.asi_nombre }}</td>
-                                <td>{{ asistente.asi_correo }}</td>
-                                <td>{{ asistente.asi_telefono }}</td>
-                                <td>
-                                    {% if asistente.comprobante_pago %}
-                                        <a class="btn btn-outline-info" href="{{ url_for('administrador.comprobante_asistente', asistente_id=asistente.asi_id, evento_id = evento_id ) }}" target="_blank">
-                                            <i class="fa-solid fa-file"></i> Ver Comprobante
-                                        </a>
-                                    {% else %}
-                                        <p>Sin Comprobante</p>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-outline-success btn-admitir" data-evento="{{ evento_id }}" data-id="{{ asistente.asi_id }}" data-nombre="{{ asistente.asi_nombre }}" data-bs-toggle="modal" data-bs-target="#modalAdmitir"><i class="fa-solid fa-check"></i> Admitir</button>
-                                    <button class="btn btn-outline-danger btn-rechazar" data-evento="{{ evento_id }}" data-id="{{ asistente.asi_id }}" data-nombre="{{ asistente.asi_nombre }}" data-bs-toggle="modal" data-bs-target="#modalRechazo"><i class="fa-solid fa-x"></i> Rechazar</button>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for asistente in asistentes %}
+        <div class="col">
+            <div class="card h-100 border-0 shadow-lg rounded-4 hover-card">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title  fw-bold mb-2">{{ asistente.asi_nombre }}</h5>
+                    
+                    <ul class="list-unstyled mb-3 text-muted small">
+                        <li><i class="fa-solid fa-envelope me-2 text-secondary"></i> <strong>Correo:</strong> {{ asistente.asi_correo }}</li>
+                        <li><i class="fa-solid fa-phone me-2 text-secondary"></i> <strong>Teléfono:</strong> {{ asistente.asi_telefono }}</li>
+                        <li><i class="fa-solid fa-clock me-2 text-secondary"></i> <strong>Inscripción:</strong> {{ asistente.hora_inscripcion }}</li>
+                        <li>
+                            <i class="fa-solid fa-flag me-2 text-secondary"></i> 
+                            <strong>Estado:</strong>
+                            {% if asistente.estado == "Admitido" %}
+                                <span class="badge rounded-pill bg-success px-3">{{ asistente.estado }}</span>
+                            {% elif asistente.estado == "Pendiente" %}
+                                <span class="badge rounded-pill bg-warning text-dark px-3">{{ asistente.estado }}</span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-danger px-3">{{ asistente.estado }}</span>
+                            {% endif %}
+                        </li>
+                    </ul>
 
-    <div id="tabla-admitidos" class="contenedor-tablas">
-        {% if asistentes %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Comprobante</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for asistente in asistentes %}
-                        {% if asistente.estado == "Admitido" %}
-                            <tr>
-                                <td>{{ asistente.asi_id }}</td>
-                                <td>{{ asistente.asi_nombre }}</td>
-                                <td>{{ asistente.asi_correo }}</td>
-                                <td>{{ asistente.asi_telefono }}</td>
-                                
-                                <td>
-                                    {% if asistente.comprobante_pago %}
-                                        <a class="btn btn-outline-info" href="{{ url_for('administrador.comprobante_asistente', asistente_id=asistente.asi_id, evento_id = evento_id ) }}" target="_blank">
-                                            <i class="fa-solid fa-file"></i> Ver Comprobante
-                                        </a>
-                                    {% else %}
-                                        <p>Sin Comprobante</p>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button class="btn btn-outline-danger btn-rechazar" data-evento="{{ evento_id }}" data-id="{{ asistente.asi_id }}" data-nombre="{{ asistente.asi_nombre }}" data-bs-toggle="modal" data-bs-target="#modalRechazo"><i class="fa-solid fa-x"></i> Rechazar</button>
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    </div>
+                    {% if asistente.documentos %}
+                        <a href="{{ asistente.documentos }}" class="btn btn-outline-secondary w-100 mb-3" target="_blank">
+                            <i class="fa-solid fa-file me-2"></i> Ver Documento
+                        </a>
+                    {% else %}
+                        <p class="text-muted small text-center">Sin documento</p>
+                    {% endif %}
 
-    <div id="tabla-rechazados" class="contenedor-tablas">
-        {% if asistentes %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Teléfono</th>
-                        <th>Comprobante</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for asistente in asistentes %}
-                        {% if asistente.estado == "Rechazado" %}
-                            <tr>
-                                <td>{{ asistente.asi_id }}</td>
-                                <td>{{ asistente.asi_nombre }}</td>
-                                <td>{{ asistente.asi_correo }}</td>
-                                <td>{{ asistente.asi_telefono }}</td>
-                                
-                                <td>
-                                    {% if asistente.comprobante_pago %}
-                                        <a class="btn btn-outline-info" href="{{ url_for('administrador.comprobante_asistente', asistente_id=asistente.asi_id, evento_id = evento_id ) }}" target="_blank">
-                                            <i class="fa-solid fa-file"></i> Ver Comprobante
-                                        </a>
-                                    {% else %}
-                                        <p>Sin Comprobante</p>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <!-- Botón Admitir en tabla de rechazados corregido -->
-                                    <button class="btn btn-outline-success btn-admitir"
+                    <div class="d-flex justify-content-between mt-auto">
+                        {% if asistente.estado == "Pendiente" or asistente.estado == "Rechazado" %}
+                            <button class="btn btn-success  btn-admitir"
                                     data-evento="{{ evento_id }}"
                                     data-id="{{ asistente.asi_id }}"
                                     data-nombre="{{ asistente.asi_nombre }}"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#modalAdmitir">
-                                    <i class="fa-solid fa-check"></i> Admitir
-                                    </button>
-
-                                </td>
-                            </tr>
+                                    data-bs-target="#modalAdmitir"
+                                    data-url = "{% url 'administrador:actualizar_estado_asistente' 0 'estado-placeholder' %}">
+                                <i class="fa-solid fa-check me-1"></i> Admitir
+                            </button>
                         {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    </div>
+                        
+                        {% if asistente.estado == "Pendiente" or asistente.estado == "Admitido" %}
+                            <button class="btn btn-danger btn-sm btn-rechazar"
+                                    data-evento="{{ evento_id }}"
+                                    data-id="{{ asistente.asi_id }}"
+                                    data-nombre="{{ asistente.asi_nombre }}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalRechazo"
+                                    data-url = "{% url 'administrador:actualizar_estado_asistente' 0 'estado-placeholder' %}">
+                                <i class="fa-solid fa-xmark me-1"></i> Rechazar
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
 
    <!-- Modal de Confirmación para Admitir -->
 <div class="modal fade" id="modalAdmitir" tabindex="-1" aria-labelledby="modalAdmitirLabel" aria-hidden="true">
@@ -231,7 +176,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" id="confirmarAdmitir">Confirmar</button>
+                <button type="button" class="btn btn-success  btn-confirmar-admitir" id="confirmarAdmitir" data-url="{% url 'administrador:actualizar_estado_asistente' 0 'estado-placeholder' %}">Confirmar</button>
             </div>
         </div>
     </div>
@@ -251,23 +196,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger" id="confirmarRechazo">Confirmar</button>
+                <button type="button" class="btn btn-danger btn-confirmar-rechazar" id="confirmarRechazo" data-url="{% url 'administrador:actualizar_estado_asistente' 0 'estado-placeholder' %}">Confirmar</button>
             </div>
         </div>
     </div>
 </div>
 
-    <script>
-        function mostrarTabla(tipo) {
-            document.getElementById('tabla-pendientes').classList.remove('activo');
-            document.getElementById('tabla-admitidos').classList.remove('activo');
-            document.getElementById('tabla-rechazados').classList.remove('activo');
-
-            document.getElementById(`tabla-${tipo}`).classList.add('activo');
-        }
-    </script>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/static/js/asistentes.js"></script>
+    <script src="{% static 'app_administrador/js/asistentes.js' %}"></script>
 </body>
 </html>

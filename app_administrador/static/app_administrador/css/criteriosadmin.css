@@ -1,123 +1,90 @@
-/* static/css/criterios.css */
-.contenedor-criterios {
-    width: 90%;
-    margin: auto;
-    padding: 20px;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 0 10px #ccc;
+:root {
+    --color-naranja: #FF5800;
+    --color-texto: #ffffff;
 }
 
-.nuevo-criterio {
+.card input:disabled {
+    color: #555;
+}
+.card input:disabled:hover {
+    cursor: not-allowed;
+}
+
+.contenedor-botones{
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-.nuevo-criterio input {
-    padding: 5px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+.titulo-card{
+    color: var(--color-naranja);
 }
 
-.tabla-criterios {
+.btn-modificar-criterios{
     width: 100%;
-    border-collapse: collapse;
-}
-
-.tabla-criterios th, .tabla-criterios td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-}
-
-.tabla-criterios input {
-    width: 90%;
-    padding: 5px;
-    border-radius: 6px;
-    border: 1px solid #aaa;
-}
-
-.btn-modificar {
-    background-color: #FF5800;
-    color: white;
-}
-
-.btn-eliminar {
-    background-color: #cc0000;
-    color: white;
-    margin-left: 5px;
-}
-/* Agrega esto a tu archivo de estilos o vincula uno nuevo */
-#form-criterios .input-grupos input {
-    max-width: 900px;
-    margin-right: 10px;
-}
-
-#tabla-criterios td input {
-    width: 100%;
-}
-.form-control{
-    width: 80%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-}
-
-.form-control_porcentaje{
-    width: 20%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 10px;
-}
-
-.input-grupos {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    width: 1000px;
-}
-
-.columna-porcentaje {
-    width: 100px;
-    max-width: 100px;
-    text-align: center;
-}
-.columna-porcentaje input {
-    width: 70px;
-    text-align: center;
-}
-
-.acciones {/* suficiente para ambos botones */
-    display: flex;
-    gap: 5px; /* espacio entre botones */
-    justify-content: center;
-    align-items: center;
-}
-
-.acciones button {
-    padding: 5px 10px;
-    font-size: 0.875rem;
+    background-color: var(--color-naranja);
+    border-radius: 10px;
+    color: var(--color-texto);
     border: none;
-    border-radius: 4px;
-    white-space: nowrap;
+    text-align: center;
+    margin-top: 5px;
 }
 
-.btn-modificar {
-    background-color: #FF5800;
-    color: white;
+.btn-modificar-criterios:hover {
+    background-color: #ff59009f;
+    transition: 5.s ease;
+    cursor: pointer;
 }
 
-.btn-eliminar {
-    background-color: #cc0000;
-    color: white;
+.btn-eliminar-criterios {
+    width: 100%;
+    background-color: var(--color-naranja);
+    border-radius: 10px;
+    color: var(--color-texto);
+    border: none;
+    text-align: center;
+    margin-top: 5px;
+}
+.btn-eliminar-criterios:hover {
+    background-color: #ff59009f;
+    transition: 5.s ease;
+    cursor: pointer;
 }
 
-.criterios-tr{
-    width: 70%;
+.input-group{
+    width: 100vw;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
+.porcentaje-total{
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
 
+.porcentaje{
+    background-color: var(--color-naranja);
+    color: var(--color-texto);
+    padding: 5px;
+    margin-right: 55px;
+    border-radius: 10px;
+}
 
+.card-eliminada {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.3s ease-in-out;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 12px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4) !important;
+}

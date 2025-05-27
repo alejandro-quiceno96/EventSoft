@@ -7,11 +7,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     document.getElementById("btnModificar").addEventListener("click", function () {
-        const baseUrl = this.getAttribute("data-base-url");
         const eventoId = this.getAttribute("data-id");
-
-        if (baseUrl && eventoId) {
-            window.location.href = `${baseUrl}${eventoId}`;
+        const url = baseModificarUrl + eventoId;
+        console.log("URL de modificación:", url);
+        if (url) {
+            window.location.href = url;
+            
         } else {
             alert("⚠️ No se pudo construir la URL de modificación.");
         }

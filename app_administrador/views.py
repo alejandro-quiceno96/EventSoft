@@ -1,15 +1,21 @@
-from django.shortcuts import render, redirect
-from django.http import JsonResponse, Http404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.dateparse import parse_datetime
+from django.http import JsonResponse, Http404, HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 from datetime import datetime
+import os
+from .utils import generar_pdf, generar_clave_acceso
+from django.urls import reverse
+from decimal import Decimal
+import json
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos
 from app_areas.models import Areas
 from app_categorias.models import Categorias
 from app_administrador.models import Administradores
-
+from app_criterios.models import Criterios
 
 # Obtener áreas disponibles
 def obtener_areas_eventos():
@@ -118,8 +124,8 @@ def obtener_evento(request, evento_id):
         pass
 
     # Contar participantes y asistentes admitidos
-    participantes = ParticipantesEventos.objects.filter(par_eve_participante_fk=evento_id, par_eve_estado='Admitido').count()
-    asistentes = AsistentesEventos.objects.filter(asi_eve_asistente_fk=evento_id, asi_eve_estado='Admitido').count()
+    participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento_id, par_eve_estado='Admitido').count()
+    asistentes = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_estado='Admitido').count()
 
 
     datos_evento = {
@@ -144,15 +150,29 @@ def obtener_evento(request, evento_id):
 
 @csrf_exempt 
 def eliminar_evento(request, evento_id):
-    
-        try:
-            evento = Eventos.objects.get(id=evento_id)
-            evento.delete()
-            return JsonResponse({'mensaje': 'Evento eliminado correctamente'})
-        except Eventos.DoesNotExist:
-            return JsonResponse({'mensaje': 'Evento no encontrado'}, status=404)
-        except Exception as e:
-            return JsonResponse({'mensaje': f'Error al eliminar el evento: {str(e)}'}, status=500)
+    try:
+        evento = Eventos.objects.get(id=evento_id)
+
+        # Eliminar archivo de imagen si existe
+        if evento.eve_imagen and evento.eve_imagen.name:
+            if os.path.isfile(evento.eve_imagen.path):
+                evento.eve_imagen.delete(save=False)
+
+        # Eliminar archivo de programación si existe
+        if evento.eve_programacion and evento.eve_programacion.name:
+            if os.path.isfile(evento.eve_programacion.path):
+                evento.eve_programacion.delete(save=False)
+
+        # Finalmente eliminar el evento de la base de datos
+        evento.delete()
+
+        return JsonResponse({'mensaje': 'Evento eliminado correctamente'})
+
+    except Eventos.DoesNotExist:
+        return JsonResponse({'mensaje': 'Evento no encontrado'}, status=404)
+
+    except Exception as e:
+        return JsonResponse({'mensaje': f'Error al eliminar el evento: {str(e)}'}, status=500)
 
 def inicio_sesion_administrador(request):
     if request.method == "POST":
@@ -170,3 +190,267 @@ def inicio_sesion_administrador(request):
             messages.error(request, "Cédula no válida")
 
     return render(request, 'app_administrador/inicio_sesion.html')
+
+@require_http_methods(["GET", "POST"])
+def editar_evento(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    print(f"Evento a editar: {evento}")
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre_evento')
+        descripcion = request.POST.get('descripcion_evento')
+        ciudad = request.POST.get('ciudad')
+        lugar = request.POST.get('lugar')
+        fecha_inicio = request.POST.get('fecha_inicio')
+        fecha_fin = request.POST.get('fecha_fin')
+        categoria = request.POST.get('categoria')
+        inscripcion = request.POST.get('inscripcion')
+        estado = request.POST.get('estado_evento')
+        aforo = request.POST.get('cantidad_personas') or None
+        aforo = int(aforo) if aforo else None
+        
+        # Archivos
+        imagen = request.FILES.get('imagen_evento')
+        documento = request.FILES.get('documento_evento')
+
+        if imagen:
+            # Eliminar archivo anterior si existe
+            if evento.eve_imagen and evento.eve_imagen.name:
+                if os.path.isfile(evento.eve_imagen.path):
+                    evento.eve_imagen.delete(save=False)
+            evento.eve_imagen = imagen
+
+        if documento:
+            # Eliminar archivo anterior si existe
+            if evento.eve_programacion and evento.eve_programacion.name:
+                if os.path.isfile(evento.eve_programacion.path):
+                    evento.eve_programacion.delete(save=False)
+            evento.eve_programacion = documento
+
+        # Campos normales
+        evento.eve_nombre = nombre
+        evento.eve_descripcion = descripcion
+        evento.eve_ciudad = ciudad
+        evento.eve_lugar = lugar
+        evento.eve_fecha_inicio = parse_datetime(fecha_inicio)
+        evento.eve_fecha_fin = parse_datetime(fecha_fin)
+        evento.eve_capacidad = aforo if aforo is not None else 0
+        evento.eve_tienecosto = True if inscripcion == 'Si' else False
+        evento.eve_estado = estado
+
+        evento.save()
+
+        # Actualizar categoría del evento
+        evento_categoria = EventosCategorias.objects.filter( eve_cat_evento_fk=evento_id).first()
+        if evento_categoria:
+            evento_categoria.categoria_id = categoria
+            evento_categoria.save()
+        return redirect('administrador:index_administrador')  # Asegúrate de tener esta URL nombrada
+
+    else:
+        evento_categoria = EventosCategorias.objects.filter(eve_cat_evento_fk=evento).first()
+        categoria_evento = evento_categoria.eve_cat_categoria_fk if evento_categoria else None
+        area_categoria = categoria_evento.cat_area_fk if categoria_evento else None  # Si existe ese campo
+
+
+        contexto = {
+            'evento': evento,
+            'categoria_seleccionada': categoria_evento,
+            'area_seleccionada': area_categoria,
+            'areas': obtener_areas_eventos(),
+            'categorias': Categorias.objects.all(),
+            'administrador': request.session.get('admin_nombre'),
+        }
+
+        return render(request, 'app_administrador/modificarInformacion.html', contexto)
+    
+@require_http_methods(["GET", "POST"])
+def ver_participantes(request: HttpRequest ,evento_id):
+    estado = request.GET.get('estado')
+
+    # Filtrar participantes_eventos según evento y estado
+    participantes_eventos = ParticipantesEventos.objects.select_related('par_eve_participante_fk').filter(
+       par_eve_evento_fk=evento_id,
+        par_eve_estado=estado
+    )
+    evento = get_object_or_404(Eventos, id=evento_id)
+    # Construir lista de diccionarios con datos para la plantilla
+    participantes = []
+    for pe in participantes_eventos:
+        p = pe.par_eve_participante_fk
+        participantes.append({
+            'par_id': p.id,
+            'par_cedula': p.par_cedula,
+            'par_nombre': p.par_nombre,
+            'par_correo': p.par_correo,
+            'par_telefono': p.par_telefono,
+            'documentos': pe.par_eve_documentos,
+            'estado': pe.par_eve_estado,
+            'hora_inscripcion': pe.par_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if pe.par_eve_fecha_hora else None,
+        })
+
+
+    return render(request, 'app_administrador/ver_participantes.html', {
+        'participantes': participantes,
+        'evento_id': evento_id,
+        'evento_nombre': evento.eve_nombre,
+    })
+
+@csrf_exempt 
+def actualizar_estado(request, participante_id, nuevo_estado):
+    if request.method == 'POST':
+        evento_id = request.POST.get('evento_id')
+
+        if not evento_id:
+            return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
+
+        # Generar PDF y clave de acceso
+        if nuevo_estado == 'Admitido':
+            qr_participante = generar_pdf(participante_id, "Participante", evento_id, tipo="participante")
+            clave_acceso = generar_clave_acceso()
+        else:
+            qr_participante = None
+            clave_acceso = None
+        # Buscar el participante_evento
+        try:
+            participante_evento = ParticipantesEventos.objects.get(
+                par_eve_participante_fk=participante_id,
+                par_eve_evento_fk=evento_id
+            )
+        except ParticipantesEventos.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Participante no encontrado en el evento'}, status=404)
+
+        # Actualizar los valores
+        participante_evento.par_eve_estado = nuevo_estado
+        participante_evento.par_eve_qr = qr_participante
+        participante_evento.par_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
+        participante_evento.save()
+        url = reverse('administrador:ver_participantes', kwargs={'evento_id': evento_id})
+        return redirect(f'{url}?estado={nuevo_estado}')
+
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+def ver_asistentes(request: HttpRequest, evento_id):
+    estado = request.GET.get('estado')
+
+    # Obtener los asistentes del evento utilizando el ORM de Django
+    asistentes_evento = AsistentesEventos.objects.select_related('asi_eve_asistente_fk').filter(
+        asi_eve_evento_fk=evento_id,
+        asi_eve_estado=estado)
+    
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Preparar los datos
+    asistentes_data = []
+    for ae in asistentes_evento:
+        a = ae.asi_eve_asistente_fk
+        asistentes_data.append({
+            'asi_id': a.id,
+            'asi_nombre': a.asi_nombre,
+            'asi_correo': a.asi_correo,
+            'asi_telefono': a.asi_telefono,
+            'documentos': ae.asi_eve_soporte.url if ae.asi_eve_soporte else None,
+            'estado': ae.asi_eve_estado,
+            'hora_inscripcion': ae.asi_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ae.asi_eve_fecha_hora else None,
+        })
+
+    return render(request, 'app_administrador/ver_asistentes.html', {
+        'asistentes': asistentes_data,
+        'evento_id': evento_id,
+        'evento_nombre': evento.eve_nombre,
+    })
+    
+@csrf_exempt 
+def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
+    if request.method == 'POST':
+        evento_id = request.POST.get('evento_id')
+
+        if not evento_id:
+            return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
+
+        # Generar PDF y clave de acceso
+        if nuevo_estado == 'Admitido':
+            qr_participante = generar_pdf(asistente_id, "Asistente", evento_id, tipo="asistente")
+            clave_acceso = generar_clave_acceso()
+        else:
+            qr_participante = None
+            clave_acceso = None
+        # Buscar el participante_evento
+        try:
+            asistente_evento = AsistentesEventos.objects.get(
+                asi_eve_asistente_fk=asistente_id,
+                asi_eve_evento_fk=evento_id
+            )
+        except ParticipantesEventos.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Asistente no encontrado en el evento'}, status=404)
+
+        # Actualizar los valores
+        asistente_evento.asi_eve_estado = nuevo_estado
+        asistente_evento.asi_eve_qr = qr_participante
+        asistente_evento.asi_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
+        asistente_evento.save()
+        url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+        return redirect(f'{url}?estado={nuevo_estado}')
+
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+@csrf_exempt
+def criterios_evaluacion(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    
+    if request.method == 'POST':
+        criterios = request.POST.getlist('criterio[]')
+        porcentajes = request.POST.getlist('porcentaje[]')
+
+        try:
+            porcentajes_float = [Decimal(p) for p in porcentajes]
+        except ValueError:
+            messages.error(request, "Porcentajes inválidos.")
+            return redirect('administrador:criterios_evaluacion', evento_id=evento_id)
+
+        suma_nuevos = sum(porcentajes_float)
+
+        criterios_existentes = Criterios.objects.filter(cri_evento_fk=evento_id)
+        suma_existente = sum(c.cri_peso for c in criterios_existentes)
+
+        # suma_existente ya es una suma de Decimals
+        if suma_existente + suma_nuevos > Decimal('100'):
+            messages.error(request, "La suma de los porcentajes no puede superar el 100%.")
+            return redirect('administrador:criterios_evaluacion', evento_id=evento_id)
+        
+        for desc, porc in zip(criterios, porcentajes_float):
+            Criterios.objects.create( cri_descripcion=desc, cri_peso=porc,  cri_evento_fk=evento)
+
+        messages.success(request, "Criterio(s) agregado(s) correctamente.")
+        return redirect('administrador:criterios_evaluacion', evento_id=evento_id)
+
+
+    context = {
+        'evento': evento,
+        'administrador': request.session.get('admin_nombre'),
+        'criterios': Criterios.objects.filter(cri_evento_fk=evento_id),
+    }
+    
+    return render(request, 'app_administrador/criterios_evaluacion.html', context)
+
+def modificar_criterio(request, criterio_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        try:
+            criterio = Criterios.objects.get(id=criterio_id)
+            criterio.cri_descripcion = data.get('descripcion')
+            criterio.cri_peso = data.get('porcentaje')
+            criterio.save()
+            return JsonResponse({'success': True})
+        except Criterios.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Criterio no encontrado'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+def eliminar_criterio(request, criterio_id):
+    if request.method == 'POST':
+        try:
+            criterio = Criterios.objects.get(id=criterio_id)
+            criterio.delete()
+            return JsonResponse({'success': True})
+        except Criterios.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'No encontrado'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)

@@ -5,7 +5,7 @@
     {{ administrador|default:'Administrador' }}
 {% endblock %}
 {% block content %}
-    <!-- Contenedor Principal de Eventos -->
+
     <div class="contenedor-principal-de-eventos">
         {% for evento in eventos %}
             <div class="card" style="width: 18rem;">
@@ -30,21 +30,15 @@
                             <i class="fa-solid fa-eye"></i> Ver más
                         </button>
                         
-                        <a href="#" class="text-decoration-none">
+                        <a href="{% url 'administrador:ver_participantes' evento_id=evento.id %}?estado=Pendiente" class="text-decoration-none">
                             <button class="btn-ver_participantes w-100">
-                                <i class="fas fa-user-check"></i> Evaluadores
+                                <i class="fa-solid fa-users"></i> Participantes
                             </button>
                         </a>
                         
-                        <a href="" class="text-decoration-none">
+                        <a href="{% url 'administrador:ver_asistentes' evento_id=evento.id %}?estado=Pendiente" class="text-decoration-none">
                             <button class="btn-ver_participantes w-100">
-                                <i class="fa-solid fa-users"></i> Ver Participantes
-                            </button>
-                        </a>
-                        
-                        <a href="" class="text-decoration-none">
-                            <button class="btn-ver_participantes w-100">
-                                <i class="fa-solid fa-users"></i> Ver Asistentes
+                                <i class="fa-solid fa-users"></i> Asistentes
                             </button>
                         </a>
                         
@@ -131,13 +125,26 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal de evento modificado -->
+    <div id="modalEventoModificado" class="modal-modificar-evento" style="display:none;">
+    <div class="modal-contenido-modificar-evento">
+        <span id="cerrarModal" class="cerrar-modificar-evento">&times;</span>
+        <h2>¡Éxito!</h2>
+        <p>Evento modificado correctamente.</p>
+    </div>
+    </div>
+
     <script>
         const baseEventoDetalleUrl = "{% url 'administrador:evento_detalle' 0 %}".replace('0', '');
         const baseEliminarUrl = "{% url 'administrador:eliminar_evento' 0 %}".replace('0', '');
+        const baseModificarUrl = "{% url 'administrador:editar_evento' 0 %}".replace('0', '');
+        const baseCriteriosUrl = "{% url 'administrador:criterios_evaluacion' 0 %}".replace('0', '');
     </script>
 
     <script src="{% static 'app_administrador/js/verEventos.js' %}"></script>
     <script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>
     <script src="{% static 'app_administrador/js/Eliminar.js' %}"></script>
+    <script src="{% static 'app_administrador/js/modalModificarEvento.js' %}"></script>
 {% endblock %}
 

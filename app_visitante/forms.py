@@ -6,4 +6,4 @@ class RegistroAsistenteForm(forms.ModelForm):
 
     class Meta:
         model = Asistentes
-        fields = ['id', 'nombre', 'correo', 'telefono']
+        fields = ['id', 'asi_nombre', 'asi_correo', 'asi_telefono']
