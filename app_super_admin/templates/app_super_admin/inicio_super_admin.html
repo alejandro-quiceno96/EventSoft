@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Super Admin - EventSoft{% endblock %}
+
+{% block content %}
+<header style="background-color: #ff6600; padding: 15px 30px; color: white;"
+    class="d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <img src="{% static 'app_super_admin/image/Logo Sena 1.png' %}" alt="Logo SENA" height="60" class="me-2">
+       
+
+    </div>
+    <div>
+        <i class="fas fa-user-circle me-2"></i>
+        Super Admin
+        <i class="fas fa-bell ms-3" id="notificationBell"></i>
+    </div>
+</header>
+
+<main class="text-center">
+    <h2 class="bg-warning text-white p-2 mt-4 rounded" style="width: 250px; margin: 0 auto;">Eventos activos</h2>
+    <div class="d-flex flex-wrap justify-content-center gap-3 p-3">
+        {% for evento in eventos %}
+        <div class="event-card card shadow-sm" style="width: 280px;">
+            <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="Imagen evento">
+            <div class="card-body">
+                <h5 class="card-title">{{ evento.eve_nombre }}</h5>
+                <p class="card-text">📍 {{ evento.eve_lugar }}</p>
+                <p class="card-text">🏙️ {{ evento.eve_ciudad }}</p>
+                <p class="card-text">📅 {{ evento.eve_fecha_inicio }}</p>
+                <p class="card-text">👤 {{ evento.eve_administrador_fk.nombre|default:"No asignado" }}</p>
+                <p class="card-text">
+                    Estado:
+                    {% if evento.eve_estado == "Activo" %}
+                    <span class="text-success">{{ evento.eve_estado }}</span>
+                    {% elif evento.eve_estado == "Terminado" %}
+                    <span class="text-danger">{{ evento.eve_estado }}</span>
+                    {% else %}
+                    <span class="text-warning">{{ evento.eve_estado }}</span>
+                    {% endif %}
+                </p>
+                <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}"
+                    class="btn btn-warning text-white">Ver evento</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+
+<button id="verEventosCreados" class="btn btn-warning position-fixed bottom-0 end-0 m-4" data-bs-toggle="modal"
+    data-bs-target="#modalEventosCreados">
+    📋 Ver eventos creados
+</button>
+
+
+<div class="modal fade" id="modalEventosCreados" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Eventos en estado "Creado"</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                {% if eventos_por_estado %}
+                {% for estado, eventos in eventos_por_estado.items %}
+                <h6 class="mt-3">{{ estado }}</h6>
+                <ul class="list-group mb-2">
+                    {% for evento in eventos %}
+                    <li class="list-group-item">
+                        <strong>{{ evento.eve_nombre }}</strong>
+                        - 📍 {{ evento.eve_lugar }}
+                        - 📅 {{ evento.eve_fecha_inicio }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endfor %}
+                {% else %}
+                <p>No hay eventos en estado "Creado".</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        if (document.querySelectorAll(".list-group-item").length > 0) {
+            document.getElementById("verEventosCreados").click();
+        }
+    });
+</script>
+{% endblock %}

@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("btnAccion").setAttribute("data-id", data.eve_id);
                     document.getElementById("btnModificar").setAttribute("data-id", data.eve_id);
                     document.getElementById("btnCriterios").setAttribute("data-id", data.eve_id);
+                    document.getElementById("btnCriterios").setAttribute("data-url", baseCriteriosUrl + data.eve_id);
                     // Mostrar el modal
                     new bootstrap.Modal(document.getElementById("eventoModal")).show();
                 })
@@ -29,10 +30,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.getElementById("btnCriterios").addEventListener("click", function () {
-    const eventoId = this.getAttribute("data-id");
-    if (eventoId) {
+    const url = this.getAttribute("data-url");
+    if (url) {
         // Redirige a la URL de la ruta Flask
-        window.location.href = `/criterios_evaluacion/${eventoId}`;
+        window.location.href = url;
     }
 });
 
