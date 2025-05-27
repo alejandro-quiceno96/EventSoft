@@ -38,11 +38,11 @@ def inicio_sesion_super_admin(request):
             
             request.session['administrador'] = {
                 'id': administrador.id,
-                'nombre': administrador.nombre  
+                'nombre': administrador.adm_nombre, 
             }
             
             messages.success(request, '✅ Inicio de sesión exitoso.')
-            return redirect('super_administrador:index')
+            return redirect('super_admin:index')
             
         except Administradores.DoesNotExist:
             messages.error(request, '❌ Cédula no registrada.')

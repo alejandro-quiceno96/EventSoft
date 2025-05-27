@@ -24,6 +24,12 @@ urlpatterns=[
     path('criterios_evaluacion/<int:evento_id>', views.criterios_evaluacion, name='criterios_evaluacion'),
     path('modificar_criterio/<int:criterio_id>', views.modificar_criterio, name='modificar_criterio'),
     path('eliminar_criterio/<int:criterio_id>', views.eliminar_criterio, name='eliminar_criterio'),
+    
+    #calificaciones
+    path('tabla_calificaciones/<int:evento_id>', views.tabla_calificaciones, name='tabla_calificaciones'),
+    path('descargar_raking/<int:evento_id>', views.descargar_ranking_pdf, name = "descargar_ranking_pdf" ),
+    path('evento/<int:evento_id>/participante/<int:participante_id>/detalles/', views.detalles_calificaciones, name='detalle_calificaciones'),
+
 
     
 ]

@@ -1,62 +1,35 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Criterios de Evaluación</title>
+{% extends "app_evaluador/base.html" %}
 
-    <!-- Estilos -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/criteriosadmin.css') }}">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+{% block title %}Criterios de Evaluación{% endblock %}
 
-</head>
-<body class="bg-gray-100 font-sans">
-
-    <header>
-        <section class="header-admin">
-            <div class="contenedor-1">
-                <img class="logo-sena" src="/static/images/Logo Sena 1.png" alt="Logo Sena">
-                <a href="">EventSoft</a>
-            </div>
-            <div class="contenedor-2">
-                <img class="img-user" src="/static/images/user.png" alt="user">
-                <a href="#">{{ evaluador_nombre }}</a>
-            </div>
-        </section>
-    </header>
+{% block extra_styles %}
 <div class="container mt-5">
-    <!-- Botón para volver al evaluador -->
     <div class="mt-3">
-        <a href="{{ url_for('evaluador.evaluador') }}" class=" btn btn-danger">Volver al Evaluador</a>
+        <a href="{% url 'app_evaluador:inicio_evaluador' %}" class="btn btn-danger">Volver al Evaluador</a>
     </div>
+
     <h2 class="mb-4">Criterios de Evaluación</h2>
 
-    <!-- Alerta de Información -->
     <div class="alert alert-info" role="alert">
-        <strong>Nota:</strong> Los criterios de evaluación son fundamentales para la calificación de los participantes. Asegúrate de que sean claros y justos.
-    
-        <!-- Formulario para agregar nuevo criterio -->
+        <strong>Nota:</strong> Los criterios de evaluación son fundamentales para la calificación de los participantes.
         <form id="form-criterios" method="POST">
+            {% csrf_token %}
             <div class="mb-3">
                 <label for="nuevo_criterio" class="form-label">Nuevo Criterio:</label>
-                <div class="input-grupos">
+                <div class="input-grupos d-flex gap-2">
                     <input type="text" class="form-control" name="criterio" placeholder="Descripción" required>
-                    <input type="number" class="form-control_porcentaje" name="porcentaje" placeholder="%" min="0" max="100" required>
-                    <input type="hidden" name="evento_id" value="{{ evento_actual.id }}">  <!-- Campo oculto para el evento -->
+                    <input type="number" class="form-control" name="porcentaje" placeholder="%" min="0" max="100" required>
+                    <input type="hidden" name="evento_id" value="{{ evento_actual.id }}">
                     <button type="submit" class="btn btn-success">Agregar</button>
                 </div>
             </div>
         </form>
     </div>
-    
 
-    <!-- Porcentaje total -->
     <div id="total-porcentaje" class="alert alert-secondary">
         Porcentaje total: <span id="porcentaje-total">0</span>%
     </div>
 
-    <!-- Tabla de criterios -->
     <table class="table table-bordered" id="tabla-criterios">
         <thead class="table-dark">
             <tr>
@@ -68,13 +41,9 @@
         <tbody>
             {% for criterio in criterios %}
             <tr data-id="{{ criterio.id }}">
-                <td class="criterios-tr">
-                    <input type="text" value="{{ criterio.descripcion }}" class="form-control" disabled>
-                </td>
-                <td class="columna-porcentaje">
-                    <input type="number" class="porcentaje-existente form-control" value="{{ criterio.peso }}" disabled>
-                </td>
-                <td class="acciones">
+                <td><input type="text" value="{{ criterio.descripcion }}" class="form-control" disabled></td>
+                <td><input type="number" class="form-control" value="{{ criterio.peso }}" disabled></td>
+                <td>
                     <button class="btn btn-primary btn-modificar">Modificar</button>
                     <button class="btn btn-danger btn-eliminar">Eliminar</button>
                 </td>
@@ -82,12 +51,39 @@
             {% endfor %}
         </tbody>
     </table>
-
-    
 </div>
+{% endblock %}
 
-<!-- Scripts -->
-<script src="/static/js/criteriosevaluador.js"></script>
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const csrftoken = '{{ csrf_token }}';
 
-</body>
-</html>
+    document.querySelectorAll('.btn-eliminar').forEach(button => {
+        button.addEventListener('click', function () {
+            const row = this.closest('tr');
+            const criterioId = row.getAttribute('data-id');
+
+            fetch(`/criterio/${criterioId}/eliminar/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    row.remove();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error al eliminar criterio');
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

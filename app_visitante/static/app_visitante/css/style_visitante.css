@@ -591,7 +591,7 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
     gap: 15px;
 }
 
-.menu-item {
+.btn-menu {
     background-color: transparent;
     border: none;
     color: white;
@@ -605,7 +605,7 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
     transition: background 0.2s ease;
 }
 
-.menu-item:hover {
+.btn-menu:hover {
     background-color: #FF5800;
     color: #fff;
     border-radius: 5px;

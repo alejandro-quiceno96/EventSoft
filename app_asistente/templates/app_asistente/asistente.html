@@ -1,195 +1,50 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Asistentes</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background-image: url("{% static 'images/fondo_admin.png' %}");
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+{% block title %}Registro de Asistentes{% endblock %}
 
-        h1 {
-            background-color: #f77604;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            margin-top: 0;
-            border-bottom: 3px solid #E67E22;
-        }
+{% block content %}
+<h1>Registro de Asistentes</h1>
+<a href="{% url 'home' %}" class="btn-volver">Volver</a>
 
-        form {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 30px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-success">
+    {{ message }}
+</div>
+{% endfor %}
+{% endif %}
 
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+<form action="{% url 'registrar_asistente' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="asi_id">ID:</label>
+    <input type="text" id="asi_id" name="asi_id" required><br><br>
 
-        input[type="text"],
-        input[type="email"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
+    <input type="hidden" id="eve_id" name="eve_id" value="{{ evento }}">
 
-        button[type="submit"] {
-            background-color: #f77604;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background-color 0.3s ease;
-        }
+    <label for="asi_nombre">Nombre:</label>
+    <input type="text" id="asi_nombre" name="asi_nombre" required><br><br>
 
-        button[type="submit"]:hover {
-            background-color: #d96403;
-        }
+    <label for="asi_correo">Correo:</label>
+    <input type="email" id="asi_correo" name="asi_correo" required><br><br>
 
-        .btn-volver {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #d96403;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
+    <label for="asi_telefono">Teléfono:</label>
+    <input type="text" id="asi_telefono" name="asi_telefono" required><br><br>
 
-        .btn-volver:hover {
-            background-color: #b04d02;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Mensajes flash */
-        .alert {
-            margin: 20px auto;
-            max-width: 600px;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-        }
-
-        .alert-success {
-            background-color: #d4edda;
-            border-color: #c6efce;
-            color: #155724;
-        }
-
-        .file-upload-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            margin: 15px 0;
-        }
-
-        .file-label {
-            display: inline-block;
-            background-color: #f77604;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background 0.3s ease;
-        }
-
-        .file-label:hover {
-            background-color: #d96403;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .file-name {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #555;
-            font-style: italic;
-        }
-    </style>
-</head>
-
-<body>
-    <h1>Registro de Asistentes</h1>
-    <a href="{% url 'home' %}" class="btn-volver">Volver</a>
-
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-success">
-        {{ message }}
+    {% if cobro == "Si" %}
+    <div class="file-upload-container">
+        <label for="comprobante_pago" class="file-label">📂 SUBIR COMPROBANTE DE PAGO</label>
+        <input type="file" id="comprobante_pago" name="comprobante_pago" class="file-input" required>
+        <span id="file-name" class="file-name">Ningún archivo seleccionado</span>
     </div>
-    {% endfor %}
     {% endif %}
 
-    <form action="{% url 'registrar_asistente' %}" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="asi_id">ID:</label>
-        <input type="text" id="asi_id" name="asi_id" required>
+    <button type="submit">Registrar</button>
+</form>
+{% endblock %}
 
-        <input type="hidden" id="eve_id" name="eve_id" value="{{ evento }}">
-
-        <label for="asi_nombre">Nombre:</label>
-        <input type="text" id="asi_nombre" name="asi_nombre" required>
-
-        <label for="asi_correo">Correo:</label>
-        <input type="email" id="asi_correo" name="asi_correo" required>
-
-        <label for="asi_telefono">Teléfono:</label>
-        <input type="text" id="asi_telefono" name="asi_telefono" required>
-
-        {% if cobro == "Si" %}
-        <div class="file-upload-container">
-            <label for="comprobante_pago" class="file-label">📂 SUBIR COMPROBANTE DE PAGO</label>
-            <input type="file" id="comprobante_pago" name="comprobante_pago" class="file-input" required>
-            <span id="file-name" class="file-name">Ningún archivo seleccionado</span>
-        </div>
-        {% endif %}
-
-        <button type="submit">Guardar</button>
-    </form>
-
-    <script>
-        const comprobanteInput = document.getElementById("comprobante_pago");
-        if (comprobanteInput) {
-            comprobanteInput.addEventListener("change", function () {
-                const fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
-                document.getElementById("file-name").textContent = fileName;
-            });
-        }
-    </script>
-
-</body>
-
-</html>
+{% block extra_css %}
+<style>
+    /* aquí el CSS específico de la plantilla */
+</style>
+{% endblock %}

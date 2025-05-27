@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ranking - {{ evento.eve_nombre }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: "Helvetica Neue", sans-serif;
+            font-size: 12pt;
+            color: #2c3e50;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 22pt;
+            color: #1abc9c;
+        }
+
+        .header small {
+            font-size: 12pt;
+            color: #7f8c8d;
+        }
+
+        .logo {
+            width: 80px;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            background-color: #34495e;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f4f6f7;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 1cm;
+            text-align: center;
+            font-size: 10pt;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        {% comment %} Reemplaza con tu logo si lo tienes {% endcomment %}
+        <!-- <img src="{{ STATIC_ROOT }}/img/logo.png" class="logo"> -->
+        <h1>Ranking de Participantes</h1>
+        <small>{{ evento.eve_nombre }}</small>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Participante</th>
+                <th>Promedio</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in ranking %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td style="text-align: left;">{{ p.nombre }}</td>
+                <td><strong>{{ p.promedio|floatformat:2 }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No hay calificaciones disponibles.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <center> Documento generado automáticamente por el sistema - {{ evento.eve_nombre }}</center>
+    </div>
+
+</body>
+</html>

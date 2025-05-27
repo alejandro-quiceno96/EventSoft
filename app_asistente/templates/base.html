@@ -1,0 +1,23 @@
+{%load static%}
+
+<link rel="stylesheet" href="{% static 'app_asistente/css/asistente.css' %}">
+
+<link rel="stylesheet" href="{% static 'app_asistente/css/buscar_asistente.css' %}">
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Título por defecto{% endblock %}</title>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block header %}{% endblock %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {% block footer %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

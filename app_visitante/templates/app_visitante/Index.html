@@ -46,17 +46,17 @@
     <div id="sidebarMenu" class="sidebar-menu">
         <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
         <div class="menu-content">
-            <a class="menu-item" href="{% url 'administrador:inicio_sesion_administrador' %}">
+            <a class="btn-menu" href="{% url 'administrador:inicio_sesion_administrador' %}">
                 <i class="fa-solid fa-user-tie"></i> Administrador
             </a>
             
-            <a class="menu-item" href="{% url 'app_participante:buscar_participantes' %}">
+            <a class="btn-menu" href="{% url 'app_participante:buscar_participantes' %}">
                 <i class="fa-solid fa-user"></i> Mis inscripciones como participante
             </a>
-            <a class="menu-item" href="{% url 'super_admin:inicio_sesion_super_admin' %}">
+            <a class="btn-menu" href="{% url 'super_admin:inicio_sesion_super_admin' %}">
                 <i class="fa-solid fa-user-shield"></i> Super Administrador
             </a>
-            <a class="menu-item" href="{% url 'inicio_sesion_evaluador' %}">
+            <a class="btn-menu" href="{% url 'inicio_sesion_evaluador' %}">
                 <i class="fas fa-chalkboard-user"></i> Evaluador
             </a>
 
@@ -207,7 +207,7 @@
     }
 
     function closeMenu() {
-        document.getElementById("sidebarMenu").style.left = "-250px";  // ajusta según tu CSS
+        document.getElementById("sidebarMenu").style.left = "-350px";  // ajusta según tu CSS
         document.getElementById("overlay").style.display = "none";
     }
 </script>
