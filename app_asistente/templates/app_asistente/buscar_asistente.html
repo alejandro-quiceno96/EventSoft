@@ -1,112 +1,29 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Buscar Asistente</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+{% block title %}Buscar Asistente{% endblock %}
 
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #FF5800;
-        }
+{% block extra_css %}
 
-        header {
-            width: 100%;
-            padding: 15px;
-            background: #FF5800;
-            color: white;
-            text-align: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
+{% endblock %}
 
-        header button {
-            position: absolute;
-            left: 15px;
-            top: 10px;
-            padding: 8px 15px;
-            background: white;
-            color: #FF5800;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-        }
+{% block header %}
+<header class="header-participante">
+    <h1>Buscar Asistente</h1>
+    <a href="{% url 'app_visitante:base' %}" class="btn-volver">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+</header>
+  
+{% endblock %}
 
-        header button:hover {
-            background: #e0e0e0;
-        }
-
-        main {
-            margin-top: 80px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        label {
-            font-size: 18px;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        button[type="submit"] {
-            background: #FF5800;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button[type="submit"]:hover {
-            background: #e04700;
-        }
-    </style>
-</head>
-
-<body>
-    <header>
-        <h1>Buscar Asistente</h1>
-        <button onclick="window.location.href='{% url 'home' %}'">⬅ Volver</button>
-    </header>
-
-    <main>
-        <form action="{% url 'buscar_eventos_asis' %}" method="POST">
-            {% csrf_token %}
-            <label for="cedula">Ingrese la cédula del asistente:</label>
-            <input type="text" name="cedula" id="cedula" required />
-            <button type="submit">Buscar</button>
-        </form>
-    </main>
-</body>
-
-</html>
+{% block content %}
+<main>
+    <form action="{% url 'buscar_eventos_asis' %}" method="POST">
+        {% csrf_token %}
+        <label for="cedula">Ingrese la cédula del asistente:</label>
+        <input type="text" name="cedula" id="cedula" required />
+        <button type="submit">Buscar</button>
+    </form>
+</main>
+{% endblock %}

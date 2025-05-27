@@ -1,54 +1,36 @@
-{% extends "administrador/baseadmin.html" %}
+{% extends "app_administrador/baseadmin.html" %}
+{% load static %}
+
 {% block title %}
-  {{ administrador if administrador else 'Administrador' }}
+    {{ administrador|default:'Administrador' }}
 {% endblock %}
 {% block content %}
-<link rel="stylesheet" href="/static/css/posicionesadmin.css">
+<link rel="stylesheet" href="{% static 'app_administrador/css/posicionesadmin.css' %}">
+
+
 <div class="container mt-5">
-    <h3 class="text">
-        <i class="fa-solid fa-list"></i> Detalle de Calificaciones de <strong>{{ participante.nombre }}</strong>
-    </h3>
+    <a href="{% url 'administrador:tabla_calificaciones' evento_id=evento.id %}" class="btn btn-detalle-calificacion mb-2">
+            <i class="fa-solid fa-arrow-left"></i></i> Volver a tabla de posiciones
+    </a>
+    <h2 class="mb-4"><i class="fa-solid fa-list-check"></i> Detalle de Calificaciones - {{ participante.par_nombre }}</h2>
 
-    <!-- Botón para volver a la lista de participantes -->
-    <div class="d-flex justify-content-end mt-3 p-2">
-        <a href="{{ url_for('administrador.ranking_evento', evento_id=evento.id) }}" class="btn btn-outline-primary">
-            <i class="fa-solid fa-arrow-left"></i> Volver al Ranking
-        </a>
-    </div>
-    <!-- Tabla de calificaciones -->
-    <div class="table-responsive shadow-lg rounded-3 overflow-hidden">
-        <table class="table table-hover align-middle mb-0 table-striped">
-            <thead class="table-dark">
-                <tr>
-                    <th scope="col">Criterio</th>
-                    <th scope="col">Peso</th>
-                    <th scope="col">Evaluador</th>
-                    <th scope="col">Calificación</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for c in calificaciones %}
-                <tr>
-                    <td>{{ c.criterio }}</td> <!-- Asegúrate de que 'criterio.descripcion' sea el nombre del criterio -->
-                    <td>{{ "%.2f"|format(c.peso) }}</td>
-                    <td>{{ c.evaluador }}</td> <!-- Asegúrate de que 'evaluador.nombre' sea el nombre del evaluador -->
-                    <td>
-                        <span class="badge bg-info fs-6">
-                            {{ c.valor }}
-                        </span>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="text-center text-muted py-4">
-                        <i class="fa-solid fa-circle-info"></i> No hay calificaciones registradas para este participante.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
-    
+    <div class="row">
+        {% for item in evaluadores_data %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow rounded-4 border-0">
+                <div class="card-header">
+                    Evaluador: {{ item.evaluador.eva_nombre }}
+                </div>
+                <div class="card-body">
+                    <p><strong>Promedio:</strong> {{ item.promedio|floatformat:2 }}</p>
+                    <a href="#" class="btn btn-detalle-calificacion">
+                        <i class="fa-solid fa-eye"></i> Ver Detalle de Calificación
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

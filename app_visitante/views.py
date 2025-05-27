@@ -23,7 +23,7 @@ def inicio_visitante(request):
         'categorias': categorias,
         'areas': areas,
     }
-    return render(request, 'app_visitante/base.html', contexto)
+    return render(request, 'app_visitante/index.html', contexto)
 
 
 

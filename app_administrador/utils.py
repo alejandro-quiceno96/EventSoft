@@ -14,6 +14,12 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.utils import ImageReader
 from django.conf import settings
+from django.db.models  import Avg
+
+from app_evaluador.models import Calificaciones
+from app_participante.models import Participantes
+from app_criterios.models import Criterios
+
 
 def generar_pdf(id_participante, usuario, id_evento, tipo="participante"):
     """
@@ -82,3 +88,40 @@ def generar_clave_acceso(longitud=6):
     caracteres = string.ascii_letters + string.digits  # Letras (mayúsculas y minúsculas) + números
     clave = ''.join(random.choice(caracteres) for _ in range(longitud))
     return clave
+
+def obtener_ranking(evento_id):
+
+    # Subconsulta: promedio por criterio y participante
+    subquery = (
+        Calificaciones.objects
+        .values('clas_participante_fk', 'cal_criterio_fk')
+        .annotate(promedio_criterio=Avg('cal_valor'))
+    )
+
+    # Diccionario temporal para almacenar acumulados
+    ranking_dict = {}
+
+    for row in subquery:
+        criterio = Criterios.objects.filter(id=row['cal_criterio_fk'], cri_evento_fk=evento_id).first()
+        if criterio:
+            participante_id = row['clas_participante_fk']
+            ponderado = row['promedio_criterio'] * criterio.cri_peso / 100
+
+            if participante_id not in ranking_dict:
+                ranking_dict[participante_id] = 0
+            ranking_dict[participante_id] += ponderado
+
+    # Ordenar por promedio ponderado descendente
+    ranking_ordenado = sorted(ranking_dict.items(), key=lambda x: x[1], reverse=True)
+
+    # Construir lista para el template
+    ranking = []
+    for participante_id, promedio in ranking_ordenado:
+        participante = Participantes.objects.get(id=participante_id)
+        ranking.append({
+            'id': participante.par_cedula,
+            'nombre': participante.par_nombre,
+            'promedio': round(promedio, 2)
+        })
+
+    return ranking

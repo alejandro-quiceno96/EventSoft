@@ -1,23 +1,15 @@
+{% extends 'app_participantes/base_par.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Buscar Participante</title>
-    <link rel="stylesheet" href="{% static 'app_participante/css/style.css' %}">
 
 
-</head>
-<body>
+{% block content %}
 <header>
-    <h1>Buscar Participante</h1>
-    <button onclick="window.location.href='/'">⬅ Volver</button>
+    <h1 ><center>   Buscar Participante</center></h1>
+
 </header>
+
 <main>
     <form action="{% url 'app_participante:ver_info_participante' %}" method="post">
-
-
         {% csrf_token %}
         <label for="cedula">Cédula:</label>
         <input type="text" id="cedula" name="cedula" required value="{{ cedula|default:'' }}">
@@ -39,5 +31,4 @@
         <p>No hay eventos inscritos para esta cédula.</p>
     {% endif %}
 </main>
-</body>
-</html>
+{% endblock %}

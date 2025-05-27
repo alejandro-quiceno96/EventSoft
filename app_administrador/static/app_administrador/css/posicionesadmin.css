@@ -3,6 +3,31 @@
     --color-texto: #ffffff;
 }
 
-.text{
-    color: var(--color-naranja);
+
+.ranking-title {
+        font-weight: 700;
+        font-size: 2rem;
+        color: var(--color-naranja);
+}
+
+.ranking-subtitle {
+        font-size: 1.1rem;
+        color: black;
+}
+
+.card-header{
+        background-color: var(--color-naranja);
+        color: var(--color-texto);
+}
+
+.btn-detalle-calificacion{
+        border: 1px solid var(--color-naranja);
+        color: var(--color-naranja);
+        background-color: transparent;
+}
+
+.btn-detalle-calificacion:hover{
+        background-color: var(--color-naranja);
+        color: var(--color-texto);
+        transition: .5 ease-in-out;
 }

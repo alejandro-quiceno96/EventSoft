@@ -1,6 +1,6 @@
 /* ===== VARIABLES ===== */
 :root {
-    
+    --color-naranja: #FF5800;
     --color-texto: #ffffff;
 }
 
@@ -10,88 +10,26 @@
     max-width: 100%;
 }
 
-* {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+body,
+html {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    font-family: "Noto Sans", sans-serif;
+    background-image: url(/static/images/fondo_admin.png);
+    background-size: cover;
+    background-repeat: no-repeat;
+}
 
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #FF5800;
-        }
-
-        header {
-            width: 100%;
-            padding: 15px;
-            background: #FF5800;
-            color: white;
-            text-align: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-        }
-
-        header button {
-            position: absolute;
-            left: 15px;
-            top: 10px;
-            padding: 8px 15px;
-            background: white;
-            color: #FF5800;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        header button:hover {
-            background: #e0e0e0;
-        }
-
-        main {
-            margin-top: 80px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        label {
-            font-size: 18px;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        button[type="submit"] {
-            background: #FF5800;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button[type="submit"]:hover {
-            background: #FF5800;
-        }
 /* ===== HEADER ===== */
+.header-admin {
+    background-color: var(--color-naranja);
+    height: 80px;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    width: 100%;
+}
 
 .logo-sena {
     width: 110px;
@@ -101,7 +39,8 @@
     width: 40px;
 }
 
-.contenedor-1, .contenedor-2 {
+.contenedor-1,
+.contenedor-2 {
     display: flex;
     align-items: center;
     padding: 5px;
@@ -206,7 +145,7 @@
     background-color: #6c757d42;
 }
 
-.sidebar .dropdown-btn.active + .dropdown-container {
+.sidebar .dropdown-btn.active+.dropdown-container {
     display: block;
 }
 
@@ -216,7 +155,7 @@
     transition: margin-left 0.3s ease;
 }
 
-.sidebar:hover ~ .main-content {
+.sidebar:hover~.main-content {
     margin-left: 250px;
 }
 
@@ -279,27 +218,69 @@ form {
 }
 
 /* Agrupados por campos */
-.contenedor-input-1 input { width: 70%; }
-.contenedor-input-2 { display: flex; align-items: center; gap: 60px; }
-.contenedor-input-2 textarea { width: 80%; height: 80px; }
+.contenedor-input-1 input {
+    width: 70%;
+}
 
-.div-1, .div-2, .div-3, .div-4 {
+.contenedor-input-2 {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+}
+
+.contenedor-input-2 textarea {
+    width: 80%;
+    height: 80px;
+}
+
+.div-1,
+.div-2,
+.div-3,
+.div-4 {
     display: flex;
     width: 50%;
 }
 
-.div-1 { gap: 95px; }
-.div-2 { gap: 20px; width: 60%; }
-.div-3 { gap: 35px; }
-.div-4 { gap: 10px; }
+.div-1 {
+    gap: 95px;
+}
 
-.div-1 input, .div-2 input { width: 60%; }
+.div-2 {
+    gap: 20px;
+    width: 60%;
+}
 
-.contenedor-input-3 { display: flex; gap: 70px; }
-.contenedor-input-4 { display: flex; flex-wrap: wrap; align-items: center; }
-.contenedor-input-5 { display: flex; justify-content: end; }
+.div-3 {
+    gap: 35px;
+}
 
-.contenedor-input-6, .contenedor-input-7 {
+.div-4 {
+    gap: 10px;
+}
+
+.div-1 input,
+.div-2 input {
+    width: 60%;
+}
+
+.contenedor-input-3 {
+    display: flex;
+    gap: 70px;
+}
+
+.contenedor-input-4 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.contenedor-input-5 {
+    display: flex;
+    justify-content: end;
+}
+
+.contenedor-input-6,
+.contenedor-input-7 {
     display: flex;
     justify-content: space-around;
     gap: 10px;
@@ -473,7 +454,7 @@ form {
     gap: 5px;
     font-size: 2rem;
     font-weight: bold;
-    color:  #FF5800;
+    color: #FF5800;
 }
 
 .loader-text {
@@ -481,19 +462,54 @@ form {
     animation: fadeInOut 1.2s infinite;
 }
 
-.loader-text:nth-child(1) { animation-delay: 0s; }
-.loader-text:nth-child(2) { animation-delay: 0.1s; }
-.loader-text:nth-child(3) { animation-delay: 0.2s; }
-.loader-text:nth-child(4) { animation-delay: 0.3s; }
-.loader-text:nth-child(5) { animation-delay: 0.4s; }
-.loader-text:nth-child(6) { animation-delay: 0.5s; }
-.loader-text:nth-child(7) { animation-delay: 0.6s; }
-.loader-text:nth-child(8) { animation-delay: 0.7s; }
-.loader-text:nth-child(9) { animation-delay: 0.8s; }
+.loader-text:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.loader-text:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.loader-text:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.loader-text:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.loader-text:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.loader-text:nth-child(6) {
+    animation-delay: 0.5s;
+}
+
+.loader-text:nth-child(7) {
+    animation-delay: 0.6s;
+}
+
+.loader-text:nth-child(8) {
+    animation-delay: 0.7s;
+}
+
+.loader-text:nth-child(9) {
+    animation-delay: 0.8s;
+}
 
 @keyframes fadeInOut {
-    0%, 100% { opacity: 0.2; transform: translateY(0); }
-    50% { opacity: 1; transform: translateY(-8px); }
+
+    0%,
+    100% {
+        opacity: 0.2;
+        transform: translateY(0);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateY(-8px);
+    }
 }
 
 .loader-message {
@@ -504,6 +520,13 @@ form {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }

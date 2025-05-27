@@ -1,0 +1,220 @@
+{% extends 'base_participante.html' %}
+
+{% block title %}Eventos Inscritos{% endblock %}
+{% block header_title %}Eventos Inscritos{% endblock %}
+
+{% block content %}
+    <main>
+        <h2 class="text-center my-4">Mis Inscripciones Participante</h2>
+        <input type="hidden" name="evento_id" value="123">
+
+        <div class="contenedor-principal-de-eventos">
+            {% if eventos %}
+                {% for evento in eventos %}
+                    <div class="card" style="width: 18rem;">
+                        <img src="{{ url_for('administrador.imagen_evento', id=evento.eve_id) }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ evento.eve_nombre }}</h5>
+                            <h6 class="card-subtitle mb-2 text-body-secondary">
+                                <i class="fa-solid fa-calendar"></i> {{evento.eve_fecha_inicio}} - {{evento.eve_fecha_fin}}
+                            </h6>
+
+                            {% if evento.par_eve_estado == "Admitido" %}
+                                <div style="display: flex;">Estado: 
+                                    <p class="card-text" style="color: rgb(39, 119, 39);"> {{ evento.par_eve_estado }}</p>
+                                </div>
+                                {% if evento.calificacion == "Sin calificar" %}
+                                    <span class="text-muted fst-italic">Calificación: {{ evento.calificacion }}</span>
+                                {% else %}
+                                    <span class="badge bg-success">Calificación: {{ evento.calificacion }}</span>
+                                {% endif %}
+                                <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula = "{{cedula_participante}}">
+                                    <i class="fa-solid fa-eye"></i> Ver Información
+                                </button>
+
+                            {% elif evento.par_eve_estado == "Rechazado" %}
+                                <div style="display: flex;">Estado: 
+                                    <p class="card-text" style="color: rgb(158, 28, 28);"> {{ evento.par_eve_estado }}</p>
+                                </div>
+                                <button type="button" class="btn-cancelar"
+                                data-id="{{ evento.eve_id }}"
+                                data-cedula="{{ cedula_participante }}">
+                        Cancelar mi Inscripción
+                        </button>
+
+                            {% else %}
+                                <div style="display: flex;">Estado: 
+                                    <p class="card-text" style="color: rgb(199, 80, 12);"> {{ evento.par_eve_estado }}</p>
+                                </div>
+                                <button  
+                                class="btn-modificar-participante btn-abrir-editar-externo"
+                                data-id="{{ evento.eve_id }}"
+                                data-cedula="{{ cedula_participante }}">
+                                Modificar Información de Inscripción
+                              </button>
+                                <button type="button" class="btn-cancelar"
+                                data-id="{{ evento.eve_id }}"
+                                data-cedula="{{ cedula_participante }}">
+                        Cancelar mi Inscripción
+                        </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center my-5">
+                    <h4 class="text-muted">No estás inscrito en ningún evento actualmente.</h4>
+                    <p class="text-secondary">Explora los eventos disponibles y regístrate para participar.</p>
+                </div>
+            {% endif %}
+
+            
+        </div>
+    </main>
+    
+{% endblock %}
+
+{% block modals %}
+     <!-- Modal -->
+<div class="modal fade" id="eventoModal" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5 id="modalNombre"></h5>
+                <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
+                <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
+                <p><strong>Lugar:</strong> <span id="modalLugar"></span></p>
+                <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
+                <p><strong>Categoría:</strong> <span id="modalCategoria"></span></p>
+                <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
+                <p><strong><i class="fa-solid fa-pencil"></i> Inscripción:</strong> <span id="modalInscripcion"></span></p>
+                <p><strong><i class="fa-solid fa-lock"></i> Clave de Acceso: </strong> <span id="modalClave"></span></p>
+                
+
+                <div class="modal-programacion">
+                    <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
+                    <a id="modalProgramacion"  target="_blank"><i class="fa-solid fa-eye"></i></a>
+                    <a id="modalProgramacionDescargar"  target="_blank" download><i class="fa-solid fa-download"></i></a>
+                </div>
+                <div class="modal-programacion">
+                    <p><strong><i class="fa-solid fa-qrcode"></i> Codigo Qr:</strong></p>
+                    <a id="modalCodigoQr"  target="_blank"><i class="fa-solid fa-eye"></i></a>
+                    <a id="modalCodigoQrDescargar"  target="_blank" download><i class="fa-solid fa-download"></i></a>
+                </div>
+                
+                <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid" style="width: 100%;
+                height: 300px; object-fit: contain;" />
+            </div>
+            <div class="modal-footer">
+              <button 
+              id="btnCriterios"
+              class="btn-criterios-evaluacion" 
+              data-evento-id="" 
+              data-bs-toggle="modal">
+              Ver Criterios de Evaluación
+          </button>
+              <button  class="btn-modificar-participante" data-bs-toggle="modal" data-bs-target="#modificarInscripcionModal" id="btnAbrirEditar">
+                Modificar Información de Inscripción
+              </button>
+                <button type="button" id="btnAbrirConfirmarCancelar" class="btn-ver-mas">
+                  Cancelar mi Inscripción
+                </button>
+                
+                
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmarCancelarModal" tabindex="-1" aria-labelledby="confirmarCancelarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header  text-dark">
+          <h5 class="modal-title" id="confirmarCancelarLabel">¿Cancelar inscripción?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          ¿Estás seguro de que deseas cancelar tu inscripción a este evento?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarCancelar">Sí, cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para editar inscripción -->
+  <div class="modal fade" id="modificarInscripcionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="formModificarInscripcion" class="modal-content" enctype="multipart/form-data" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">Modificar Inscripción</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+  
+          <!-- Nombre -->
+          <div class="mb-3 d-flex align-items-center">
+            <label for="inputNombre" class="form-label me-2">Nombre:</label>
+            <div class="div-editar">
+                <input type="text" class="form-control" id="inputNombre" name="par_nombre" disabled>
+                <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-editar-campo" data-target="inputNombre">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            </div>
+            
+          </div>
+  
+          <!-- Correo -->
+          <div class="mb-3 d-flex align-items-center">
+            <label for="inputCorreo" class="form-label me-2">Correo:</label>
+            <div class="div-editar">
+                <input type="email" class="form-control" id="inputCorreo" name="par_correo" disabled>
+            <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-editar-campo" data-target="inputCorreo">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            </div>
+          </div>
+  
+          <!-- Teléfono -->
+          <div class="mb-3 d-flex align-items-center">
+            <label for="inputTelefono" class="form-label me-2">Teléfono:</label>
+            <div class="div-editar">
+                <input type="text" class="form-control" id="inputTelefono" name="par_telefono" disabled>
+                <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-editar-campo" data-target="inputTelefono">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            </div>
+            
+          </div>
+          
+          <div class="modal-programacion">
+            <p><strong><i class="fa-solid fa-file-pdf"></i></i> Proyecto:</strong></p>
+            <a id="modalProyecto"  target="_blank"><i class="fa-solid fa-eye"></i></a>
+        </div>
+  
+          <div class="mb-3">
+            <label for="inputDocumento" class="form-label">Subir nuevo documento:</label>
+            <input type="file" class="form-control" id="inputDocumento" name="par_eve_documentos">
+          </div>
+          
+          
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Guardar cambios</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+{% endblock %}
+
+
+

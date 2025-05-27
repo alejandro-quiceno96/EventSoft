@@ -1,21 +1,26 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.dateparse import parse_datetime
-from django.http import JsonResponse, Http404, HttpRequest
+from django.http import JsonResponse, Http404, HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
+from django.db.models import Avg, F, Sum, FloatField
+from django.template.loader import render_to_string
 from datetime import datetime
 import os
-from .utils import generar_pdf, generar_clave_acceso
+from .utils import generar_pdf, generar_clave_acceso, obtener_ranking
 from django.urls import reverse
 from decimal import Decimal
 import json
+from weasyprint import HTML
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos
 from app_areas.models import Areas
 from app_categorias.models import Categorias
 from app_administrador.models import Administradores
 from app_criterios.models import Criterios
+from app_evaluador.models import Calificaciones
+from app_participante.models import Participantes
 
 # Obtener áreas disponibles
 def obtener_areas_eventos():
@@ -454,3 +459,99 @@ def eliminar_criterio(request, criterio_id):
         except Criterios.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'No encontrado'}, status=404)
     return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+def tabla_calificaciones(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Subconsulta: promedio por criterio y participante
+    subquery = (
+        Calificaciones.objects
+        .values('clas_participante_fk', 'cal_criterio_fk')
+        .annotate(promedio_criterio=Avg('cal_valor'))
+    )
+
+    # Diccionario temporal para almacenar acumulados
+    ranking_dict = {}
+
+    for row in subquery:
+        criterio = Criterios.objects.filter(id=row['cal_criterio_fk'], cri_evento_fk=evento_id).first()
+        if criterio:
+            participante_id = row['clas_participante_fk']
+            ponderado = row['promedio_criterio'] * criterio.cri_peso / 100
+
+            if participante_id not in ranking_dict:
+                ranking_dict[participante_id] = 0
+            ranking_dict[participante_id] += ponderado
+
+    # Ordenar por promedio ponderado descendente
+    ranking_ordenado = sorted(ranking_dict.items(), key=lambda x: x[1], reverse=True)
+
+    # Construir lista para el template
+    ranking = []
+    for participante_id, promedio in ranking_ordenado:
+        participante = Participantes.objects.get(id=participante_id)
+        ranking.append({
+            'id': participante.id,
+            'nombre': participante.par_nombre,
+            'promedio': round(promedio, 2)
+        })
+
+    return render(request, 'app_administrador/posiciones.html', {
+        'ranking': ranking,
+        'evento': evento,
+        'administrador': request.session.get('admin_nombre'),
+    })
+    
+def descargar_ranking_pdf(request, evento_id):
+    evento = Eventos.objects.get(id=evento_id)
+    ranking = obtener_ranking(evento_id)  # debe devolver lista de diccionarios con nombre y promedio
+
+    html_string = render_to_string('app_administrador/ranking_pdf.html', {
+        'evento': evento,
+        'ranking': ranking,
+    })
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="ranking_evento_{evento_id}.pdf"'
+
+    HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(response)
+    return response
+
+
+
+def detalles_calificaciones(request, evento_id, participante_id):
+    participante = get_object_or_404(Participantes, id=participante_id)
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Traer todas las calificaciones del participante en ese evento
+    calificaciones = Calificaciones.objects.filter(
+        clas_participante_fk=participante,
+        cal_criterio_fk__cri_evento_fk=evento
+    ).select_related('cal_evaluador_fk', 'cal_criterio_fk')
+
+    # Agrupar por evaluador
+    evaluadores_data = {}
+    for cal in calificaciones:
+        evaluador = cal.cal_evaluador_fk
+        if evaluador.id not in evaluadores_data:
+            evaluadores_data[evaluador.id] = {
+                'evaluador': evaluador,
+                'calificaciones': [],
+                'promedio': 0,
+            }
+        evaluadores_data[evaluador.id]['calificaciones'].append({
+            'criterio': cal.cal_criterio_fk.cri_descripcion,
+            'valor': cal.cal_valor,
+        })
+
+    # Calcular promedio de cada evaluador
+    for data in evaluadores_data.values():
+        valores = [c['valor'] for c in data['calificaciones']]
+        data['promedio'] = round(sum(valores) / len(valores), 2) if valores else 0
+
+    return render(request, 'app_administrador/detalle_calificaciones.html', {
+        'participante': participante,
+        'evento': evento,
+        'evaluadores_data': evaluadores_data.values(),
+        'administrador': request.session.get('admin_nombre'),
+    })

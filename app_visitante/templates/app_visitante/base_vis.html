@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EventSoft{% endblock %}</title>
+
+    <!-- Estilos comunes -->
+    <link rel="stylesheet" href="{% static 'app_visitante/css/style.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bloque para estilos adicionales -->
+    {% block extra_styles %}{% endblock %}
+</head>
+<body>
+    <!-- Bloque de header personalizado -->
+    {% block header %}
+    <header class="default-header">
+        <div class="logo">EventSoft</div>
+    </header>
+    {% endblock %}
+
+    <!-- Contenido principal -->
+    <main>
+        {% block content %}
+        <p>Contenido por defecto</p>
+        {% endblock %}
+    </main>
+
+    <!-- Scripts comunes -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bloque para scripts adicionales -->
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
