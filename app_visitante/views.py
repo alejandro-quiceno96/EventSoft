@@ -63,15 +63,26 @@ def submit_preinscripcion_participante(request):
         documento = request.FILES.get('par_eve_documentos')
         evento_id = request.POST.get('evento_id')
 
-        participante = Participantes.objects.create(
-            par_nombre=par_nombre,
-            par_cedula=par_cedula,
-            par_correo=par_correo,
-            par_telefono=par_telefono,
-        )
+        # Verificar si el participante ya existe
+        try:
+            participante = Participantes.objects.get(par_cedula=par_cedula)
+        except Participantes.DoesNotExist:
+            # Si no existe, crear un nuevo participante
+            participante = Participantes.objects.create(
+                par_nombre=par_nombre,
+                par_cedula=par_cedula,
+                par_correo=par_correo,
+                par_telefono=par_telefono,
+            )
 
-        evento = Eventos.objects.get(pk=evento_id)
+        # Obtener el evento
+        try:
+            evento = Eventos.objects.get(pk=evento_id)
+        except Eventos.DoesNotExist:
+            # Si el evento no existe, redirigir a una página de error o inicio
+            return redirect('inicio_visitante')
 
+        # Crear la inscripción del participante al evento
         ParticipantesEventos.objects.create(
             par_eve_participante_fk=participante,
             par_eve_evento_fk=evento,
@@ -82,9 +93,12 @@ def submit_preinscripcion_participante(request):
             par_eve_clave=''  # Idealmente deberías generar una clave segura
         )
 
+        # Redirigir a la página de inicio del visitante
         return redirect('inicio_visitante')
 
+    # Si no es POST, redirigir a la página de inicio del visitante
     return redirect('inicio_visitante')
+
 
 
 

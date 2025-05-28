@@ -2,8 +2,11 @@
 
 {% block title %}Eventos Inscritos{% endblock %}
 {% block header_title %}Eventos Inscritos{% endblock %}
+{% load static%}
 
 {% block content %}
+
+<link rel="stylesheet" href="{% static 'app_participante/css/style.css' %}">
     <main>
         <h2 class="text-center my-4">Mis Inscripciones Participante</h2>
         <input type="hidden" name="evento_id" value="123">
@@ -49,7 +52,7 @@
                                 <button  
                                 class="btn-modificar-participante btn-abrir-editar-externo"
                                 data-id="{{ evento.eve_id }}"
-                                data-cedula="{{ cedula_participante }}">
+                                data-cedula = "{{cedula_participante}}">
                                 Modificar Información de Inscripción
                               </button>
                                 <button type="button" class="btn-cancelar"
@@ -150,69 +153,76 @@
   </div>
 
   <!-- Modal para editar inscripción -->
-  <div class="modal fade" id="modificarInscripcionModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="formModificarInscripcion" class="modal-content" enctype="multipart/form-data" method="POST">
-        <div class="modal-header">
-          <h5 class="modal-title">Modificar Inscripción</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-  
+<div class="modal fade" id="modificarInscripcionModal" tabindex="-1" aria-labelledby="modificarInscripcionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header  text-white">
+        <h5 class="modal-title" id="modificarInscripcionModalLabel">Modificar Inscripción</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formModificarInscripcion" enctype="multipart/form-data" method="POST">
           <!-- Nombre -->
-          <div class="mb-3 d-flex align-items-center">
-            <label for="inputNombre" class="form-label me-2">Nombre:</label>
-            <div class="div-editar">
-                <input type="text" class="form-control" id="inputNombre" name="par_nombre" disabled>
-                <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-editar-campo" data-target="inputNombre">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-            </div>
-            
-          </div>
-  
-          <!-- Correo -->
-          <div class="mb-3 d-flex align-items-center">
-            <label for="inputCorreo" class="form-label me-2">Correo:</label>
-            <div class="div-editar">
-                <input type="email" class="form-control" id="inputCorreo" name="par_correo" disabled>
-            <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-editar-campo" data-target="inputCorreo">
+          <div class="mb-3">
+            <label for="inputNombre" class="form-label">Nombre:</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="inputNombre" name="par_nombre" disabled>
+              <button type="button" class="btn btn-editar-campo" data-target="inputNombre">
                 <i class="fa-solid fa-pen-to-square"></i>
-            </button>
+              </button>
             </div>
           </div>
-  
+
+          <!-- Correo -->
+          <div class="mb-3">
+            <label for="inputCorreo" class="form-label">Correo:</label>
+            <div class="input-group">
+              <input type="email" class="form-control" id="inputCorreo" name="par_correo" disabled>
+              <button type="button" class="btn btn-outline-primary btn-editar-campo" data-target="inputCorreo">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            </div>
+          </div>
+
           <!-- Teléfono -->
-          <div class="mb-3 d-flex align-items-center">
-            <label for="inputTelefono" class="form-label me-2">Teléfono:</label>
-            <div class="div-editar">
-                <input type="text" class="form-control" id="inputTelefono" name="par_telefono" disabled>
-                <button type="button" class="btn btn-sm btn-outline-primary ms-2 btn-editar-campo" data-target="inputTelefono">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
+          <div class="mb-3">
+            <label for="inputTelefono" class="form-label">Teléfono:</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="inputTelefono" name="par_telefono" disabled>
+              <button type="button" class="btn btn-outline-primary btn-editar-campo" data-target="inputTelefono">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
             </div>
-            
           </div>
-          
-          <div class="modal-programacion">
-            <p><strong><i class="fa-solid fa-file-pdf"></i></i> Proyecto:</strong></p>
-            <a id="modalProyecto"  target="_blank"><i class="fa-solid fa-eye"></i></a>
-        </div>
-  
+
+          <!-- Proyecto -->
+          <div class="mb-3">
+            <p><strong><i class="fa-solid fa-file-pdf me-2"></i> Proyecto:</strong></p>
+            <a id="modalProyecto" href="#" target="_blank" class="btn btn-ver-documento">
+              <i class="fa-solid fa-eye"></i> Ver documento
+            </a>
+          </div>
+
+          <!-- Subir nuevo documento -->
           <div class="mb-3">
             <label for="inputDocumento" class="form-label">Subir nuevo documento:</label>
-            <input type="file" class="form-control" id="inputDocumento" name="par_eve_documentos">
+            <div class="custom-file-upload">
+              <input type="file" class="form-control d-none" id="inputDocumento" name="par_eve_documentos">
+              <label for="inputDocumento" class="btn btn-file btn-ver-documento">
+                <i class="fa-solid fa-upload me-2"></i> Seleccionar archivo
+              </label>
+              <span class="file-name text-muted ms-2">No se ha seleccionado ningún archivo</span>
+            </div>
           </div>
-          
-          
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Guardar cambios</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
-      </form>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" form="formModificarInscripcion" class="btn btn-guardar-usuario">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
     </div>
   </div>
+</div>
 
   <!-- Modal de carga -->
 <div class="modal fade" id="modalCargaPDF" tabindex="-1" aria-hidden="true">
@@ -230,6 +240,18 @@
   <script>
     const urlTemplate = "{% url 'app_participante:detalle_evento' 123 456 %}";
     const urlPdfCriterios = "{% url 'app_participante:generar_pdf_criterios' 0 %}".replace('0', '');
+    const urlObtenerParticipante = "{%url 'app_participante:obtener_datos_participante' 123 456 %}"
+    const urlModificarParticipante = "{%url 'app_participante:modificar_inscripcion' 123 456 %}"
+    const urlEliminarInscripcion = "{%url 'app_participante:cancelar_inscripcion' 123 456%}"
+
+    document.getElementById('inputDocumento').addEventListener('change', function(event) {
+      const fileName = document.querySelector('.file-name');
+      if (event.target.files.length > 0) {
+        fileName.textContent = event.target.files[0].name;
+      } else {
+        fileName.textContent = 'No se ha seleccionado ningún archivo';
+      }
+    });
 
   </script>
   

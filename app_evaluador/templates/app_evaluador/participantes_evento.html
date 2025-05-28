@@ -2,7 +2,7 @@
 
 {% block title %}Participantes del Evento{% endblock %}
 
-{% block extra_styles %}
+{% block content %}
 <h2>Participantes admitidos del evento: {{ evento.nombre }}</h2>
 
 <div class="row g-4">
@@ -10,10 +10,10 @@
     <div class="col-md-4 col-sm-6 col-12">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title text-center">{{ participante.nombre }}</h5>
+                <h5 class="card-title text-center">{{ participante.par_nombre }}</h5>
                 <div class="d-grid gap-2">
-                    <a href="{% url 'app_evaluador:evaluar_participante' evento.id participante.id %}"
-                       class="btn btn-principal">Evaluar Participante</a>
+                    <a href="{% url 'app_evaluador:evaluar_participante' evento.id participante.id evaluador %}">
+
                     <button class="btn btn-primary btn-ver-calificaciones"
                             data-evento-id="{{ evento.id }}"
                             data-participante-id="{{ participante.id }}"
@@ -26,6 +26,8 @@
             </div>
         </div>
     </div>
+    {% empty %}
+    <p>No hay participantes admitidos en este evento.</p>
     {% endfor %}
 </div>
 
@@ -66,10 +68,8 @@
         </table>
     </div>
 </div>
-{% endblock %}
 
-{% block modals %}
-<!-- Modal de calificaciones -->
+<!-- Modal -->
 <div class="modal fade" id="modalCalificaciones" tabindex="-1" aria-labelledby="modalCalificacionesLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">

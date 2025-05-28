@@ -8,6 +8,7 @@ from app_evaluador.models import Evaluadores
 from app_evaluador.models import Calificaciones, Evaluadores
 from app_criterios.models import Criterios
 from app_categorias.models import Categorias
+from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -127,10 +128,12 @@ def evento_detalle_participante(request, evento_id, participante_id):
         'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
         'eve_categoria': categoria_nombre,
         'eve_clave': clave_acceso.par_eve_clave,
-        'codigo_qr': clave_acceso.par_eve_qr.url
+        'codigo_qr': clave_acceso.par_eve_qr.url,
+        'cedula': participante_id
     }
 
     return JsonResponse(datos_evento)
+
 
 def generar_pdf_criterios(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
@@ -146,3 +149,98 @@ def generar_pdf_criterios(request, evento_id):
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename=criterios_evaluacion_{evento.eve_nombre}.pdf'
     return response
+
+@csrf_exempt
+def obtener_datos_participante(request, participante_id,evento_id, ):
+
+    try:
+        if participante_id is None:
+            return JsonResponse({"error": "Falta el parámetro 'participante_id'"}, status=400)
+
+        # Buscar la relación del participante en el evento
+        participante_evento = ParticipantesEventos.objects.filter(
+            par_eve_participante_fk=participante_id, par_eve_evento_fk=evento_id
+        ).select_related('par_eve_participante_fk').first()
+
+        if participante_evento:
+            # Obtener los datos del participante relacionados
+            participante = participante_evento.par_eve_participante_fk
+            datos = {
+                "par_id": participante.id,
+                "par_nombre": participante.par_nombre,
+                "par_correo": participante.par_correo,
+                "par_telefono": participante.par_telefono,
+                "par_eve_evento_fk": participante_evento.par_eve_documentos.url
+            }
+            return JsonResponse(datos)
+        else:
+            return JsonResponse({"error": "No se encontró la información"}, status=404)
+
+    except Exception as e:
+        return JsonResponse({"error": f"Error en el servidor: {str(e)}"}, status=500)
+    
+@csrf_exempt
+def modificar_inscripcion(request, evento_id, participante_id):
+    if request.method == 'POST':
+        nombre = request.POST.get("par_nombre")
+        correo = request.POST.get("par_correo")
+        telefono = request.POST.get("par_telefono")
+        documento = request.FILES.get("par_eve_documentos")
+
+        try:
+            # 1. Obtener el participante utilizando ORM
+            participante = Participantes.objects.filter(id=participante_id).first()
+
+            if not participante:
+                return JsonResponse({"success": False, "error": "Participante no encontrado"})
+
+            # 2. Actualizar los datos del participante
+            participante.par_nombre = nombre
+            participante.par_correo = correo
+            participante.par_telefono = telefono
+            participante.save()
+
+            # 3. Si se sube un documento, actualizarlo en 'ParticipanteEvento'
+            if documento:
+                participante_evento = ParticipantesEventos.objects.filter(par_eve_participante_fk=participante_id, par_eve_evento_fk=evento_id).first()
+                
+                if participante_evento:
+            
+
+                    # Actualizar el campo de documentos en el modelo ParticipanteEvento
+                    participante_evento.par_eve_documentos = documento
+                    participante_evento.save()
+                else:
+                    return JsonResponse({"success": False, "error": "Inscripción al evento no encontrada"})
+
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            print("Error al modificar inscripción:", e)
+            return JsonResponse({"success": False, "error": str(e)})
+    else:
+        return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
+    
+@csrf_exempt  # Solo para evitar problemas con el CSRF en este ejemplo
+def cancelar_inscripcion(request, evento_id, participante_id):
+    if request.method == 'POST':
+
+        if not participante_id:
+            return JsonResponse({"success": False, "error": "ID del participante faltante"}, status=400)
+
+        try:
+            # Buscar la inscripción en la tabla 'participantes_eventos'
+            participante_evento = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento_id, par_eve_participante_fk=participante_id).first()
+
+            if participante_evento:
+                # Si se encuentra la inscripción, eliminarla
+                participante_evento.delete()
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "error": "No se encontró la inscripción"}, status=404)
+
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"success": False, "error": "Error al procesar la solicitud"}, status=500)
+    else:
+        return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)

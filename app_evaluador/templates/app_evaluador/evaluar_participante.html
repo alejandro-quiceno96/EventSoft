@@ -63,6 +63,14 @@
                 </tbody>
             </table>
         </div>
+{% for criterio in criterios %}
+<tr>
+    <td>{{ criterio.descripcion }} ({{ criterio.peso }}%)</td>
+    <td>
+        <input type="number" name="puntajes" class="form-control puntaje-input" min="0" max="100" required />
+    </td>
+</tr>
+{% endfor %}
 
         <div id="error-message" class="alert alert-danger" style="display:none;">
             Cada puntaje debe estar entre 0 y 100. Corrige los valores antes de guardar.
