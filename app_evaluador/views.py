@@ -6,6 +6,18 @@ from app_eventos.models import Eventos
 from app_participante.models import Participantes
 from .models import Evaluadores
 from django.contrib import messages
+from app_eventos.models import ParticipantesEventos
+from .models import Calificaciones
+from django.db.models import Avg,F
+
+def principal_evaluador(request, evaluador_id):
+    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+    eventos = Eventos.objects.all()  # O puedes filtrar según el evaluador, si aplica
+    return render(request, 'app_evaluador/inicio_evaluador.html', {
+        'evaluador': evaluador,
+        'eventos': eventos
+    })
+
 
 @csrf_exempt
 def eliminar_criterio(request, criterio_id):
@@ -38,15 +50,71 @@ def evaluar_participante(request, evento_id, participante_id, evaluador_id):
         'evaluador': evaluador,
     })
 
-def inicio_sesion(request):
+def inicio_sesion_evaluador(request):
     if request.method == 'POST':
-        cedula = request.POST.get('cedula')
+        cedula = request.POST.get('eva_cedula')
         try:
-            evaluador = Evaluadores.objects.get(cedula=cedula)
-            # Redirige a la página principal del evaluador o dashboard
-            return redirect('evaluador:home', evaluador_id=evaluador.id)
+            evaluador = Evaluadores.objects.get(eva_cedula=cedula)
+            request.session['evaluador_id'] = evaluador.id  # Guarda el evaluador en la sesión
+            return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador.id)
         except Evaluadores.DoesNotExist:
             messages.error(request, 'No se encontró ningún evaluador con esa cédula.')
-            return redirect('app_evaluador:inicio_sesion')
+            return redirect('app_evaluador:inicio_sesion_evaluador')
+    return render(request, 'app_evaluador/inicio_sesion_evaluador.html')
 
-    return render(request, 'evaluador/inicio_sesion.html')
+
+
+def ver_participantes(request, evento_id):
+    # Obtener el evento o 404
+    evento = get_object_or_404(Eventos, id=evento_id)
+    
+    # Obtener los participantes admitidos en ese evento
+    participantes_evento = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento)
+    
+    # Extraer los participantes (model Participantes) desde ParticipantesEventos
+    participantes = [pe.par_eve_participante_fk for pe in participantes_evento]
+    
+    # Obtener evaluador actual (si lo tienes en sesión, por ejemplo)
+    evaluador = request.user.id   # Ajusta según tu lógica
+    
+    # Calcular ranking con promedio de calificaciones por participante en este evento
+    # Suponiendo que Calificaciones tiene campo clas_participante_fk que apunta a Participantes
+    
+    ranking_qs = (
+        Calificaciones.objects
+        .filter(clas_participante_fk__in=participantes)
+        .values('clas_participante_fk')  # agrupar por participante
+        .annotate(
+            nombre=F('clas_participante_fk__par_nombre'),  # usar el campo real
+            promedio=Avg('cal_valor')
+        )
+        .order_by('-promedio')
+    )
+    ranking = list(ranking_qs)
+    
+    context = {
+        'evento': evento,
+        'participantes': participantes,
+        'evaluador': evaluador,
+        'ranking': ranking,
+    }   
+    
+    return render(request, 'app_evaluador/participantes_evento.html', context)
+
+
+
+def evaluar_participante(request, evento_id, participante_id, evaluador_id):
+    participante = get_object_or_404(Participantes, id=participante_id)
+    evento = get_object_or_404(Eventos, id=evento_id)
+    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+
+    if request.method == 'POST':
+        # Lógica de evaluación
+        pass
+
+    context = {
+        'participante': participante,
+        'evento': evento,
+        'evaluador': evaluador,
+    }
+    return render(request, 'app_evaluador/evaluar_participante.html', context)

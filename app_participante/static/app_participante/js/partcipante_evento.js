@@ -8,11 +8,12 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("click", function () {
             let eventoId = this.getAttribute("data-id");
             let participanteId = this.getAttribute("data-cedula")
-            let url =  urlTemplate.replace('/123/', `/${eventoId}/`).replace('/456', `/${participanteId}`);;
+            let url =  urlTemplate.replace('/123/', `/${eventoId}/`).replace('/456', `/${participanteId}`);
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    
+                    eventoIdSeleccionado = data.eve_id;
+                    participanteIdSeleccionado = data.cedula;
                     document.getElementById("modalNombre").textContent = data.eve_nombre;
                     document.getElementById("modalDescripcion").textContent = data.eve_descripcion;
                     document.getElementById("modalCiudad").textContent = data.eve_ciudad;
@@ -61,9 +62,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.getElementById("btnConfirmarCancelar").addEventListener("click", function () {
+    let url = urlEliminarInscripcion.replace('/123/', `/${eventoIdSeleccionado}/`).replace('/456', `/${participanteIdSeleccionado}`);
     const formData = new FormData();
-    formData.append("participante_id", participanteIdSeleccionado);
-    fetch(`/cancelar_inscripcion/${eventoIdSeleccionado}`, {
+    fetch(url, {
       method: "POST",
       body: formData
     })
@@ -78,13 +79,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.getElementById("btnAbrirEditar").addEventListener("click", function () {
-    fetch(`/datos_participante_evento/${eventoIdSeleccionado}?participante_id=${participanteIdSeleccionado}`)
+    let url =  urlObtenerParticipante.replace('/123/', `/${participanteIdSeleccionado}/`).replace('/456', `/${eventoIdSeleccionado}`);
+    fetch(url)
       .then(res => res.json())
       .then(data => {
-        document.getElementById("inputNombre").value = data.par_nombre;
-        document.getElementById("inputCorreo").value = data.par_correo;
-        document.getElementById("inputTelefono").value = data.par_telefono;
-        document.getElementById("modalProyecto").href = `/proyecto_participante/${data.par_eve_evento_fk}?participante_id=${data.par_id}`;
+          document.getElementById("inputNombre").value = data.par_nombre;
+          document.getElementById("inputCorreo").value = data.par_correo;
+          document.getElementById("inputTelefono").value = data.par_telefono;
+          document.getElementById("modalProyecto").href =data.par_eve_evento_fk;
 
         new bootstrap.Modal(document.getElementById("modificarInscripcionModal")).show();
       });
@@ -101,8 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const formData = new FormData(form);
     formData.append("participante_id", participanteIdSeleccionado);
-
-    fetch(`/modificar_inscripcion/${eventoIdSeleccionado}`, {
+    let url = urlModificarParticipante.replace('/123/', `/${eventoIdSeleccionado}/`).replace('/456', `/${participanteIdSeleccionado}`);
+    fetch(url, {
       method: "POST",
       body: formData
     })
@@ -151,24 +153,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.querySelectorAll(".btn-abrir-editar-externo").forEach(btn => {
     btn.addEventListener("click", function () {
-      const eventoId = this.getAttribute("data-id");
-      const cedula = this.getAttribute("data-cedula");
-  
-      eventoIdSeleccionado = eventoId;
-      participanteIdSeleccionado = cedula;
-  
-      fetch(`/datos_participante_evento/${eventoId}?participante_id=${cedula}`)
+      eventoIdSeleccionado = this.getAttribute("data-id");
+      participanteIdSeleccionado = this.getAttribute("data-cedula")
+      let url =  urlObtenerParticipante.replace('/123/', `/${participanteIdSeleccionado}/`).replace('/456', `/${eventoIdSeleccionado}`);
+      console.log(url)
+      fetch(url,{
+      method: "POST",
+    })
         .then(res => res.json())
         .then(data => {
-          document.getElementById("inputNombre").value = data.par_nombre;
-          document.getElementById("inputCorreo").value = data.par_correo;
-          document.getElementById("inputTelefono").value = data.par_telefono;
-          document.getElementById("modalProyecto").href = `/proyecto_participante/${data.par_eve_evento_fk}?participante_id=${data.par_id}`;
-  
+            document.getElementById("inputNombre").value = data.par_nombre;
+            document.getElementById("inputCorreo").value = data.par_correo;
+            document.getElementById("inputTelefono").value = data.par_telefono;
+            document.getElementById("modalProyecto").href =data.par_eve_evento_fk;
+
           new bootstrap.Modal(document.getElementById("modificarInscripcionModal")).show();
         });
     });
   });
+
   
 });
 
@@ -190,4 +193,8 @@ document.getElementById('btnCriterios').addEventListener('click', function () {
     alert("No se encontró el evento asociado");
   }
 });
+
+
+  
+
 

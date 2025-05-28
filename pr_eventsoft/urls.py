@@ -12,7 +12,7 @@ urlpatterns = [
     path('ver_evento/', include('app_visitante.urls')),
     path('participante/', include('app_participante.urls', namespace='app_participante')),
     path('super_admin/', include(('app_super_admin.urls', 'super_administrador'), namespace='super_administrador')),
-    path('evaluador/', include('app_evaluador.urls', namespace='evaluador')),
+    path('evaluador/', include('app_evaluador.urls', namespace='app_evaluador')),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
