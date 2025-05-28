@@ -1,4 +1,4 @@
-{% extends 'base_participante.html' %}
+{% extends 'app_participantes/base_par.html' %}
 
 {% block title %}Eventos Inscritos{% endblock %}
 {% block header_title %}Eventos Inscritos{% endblock %}
@@ -12,7 +12,7 @@
             {% if eventos %}
                 {% for evento in eventos %}
                     <div class="card" style="width: 18rem;">
-                        <img src="{{ url_for('administrador.imagen_evento', id=evento.eve_id) }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
+                        <img src="{{ evento.eve_imagen.url  }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ evento.eve_nombre }}</h5>
                             <h6 class="card-subtitle mb-2 text-body-secondary">
@@ -213,6 +213,25 @@
       </form>
     </div>
   </div>
+
+  <!-- Modal de carga -->
+<div class="modal fade" id="modalCargaPDF" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+      <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <h5 class="mt-3">Generando PDF...</h5>
+    </div>
+  </div>
+</div>
+
+
+  <script>
+    const urlTemplate = "{% url 'app_participante:detalle_evento' 123 456 %}";
+    const urlPdfCriterios = "{% url 'app_participante:generar_pdf_criterios' 0 %}".replace('0', '');
+
+  </script>
   
 {% endblock %}
 

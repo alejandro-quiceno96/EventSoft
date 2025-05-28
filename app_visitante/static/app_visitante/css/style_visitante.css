@@ -518,7 +518,7 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
 }
 
 /* Estilos de los botones dentro del menú */
-.menu-content button {
+.menu-content a {
     background: white;
     color: #ff6600;
     border: none;
@@ -528,6 +528,7 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
     cursor: pointer;
     font-weight: bold;
     width: 250px;
+    text-decoration: none;
 }
 
 /* Botón "Cerrar Opciones" */
@@ -591,19 +592,7 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
     gap: 15px;
 }
 
-.btn-menu {
-    background-color: transparent;
-    border: none;
-    color: white;
-    font-size: 1rem;
-    text-align: left;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    transition: background 0.2s ease;
-}
+
 
 .btn-menu:hover {
     background-color: #FF5800;
