@@ -15,13 +15,18 @@
                         <h6 class="evento-fechas">
                             <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
                         </h6>
+                        <a href="{% url 'app_evaluador:criterios_evento' evento.id %}" 
+   class="btn btn-primary" 
+   style="background-color: #FF5800; border: none;">
+    <i class="fa-solid fa-clipboard-list"></i> Subir Rúbrica
+</a>
 
-                        
-                        <a href="{% url 'app_evaluador:ver_participantes' evento.id %}" 
-                           class="btn btn-primary" 
-                           style="background-color: #FF5800; border: none;">
-                            <i class="fa-solid fa-users"></i> Evaluar Participantes
-                        </a>
+<a href="{% url 'app_evaluador:ver_participantes' evento.id %}" 
+   class="btn btn-primary" 
+   style="background-color: #FF5800; border: none;">
+    <i class="fa-solid fa-users"></i> Evaluar Participantes
+</a>
+
                     </div>
                 </div>
             {% endfor %}
