@@ -12,7 +12,7 @@
             <div class="card-body">
                 <h5 class="card-title text-center">{{ participante.par_nombre }}</h5>
                 <div class="d-grid gap-2">
-                    <a href="{% url 'app_evaluador:evaluar_participante' evento.id participante.id evaluador %}">
+                    <a href="{% url 'app_evaluador:evaluar_participante' evento.id participante.id evaluador_id %}">Evaluar</a>
 
                     <button class="btn btn-primary btn-ver-calificaciones"
                             data-evento-id="{{ evento.id }}"
