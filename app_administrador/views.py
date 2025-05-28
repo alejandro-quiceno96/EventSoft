@@ -21,6 +21,7 @@ from app_administrador.models import Administradores
 from app_criterios.models import Criterios
 from app_evaluador.models import Calificaciones
 from app_participante.models import Participantes
+from app_evaluador.models import Evaluadores
 
 # Obtener áreas disponibles
 def obtener_areas_eventos():
@@ -102,7 +103,7 @@ def crear_evento(request):
 
 def inicio(request):
     # Obtener eventos (si tienes el modelo)
-    eventos = Eventos.objects.all()
+    eventos = Eventos.objects.filter(eve_administrador_fk = request.session.get('admin_cedula'))
     
     # Por ahora con datos hardcodeados como en tu ejemplo
     context = {
@@ -115,7 +116,7 @@ def inicio(request):
 @require_http_methods(["GET"])
 def obtener_evento(request, evento_id):
     try:
-        evento = Eventos.objects.get(pk=evento_id)
+        evento = Eventos.objects.get(id=evento_id)
     except Eventos.DoesNotExist:
         raise Http404("Evento no encontrado")
 
@@ -533,25 +534,68 @@ def detalles_calificaciones(request, evento_id, participante_id):
     evaluadores_data = {}
     for cal in calificaciones:
         evaluador = cal.cal_evaluador_fk
+        criterio = cal.cal_criterio_fk
         if evaluador.id not in evaluadores_data:
             evaluadores_data[evaluador.id] = {
                 'evaluador': evaluador,
                 'calificaciones': [],
-                'promedio': 0,
+                'puntaje_total': 0.0,
             }
+
+        # Calcular puntaje ponderado para este criterio
+        ponderado = float(cal.cal_valor) * float(criterio.cri_peso) / 100
+
         evaluadores_data[evaluador.id]['calificaciones'].append({
-            'criterio': cal.cal_criterio_fk.cri_descripcion,
+            'criterio': criterio.cri_descripcion,
+            'peso': criterio.cri_peso,
             'valor': cal.cal_valor,
+            'ponderado': round(ponderado, 2),
         })
 
-    # Calcular promedio de cada evaluador
+        # Sumar al total ponderado de ese evaluador
+        evaluadores_data[evaluador.id]['puntaje_total'] += ponderado
+
+    # Redondear puntajes totales
     for data in evaluadores_data.values():
-        valores = [c['valor'] for c in data['calificaciones']]
-        data['promedio'] = round(sum(valores) / len(valores), 2) if valores else 0
+        data['puntaje_total'] = round(data['puntaje_total'], 2)
 
     return render(request, 'app_administrador/detalle_calificaciones.html', {
         'participante': participante,
         'evento': evento,
         'evaluadores_data': evaluadores_data.values(),
         'administrador': request.session.get('admin_nombre'),
+    })
+
+
+def detalle_calificacion(request, participante_id, evaluador_id, evento_id):
+    participante = get_object_or_404(Participantes, id=participante_id)
+    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+
+    # Obtener todas las calificaciones de ese evaluador a ese participante
+    calificaciones = Calificaciones.objects.filter(
+        clas_participante_fk=participante,
+        cal_evaluador_fk=evaluador
+    ).select_related('cal_criterio_fk')
+
+    calificaciones_info = []
+    puntaje_total = 0
+
+    for cal in calificaciones:
+        criterio = cal.cal_criterio_fk
+        ponderado = float(cal.cal_valor) * float(criterio.cri_peso) / 100
+        puntaje_total += ponderado
+        calificaciones_info.append({
+            'criterio': criterio.cri_descripcion,
+            'peso': float(criterio.cri_peso),
+            'valor': float(cal.cal_valor),
+            'ponderado': round(ponderado, 2)
+        })
+
+    return render(request, 'app_administrador/detalle_calificacion_participante.html', {
+        'participante': participante,
+        'evaluador': evaluador,
+        'calificaciones_info': calificaciones_info,
+        'puntaje_total': round(puntaje_total, 2),
+        'administrador': request.session.get('admin_nombre'),
+        'evento': get_object_or_404(Eventos, id=evento_id)
     })

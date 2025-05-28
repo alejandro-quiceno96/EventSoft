@@ -16,7 +16,7 @@ body, html {
     overflow-x: hidden;
     font-family: "Noto Sans", sans-serif;
     background-image: url(/static/app_administrador/image/fondo_admin.png);
-    background-size: cover;
+    
     background-repeat: no-repeat;
 }
 

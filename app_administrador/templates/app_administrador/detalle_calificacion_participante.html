@@ -1,0 +1,57 @@
+{% extends "app_administrador/baseadmin.html" %}
+{% load static %}
+
+{% block title %}
+    {{ administrador|default:'Administrador' }}
+{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'app_administrador/css/posicionesadmin.css' %}">
+
+<div class="container">
+        <div class="header">
+            <a href="{% url 'administrador:detalle_calificaciones' evento.id participante.id %}" class="btn btn-detalle-calificacion mb-2 mt-3">
+                <i class="fa-solid fa-arrow-left"></i></i> Volver a califiaciones
+            </a>
+            <h1>Detalle de Calificación</h1>
+            <p>Información detallada de la calificación del participante</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Participante:</strong> {{ participante.par_nombre }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Evaluador:</strong> {{ evaluador.eva_nombre }}</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-dark text-center">
+                <tr>
+                    <th scope="col">Criterio</th>
+                    <th scope="col">Peso</th>
+                    <th scope="col">Calificación</th>
+                    <th scope="col">Puntaje Ponderado</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for cal in calificaciones_info %}
+                <tr>
+                    <td>{{ cal.criterio }}</td>
+                    <td class="text-center">{{ cal.peso|floatformat:"-2" }}%</td>
+                    <td class="text-center">{{ cal.valor }}</td>
+                    <td class="text-center fw-semibold text-primary">{{ cal.ponderado }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="table-primary fw-bold">
+                    <td colspan="3" class="text-end">Total</td>
+                    <td class="text-center">{{ puntaje_total }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        </div>
+    </div>
+{% endblock %}

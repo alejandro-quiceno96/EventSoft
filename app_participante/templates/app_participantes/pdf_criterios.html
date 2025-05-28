@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Criterios de Evaluación - {{ evento.nombre }}</title>
+    <style>
+        /* Fuente limpia y moderna */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 40px;
+            color: #333;
+            background-color: #fff;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        header h1 {
+            font-weight: 700;
+            font-size: 2.2em;
+            color: #004085;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 1em;
+            color: #666;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 12px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+
+        thead tr {
+            background-color: #007bff;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.15);
+        }
+
+        thead th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 1.1em;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        tbody tr {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #e9f2ff;
+        }
+
+        tbody td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1em;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Notas y mensajes */
+        .empty-row td {
+            text-align: center;
+            font-style: italic;
+            color: #888;
+            padding: 25px 0;
+        }
+
+        /* Pie de página */
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Criterios de Evaluación</h1>
+        <p>Evento: <strong>{{ evento.eve_nombre }}</strong></p>
+        <p>Desde: {{ evento.eve_fecha_inicio }} &mdash; Hasta: {{ evento.eve_fecha_fin }}</p>
+    </header>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th style="width: 80px;">Peso (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for criterio in criterios %}
+            <tr>
+                <td>{{ criterio.cri_descripcion }}</td>
+                <td style="text-align: center;">{{ criterio.cri_peso|floatformat:"-2" }}%</td>
+            </tr>
+            {% empty %}
+            <tr class="empty-row">
+                <td colspan="3">No hay criterios registrados para este evento.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <footer>
+        Documento generado automáticamente &bull; {{ evento.eve_nombre }} &bull; {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
+    </footer>
+</body>
+</html>

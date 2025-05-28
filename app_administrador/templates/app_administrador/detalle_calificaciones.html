@@ -23,8 +23,8 @@
                     Evaluador: {{ item.evaluador.eva_nombre }}
                 </div>
                 <div class="card-body">
-                    <p><strong>Promedio:</strong> {{ item.promedio|floatformat:2 }}</p>
-                    <a href="#" class="btn btn-detalle-calificacion">
+                    <p><strong>Puntaje Obtenido:</strong> {{ item.puntaje_total|floatformat:1 }}</p>
+                    <a href="{% url 'administrador:detalle_calificacion' evaluador_id=item.evaluador.id   participante_id=participante.id evento_id=evento.id %}" class="btn btn-detalle-calificacion">
                         <i class="fa-solid fa-eye"></i> Ver Detalle de Calificación
                     </a>
                 </div>
