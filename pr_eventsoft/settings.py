@@ -137,6 +137,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
     BASE_DIR / 'app_administrador' / 'static',
     BASE_DIR / 'app_participante' / 'static',
+    BASE_DIR / 'app_asistente' / 'static',
     BASE_DIR / 'app_super_admin' / 'static',
     BASE_DIR / 'app_evaluador' / 'static',
 ]
