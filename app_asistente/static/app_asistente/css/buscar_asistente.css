@@ -10,6 +10,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background-size: cover;
     height: 100vh;
     background-color: #FF5800;
 }
@@ -43,7 +44,6 @@ header button:hover {
 }
 
 main {
-    margin-top: 80px;
     padding: 20px;
     background: white;
     border-radius: 10px;
@@ -78,4 +78,33 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
     background: #FF5800;
+}
+
+/* Estilos para el botón "Volver" */
+.btn-volver {
+    display: inline-block;
+    padding: 10px 20px; /* Espaciado interno */
+    font-size: 16px; /* Tamaño de fuente */
+    color: #ffffff; /* Color del texto */
+    background-color: #007bff; /* Fondo del botón */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    text-decoration: none; /* Sin subrayado en el enlace */
+    transition: background-color 0.3s ease; /* Transición suave al cambiar el fondo */
+}
+
+/* Estilos para el ícono */
+.btn-volver .fas {
+    margin-right: 5px; /* Espacio entre el ícono y el texto */
+}
+
+/* Estilos al pasar el mouse sobre el botón */
+.btn-volver:hover {
+    background-color: #0056b3; /* Cambio de color de fondo al pasar el mouse */
+    cursor: pointer; /* Cambiar el cursor a un puntero */
+}
+
+/* Estilos al hacer clic en el botón */
+.btn-volver:active {
+    background-color: #003d82; /* Cambio de color de fondo al hacer clic */
 }

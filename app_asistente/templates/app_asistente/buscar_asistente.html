@@ -1,16 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Buscar Asistente{% endblock %}
-
 {% block extra_css %}
-
+<link rel="stylesheet" href="{% static 'app_asistente/css/buscar_asistente.css' %}">
 {% endblock %}
-
 {% block header %}
+
 <header class="header-participante">
     <h1>Buscar Asistente</h1>
-    <a href="{% url 'app_visitante:base' %}" class="btn-volver">
+    <a href="{% url 'inicio_visitante' %}" class="btn-volver">
         <i class="fas fa-arrow-left"></i> Volver
     </a>
 </header>
@@ -19,7 +17,7 @@
 
 {% block content %}
 <main>
-    <form action="{% url 'buscar_eventos_asis' %}" method="POST">
+    <form action="{% url 'app_asistente:inicio_asistente' %}" method="POST">
         {% csrf_token %}
         <label for="cedula">Ingrese la cédula del asistente:</label>
         <input type="text" name="cedula" id="cedula" required />

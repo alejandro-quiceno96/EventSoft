@@ -6,37 +6,210 @@
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
+<link rel="stylesheet" href="{% static 'app_asistente/css/asistente.css' %}">
 {% endblock %}
 
 {% block content %}
-<header class="header-participante">
-    <a href="{% url 'app_visitante:base' %}" class="btn btn-light">
-        ⬅ Volver
-    </a>
-    <h1 class="text-center">Eventos Asociados</h1>
-</header>
+        <header class="position-relative py-3 mb-4 header-participante">
+            <div class="container position-relative text-center">
+              <a href="/" class="btn btn-light position-absolute start-0 top-50 translate-middle-y ms-2">
+                <i class="fas fa-arrow-left"> Regresar</i>
+              </a>
+              <h1 class="text-white m-0 fs-4">Eventos Inscritos</h1>
+            </div>
+        </header>
 
-<section class="contenedor-principal-de-eventos">
-    {% if eventos %}
-    {% for evento in eventos %}
-    <article class="card-evento">
-        {% if evento.eve_imagen %}
-        <img src="{{ evento.eve_imagen.url }}" alt="{{ evento.eve_nombre }}" />
-        {% else %}
-        <img src="{% static 'images/default_event.jpg' %}" alt="Imagen por defecto" />
-        {% endif %}
-        <div class="card-evento-body">
-            <h3>{{ evento.eve_nombre }}</h3>
-            <p><strong>Fecha:</strong> {{ evento.eve_fecha }}</p>
-            <p><strong>Lugar:</strong> {{ evento.eve_lugar }}</p>
-            <p>{{ evento.eve_descripcion|truncatechars:100 }}</p>
-            <a href="{% url 'detalle_evento' evento.id %}" class="btn btn-primary mt-3">Ver detalles</a>
+        <main>
+            <h2 class="text-center my-4">Mis Inscripciones Asistentes</h2>
+            <input type="hidden" name="evento_id" value="123">
+    
+            <div class="contenedor-principal-de-eventos">
+                {% if eventos %}
+                    {% for evento in eventos %}
+                        <div class="card" style="width: 18rem;">
+                            <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ evento.eve_nombre }}</h5>
+                                <h6 class="card-subtitle mb-2 text-body-secondary">
+                                    <i class="fa-solid fa-calendar"></i> {{evento.eve_fecha_inicio}} - {{evento.eve_fecha_fin}}
+                                </h6>
+    
+                                {% if evento.asi_eve_estado == "Admitido" %}
+                                    <div style="display: flex;">Estado: 
+                                        <p class="card-text" style="color: rgb(39, 119, 39);"> {{ evento.asi_eve_estado }}</p>
+                                    </div>
+                                    <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula = "{{cedula_participante}}">
+                                        <i class="fa-solid fa-eye"></i> Ver Información del Asistente
+                                    </button>
+    
+                                {% elif evento.asi_eve_estado == "Rechazado" %}
+                                    <div style="display: flex;">Estado: 
+                                        <p class="card-text" style="color: rgb(158, 28, 28);"> {{ evento.asi_eve_estado }}</p>
+                                    </div>
+                                    <button type="button" class="btn-cancelar"
+                                                data-id="{{ evento.eve_id }}"
+                                                data-cedula="{{ cedula_participante }}">
+                                        Cancelar mi Inscripción
+                                    </button>
+    
+                                {% else %}
+                                    <div style="display: flex;">Estado: 
+                                        <p class="card-text" style="color: rgb(199, 80, 12);"> {{ evento.asi_eve_estado }}</p>
+                                    </div>
+                                        <button type="button" class="btn-cancelar"
+                                                data-id="{{ evento.eve_id }}"
+                                                data-cedula="{{ cedula_participante }}">
+                                        Cancelar mi Inscripción
+                                        </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center my-5">
+                        <h4 class="text-muted">No estás inscrito en ningún evento actualmente.</h4>
+                        <p class="text-secondary">Explora los eventos disponibles y regístrate para participar.</p>
+                    </div>
+                {% endif %}
+    
+                
+            </div>
+        </main>
+
+         <!-- Modal -->
+        <div class="modal fade" id="eventoModalD" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <h5 id="modalNombre"></h5>
+
+        <p><strong><i class="fa-solid fa-file-lines"></i> Descripción:</strong> <span id="modalDescripcion"></span></p>
+        <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
+        <p><strong><i class="fa-solid fa-location-dot"></i> Lugar:</strong> <span id="modalLugar"></span></p>
+        <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
+        <p><strong><i class="fa-solid fa-list"></i> Categoría:</strong> <span id="modalCategoria"></span></p>
+        <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
+        <p><strong><i class="fa-solid fa-pencil"></i> Inscripción:</strong> <span id="modalInscripcion"></span></p>
+        <p><strong><i class="fa-solid fa-key"></i> Clave de Acceso:</strong> <span id="modalClave"></span></p>
+
+        <div class="modal-programacion mb-2">
+          <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
+          <a id="modalProgramacion" target="_blank" class="me-2"><i class="fa-solid fa-eye"></i></a>
+          <a id="modalProgramacionDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
         </div>
-    </article>
-    {% endfor %}
-    {% else %}
-    <p class="empty-message">No se encontraron eventos asociados.</p>
-    {% endif %}
-</section>
+
+        <div class="modal-programacion mb-2">
+          <p><strong><i class="fa-solid fa-qrcode"></i> Código QR:</strong></p>
+          <a id="modalCodigoQr" target="_blank" class="me-2"><i class="fa-solid fa-eye"></i></a>
+          <a id="modalCodigoQrDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
+        </div>
+
+        <img
+          id="modalImagen"
+          src=""
+          alt="Imagen del evento"
+          class="img-fluid"
+          style="width: 100%; height: 300px; object-fit: contain;"
+        />
+      </div>
+
+      <div class="modal-footer">
+        <button  class="btn-modificar-participante" data-bs-toggle="modal" data-bs-target="#modificarInscripcionModal" id="btnAbrirEditar">
+                Modificar Información de Inscripción
+              </button>
+        <button type="button" id="btnAbrirConfirmarCancelar" class="btn-ver-mas">
+          Cancelar mi Inscripción
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+        <!-- Modal de confirmación -->
+<div class="modal fade" id="confirmarCancelarModal" tabindex="-1" aria-labelledby="confirmarCancelarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header  text-dark">
+          <h5 class="modal-title" id="confirmarCancelarLabel">¿Cancelar inscripción?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          ¿Estás seguro de que deseas cancelar tu inscripción a este evento?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarCancelar">Sí, cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modificarInscripcionModal" tabindex="-1" aria-labelledby="modificarInscripcionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header  text-white">
+        <h5 class="modal-title" id="modificarInscripcionModalLabel">Modificar Inscripción</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formModificarInscripcion" enctype="multipart/form-data" method="POST">
+          <!-- Nombre -->
+          <div class="mb-3">
+            <label for="inputNombre" class="form-label">Nombre:</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="inputNombre" name="par_nombre" disabled>
+              <button type="button" class="btn btn-editar-campo" data-target="inputNombre">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Correo -->
+          <div class="mb-3">
+            <label for="inputCorreo" class="form-label">Correo:</label>
+            <div class="input-group">
+              <input type="email" class="form-control" id="inputCorreo" name="par_correo" disabled>
+              <button type="button" class="btn btn-editar-campo" data-target="inputCorreo">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="mb-3">
+            <label for="inputTelefono" class="form-label">Teléfono:</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="inputTelefono" name="par_telefono" disabled>
+              <button type="button" class="btn  btn-editar-campo" data-target="inputTelefono">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" form="formModificarInscripcion" class="btn btn-guardar-usuario">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <script>
+    const urlDetalleEvento = "{% url 'app_asistente:evento_asistentes' 123 456 %}";
+    const urlModificar = "{% url 'app_asistente:modificar_asistente' 0 %}".replace("0", "");
+    const urlGuardar = "{% url 'app_asistente:guardar_cambios' 0 %}".replace("0", "");
+    const urlEliminarInscripcion = "{% url 'app_asistente:cancelar_inscripcion' 123 456 %}";
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
+  <script src="{% static 'app_asistente/js/asistentes_eventos.js'%}"></script>
 {% endblock %}
