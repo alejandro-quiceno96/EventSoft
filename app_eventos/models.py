@@ -14,6 +14,7 @@ class Eventos(models.Model):
     eve_tienecosto = models.BooleanField(default=False)
     eve_programacion = models.FileField(upload_to='pdf/programacion/')
     eve_administrador_fk = models.ForeignKey('app_administrador.Administradores', on_delete=models.CASCADE)
+   
 
 class EventosCategorias(models.Model):
     eve_cat_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)

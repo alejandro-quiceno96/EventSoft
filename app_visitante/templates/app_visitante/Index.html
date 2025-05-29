@@ -1,7 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -11,23 +10,19 @@
     <link rel="stylesheet" href="{% static 'app_visitante/css/style_visitante.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
-
 </head>
 
 <body>
 
-    
     <!-- Header -->
     <header class="header">
-
         <div class="header-logo-nombre">
             <button class="abrir-menu" onclick="openMenu()">
                 <i class="fa-solid fa-bars"></i>
                 <span class="tooltiptext">Menú</span>
             </button>
-
-            <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo"> 
-            <h2> EventSoft</h2>
+            <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo">
+            <h2>EventSoft</h2>
         </div>
 
         <div class="search-section">
@@ -36,20 +31,18 @@
                 <i class="fa-solid fa-filter"></i> Filtrar eventos
             </button>
         </div>
-
     </header>
 
-    <!-- Overlay oscuro -->
+    <!-- Overlay -->
     <div id="overlay" class="overlay" onclick="closeMenu()"></div>
 
-    <!-- Menú lateral izquierdo -->
+    <!-- Sidebar Menu -->
     <div id="sidebarMenu" class="sidebar-menu">
         <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
         <div class="menu-content">
             <a class="btn-menu" href="{% url 'administrador:inicio_sesion_administrador' %}">
                 <i class="fa-solid fa-user-tie"></i> Administrador
             </a>
-            
             <a class="btn-menu" href="{% url 'app_participante:buscar_participantes' %}">
                 <i class="fa-solid fa-user"></i> Mis inscripciones como participante
             </a>
@@ -62,22 +55,20 @@
             <a class="btn-menu" href="{% url 'app_evaluador:inicio_sesion_evaluador' %}">
                 <i class="fas fa-chalkboard-user"></i> Evaluador
             </a>
-
-            
         </div>
     </div>
 
-    <!-- Modal filtros -->
+    <!-- Modal Filtros -->
     <div id="filterEventsModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeFilterEventsModal()">&times;</span>
             <h3>Filtrar eventos</h3>
-            <form method="GET" action=".">
+            <form method="GET" action="">
                 <label for="categoria_modal">Categoría:</label>
                 <select name="categoria" id="categoria_modal">
                     <option value="">Todas</option>
                     {% for cat in categorias %}
-                    <option value="{{ cat.cat_codigo }}">{{ cat.cat_nombre }}</option>
+                        <option value="{{ cat.cat_codigo }}">{{ cat.cat_nombre }}</option>
                     {% endfor %}
                 </select>
 
@@ -85,7 +76,7 @@
                 <select name="area" id="area_modal">
                     <option value="">Todas</option>
                     {% for area in areas %}
-                    <option value="{{ area.are_codigo }}">{{ area.are_nombre }}</option>
+                        <option value="{{ area.are_codigo }}">{{ area.are_nombre }}</option>
                     {% endfor %}
                 </select>
 
@@ -97,40 +88,40 @@
         </div>
     </div>
 
-    <!-- Contenido principal -->
+    <!-- Contenido Principal -->
     <main class="content">
-
         <section class="contenedor-principal-de-eventos">
             {% if eventos %}
                 {% for evento in eventos %}
-                <div class="card" style="width: 18rem; margin: 10px; display: inline-block; vertical-align: top;">
-                    <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" style="height: 180px; object-fit: cover; width: 100%;">
-
-                    <div class="card-body">
-                        <h5 class="evento-titulo">{{ evento.eve_nombre }}</h5>
-                        <h6 class="evento-fechas">
-                            <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
-                        </h6>
-                        <p class="evento-descripcion">{{ evento.eve_descripcion|truncatechars:50 }}</p>
-                        {% if evento.eve_estado == "Terminado" %}
-                        <button class="btn btn-primary" disabled style="background-color: #FF5800;">
-                            <i class="fa-solid fa-circle-check"></i> Evento Terminado
-                        </button>
-                        {% else %}
-                        <a href="{% url 'detalle_evento' evento.pk %}" class="btn btn-primary">Ver más</a>
+                    {% if evento.eve_estado == "activo" %}
+                    
+                        <div class="card" style="width: 18rem; margin: 10px; display: inline-block; vertical-align: top;">
+                            <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" style="height: 200px; object-fit: contain; width: 100%;">
+                            <div class="card-body">
+                                <h5 class="evento-titulo">{{ evento.eve_nombre }}</h5>
+                                <h6 class="evento-fechas">
+                                    <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
+                                </h6>
+                                <p class="evento-descripcion">{{ evento.eve_descripcion|truncatechars:50 }}</p>
+                                {% if evento.eve_estado == "Terminado" %}
+                                    <button class="btn btn-primary" disabled style="background-color: #FF5800;">
+                                        <i class="fa-solid fa-circle-check"></i> Evento Terminado
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'detalle_evento' evento.pk %}" class="btn btn-primary">Ver más</a>
+                                {% endif %}
+                            </div>
+                        </div>
                     {% endif %}
-                    </div>
-                </div>
                 {% endfor %}
             {% else %}
-            <div class="alerta">
-                <i class="fa-solid fa-triangle-exclamation"></i> No hay eventos disponibles.
-            </div>
+                <div class="alerta">
+                    <i class="fa-solid fa-triangle-exclamation"></i> No hay eventos disponibles.
+                </div>
             {% endif %}
         </section>
 
         <!-- Chatbot -->
-        
         <div id="chatbotModal" class="chatbot-modal">
             <div class="chatbot-header">
                 <span>🤖 Asistente Virtual de EventSoft</span>
@@ -146,41 +137,44 @@
                 <button onclick="enviarPregunta('documentos')">¿Qué documentos necesito?</button>
             </div>
         </div>
-
     </main>
-   
 
-    
-
+    <!-- JS Funciones -->
     <script>
-        // Abrir el modal de filtros con animación
         function openFilterEventsModal() {
             const modal = document.getElementById("filterEventsModal");
-            modal.style.display = "block"; // Mostrar el modal
+            modal.style.display = "block";
             setTimeout(() => {
-                modal.classList.add("fade-in"); // Aplicar animación de entrada
-            }, 10); // Esto asegura que la clase de animación se aplique después de cambiar el display
+                modal.classList.add("fade-in");
+            }, 10);
         }
 
-        // Cerrar el modal de filtros con animación
         function closeFilterEventsModal() {
             const modal = document.getElementById("filterEventsModal");
-            modal.classList.add("fade-out"); // Aplicar animación de salida
+            modal.classList.add("fade-out");
             setTimeout(() => {
-                modal.style.display = "none"; // Ocultar el modal
-                modal.classList.remove("fade-out"); // Eliminar la clase de animación para futuros usos
+                modal.style.display = "none";
+                modal.classList.remove("fade-out");
             }, 300);
         }
 
-        // Función para abrir y cerrar el modal del chatbot
-        function toggleChatbotModal() {
-            const modal = document.getElementById("chatbotModal");
-            modal.classList.toggle("open");
+        function openMenu() {
+            document.getElementById("sidebarMenu").style.left = "0";
+            document.getElementById("overlay").style.display = "block";
         }
 
-        // Función para enviar preguntas al chatbot
+        function closeMenu() {
+            document.getElementById("sidebarMenu").style.left = "-350px";
+            document.getElementById("overlay").style.display = "none";
+        }
+
+        function toggleChatbotModal() {
+            document.getElementById("chatbotModal").classList.toggle("open");
+        }
+
         function enviarPregunta(pregunta) {
             const log = document.getElementById("chatLog");
+
             const userMsg = document.createElement("p");
             userMsg.className = "user-msg";
             userMsg.textContent = "Tú: " + pregunta;
@@ -202,20 +196,17 @@
                     log.appendChild(botMsg);
                 });
         }
+
+        function filterEvents() {
+            const input = document.getElementById("search");
+            const filter = input.value.toLowerCase();
+            const cards = document.querySelectorAll(".card");
+
+            cards.forEach(card => {
+                const titulo = card.querySelector(".evento-titulo").textContent.toLowerCase();
+                card.style.display = titulo.includes(filter) ? "inline-block" : "none";
+            });
+        }
     </script>
-    <script>
-    function openMenu() {
-        document.getElementById("sidebarMenu").style.left = "0";
-        document.getElementById("overlay").style.display = "block";
-    }
-
-    function closeMenu() {
-        document.getElementById("sidebarMenu").style.left = "-350px";  // ajusta según tu CSS
-        document.getElementById("overlay").style.display = "none";
-    }
-</script>
-
-
 </body>
-
 </html>
