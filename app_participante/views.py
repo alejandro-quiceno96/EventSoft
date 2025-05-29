@@ -4,11 +4,10 @@ from app_participante.models import Participantes
 from django.http import JsonResponse, Http404, HttpResponse
 from weasyprint import HTML
 from app_eventos.models import Eventos, EventosCategorias
-from app_evaluador.models import Evaluadores
-from app_evaluador.models import Calificaciones, Evaluadores
+from app_evaluador.models import Calificaciones
 from app_criterios.models import Criterios
 from app_categorias.models import Categorias
-from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import default_storage
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -205,13 +204,17 @@ def modificar_inscripcion(request, evento_id, participante_id):
                 participante_evento = ParticipantesEventos.objects.filter(par_eve_participante_fk=participante_id, par_eve_evento_fk=evento_id).first()
                 
                 if participante_evento:
-            
+                    # Eliminar el documento anterior si existe
+                    if participante_evento.par_eve_documentos:
+                        default_storage.delete(participante_evento.par_eve_documentos.path)
+                        participante_evento.par_eve_documentos.delete(save=False)
 
                     # Actualizar el campo de documentos en el modelo ParticipanteEvento
                     participante_evento.par_eve_documentos = documento
                     participante_evento.save()
                 else:
                     return JsonResponse({"success": False, "error": "Inscripción al evento no encontrada"})
+
 
             return JsonResponse({"success": True})
 
@@ -221,7 +224,7 @@ def modificar_inscripcion(request, evento_id, participante_id):
     else:
         return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
     
-@csrf_exempt  # Solo para evitar problemas con el CSRF en este ejemplo
+@csrf_exempt 
 def cancelar_inscripcion(request, evento_id, participante_id):
     if request.method == 'POST':
 
@@ -233,7 +236,12 @@ def cancelar_inscripcion(request, evento_id, participante_id):
             participante_evento = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento_id, par_eve_participante_fk=participante_id).first()
 
             if participante_evento:
-                # Si se encuentra la inscripción, eliminarla
+                # Eliminar el documento asociado si existe
+                if participante_evento.par_eve_documentos:
+                    # Eliminar el archivo físico de la carpeta media
+                    default_storage.delete(participante_evento.par_eve_documentos.path)
+                
+                # Eliminar la inscripción
                 participante_evento.delete()
                 return JsonResponse({"success": True})
             else:

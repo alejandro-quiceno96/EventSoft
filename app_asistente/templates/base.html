@@ -1,23 +1,23 @@
 {%load static%}
 
-<link rel="stylesheet" href="{% static 'app_asistente/css/asistente.css' %}">
-
-<link rel="stylesheet" href="{% static 'app_asistente/css/buscar_asistente.css' %}">
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Título por defecto{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'app_administrador/css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'app_asistente/css/asistente.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     {% block header %}{% endblock %}
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    {% block content %}{% endblock %}
     {% block footer %}{% endblock %}
     {% block extra_js %}{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
+
 </body>
 </html>

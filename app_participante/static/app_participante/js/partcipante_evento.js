@@ -30,7 +30,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     enlace_programacion.href = data.eve_programacion;
                     enlace_qr.href = data.codigo_qr
                     // Mostrar el modal
-                    new bootstrap.Modal(document.getElementById("eventoModal")).show();
+                    const modalElement = document.getElementById('eventoModal');
+                    if (modalElement) {
+                        const modal = new bootstrap.Modal(modalElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                        });
+                        modal.show();
+                    }
                 })
                 .catch(error => console.error("Error al obtener los datos:", error));
         });

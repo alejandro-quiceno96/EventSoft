@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('app_visitante.urls')),
-    path('asistente/', include('app_asistente.urls')),
+    path('asistente/', include('app_asistente.urls', namespace = "app_asistente")),
     path('administrador/', include('app_administrador.urls', namespace='administrador'), ),
     path('ver_evento/', include('app_visitante.urls')),
     path('participante/', include('app_participante.urls', namespace='app_participante')),
