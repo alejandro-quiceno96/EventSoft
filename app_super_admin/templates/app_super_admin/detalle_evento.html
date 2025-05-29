@@ -13,6 +13,8 @@
     style="display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column;">
     <div class="info-section"
         style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); text-align: center; width: 80%; max-width: 600px; margin-bottom: 20px;">
+
+        <!-- Imagen del evento -->
         {% if evento.eve_imagen %}
         <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" class="event-image"
             style="width: 100%; height: 300px; object-fit: contain; border-radius: 10px;">
@@ -20,22 +22,77 @@
         <img src="{{ evento.imagen_url }}" alt="Imagen del evento" class="event-image"
             style="width: 100%; height: 300px; object-fit: contain; border-radius: 10px;">
         {% endif %}
-        <h2>{{ evento.nombre }} <br> Evento de {{ evento.eve_administrador_fk.nombre|default:"No asignado" }}</h2>
-        {% if evento.descripcion %}
-        <p>{{ evento.descripcion }}</p>
+
+        <!-- Título del evento -->
+        <h2>
+            {{ evento.eve_nombre|default:"Evento de No asignado" }}
+        </h2>
+
+        <!-- Nombre del administrador -->
+        <h3>
+            Evento de {{ evento.eve_administrador_fk.adm_nombre|default:"No asignado" }}
+        </h3>
+
+        <!-- Descripción -->
+        {% if evento.eve_descripcion %}
+        <p><strong>Descripción:</strong> {{ evento.eve_descripcion }}</p>
         {% endif %}
-        <p>Se realizará el próximo {{ evento.fecha_inicio }}, en {{ evento.lugar }}{% if evento.ciudad %}, en la ciudad
-            de {{ evento.ciudad }}{% endif %}.</p>
-        <p>📍 Lugar: {{ evento.lugar }}</p>
-        <p>📅 Fecha: {{ evento.fecha_inicio }}</p>
-        {% if evento.ciudad %}
-        <p>🏙️ Ciudad: {{ evento.ciudad }}</p>
-        {% endif %}
+
+        <!-- Información general -->
+        <p>Se realizará el próximo
+            {% if evento.eve_fecha_inicio %}
+            {{ evento.eve_fecha_inicio }}
+            {% else %}
+            <em>fecha por definir</em>
+            {% endif %}, en
+            {% if evento.eve_lugar %}
+            {{ evento.eve_lugar }}
+            {% else %}
+            <em>lugar por definir</em>
+            {% endif %}
+            {% if evento.eve_ciudad %}
+            , en la ciudad de {{ evento.eve_ciudad }}
+            {% endif %}.
+        </p>
+
+        <!-- Detalles específicos -->
+        <div class="event-details" style="text-align: left; margin-top: 20px;">
+            <p>📍 <strong>Lugar:</strong> {{ evento.eve_lugar|default:"Por definir" }}</p>
+            <p>📅 <strong>Fecha:</strong> {{ evento.eve_fecha_inicio|default:"Por definir" }}</p>
+            {% if evento.eve_fecha_fin %}
+            <p>📅 <strong>Fecha fin:</strong> {{ evento.eve_fecha_fin }}</p>
+            {% endif %}
+            {% if evento.eve_ciudad %}
+            <p>🏙️ <strong>Ciudad:</strong> {{ evento.eve_ciudad }}</p>
+            {% endif %}
+            {% if evento.eve_estado %}
+            <p>📊 <strong>Estado:</strong> {{ evento.eve_estado }}</p>
+            {% endif %}
+            {% if evento.eve_capacidad %}
+            <p>👥 <strong>Capacidad:</strong> {{ evento.eve_capacidad }}</p>
+            {% endif %}
+            {% if evento.eve_programacion %}
+            <p>📝 <strong>Programacion:</strong><a href="{{ evento.eve_programacion.url}}" target="_blank">Ver programacion</a></p>
+            {% endif %}
+        </div>
     </div>
 
     <div class="btn-container">
-        <a href="{% url 'super_administrador:index' %}" class="open-menu-btn"
-            style="position: fixed; top: 10px; right: 20px; background: white; color: #ff9100; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; z-index: 1000;">Volver</a>
+        <a href="{% url 'super_admin:index' %}" class="open-menu-btn"
+            style="position: fixed; top: 10px; right: 20px; background: white; color: #ff9100; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; z-index: 1000;">
+            Volver
+        </a>
     </div>
 </div>
+
+
+{% comment %}
+<div style="margin-top: 20px; background: #f0f0f0; padding: 10px; border-radius: 5px;">
+    <h4>Debug Info:</h4>
+    <p>ID: {{ evento.id }}</p>
+    <p>Estado: {{ evento.eve_estado }}</p>
+    <p>Todos los campos: {{ evento }}</p>
+</div>
+{% endcomment %}
+
 {% endblock %}

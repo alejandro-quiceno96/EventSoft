@@ -176,6 +176,7 @@
                 se realizará en {{ evento.eve_lugar }} en la ciudad de {{ evento.eve_ciudad }}.</p>
             <p>📍 Lugar: {{ evento.eve_lugar }}</p>
             <p>📅 Fecha: {{ evento.eve_fecha_inicio }}</p>
+            <p>📝 <strong>Programacion:</strong><a href="{{ evento.eve_programacion.url}}" target="_blank">Ver programacion</a></p>
             <div class="modal-programacion">
                 <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
                 <a id="modalProgramacion" href="/documento_evento/{{ evento.eve_id }}" target="_blank"

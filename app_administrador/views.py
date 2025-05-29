@@ -63,7 +63,7 @@ def crear_evento(request):
             archivo_programacion = request.FILES.get('documento_evento')
 
             # Obtener ID de administrador (puede estar vacío si no hay login aún)
-            administrador_id = request.session.get('administrador_id')
+            administrador_id = request.session.get('admin_cedula')
 
             # Crear evento
             evento = Eventos.objects.create(

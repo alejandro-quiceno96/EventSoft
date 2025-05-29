@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from app_eventos.models import Eventos, AsistentesEventos
 from app_categorias.models import Categorias
 from app_areas.models import Areas  # O Area si renombraste la clase
-from app_eventos.models import Eventos
+from app_eventos.models import Eventos, EventosCategorias
 from django.views.decorators.csrf import csrf_exempt
 from app_participante.models import Participantes
 from app_asistente.models import Asistentes
@@ -16,13 +16,27 @@ from app_administrador.utils import generar_pdf, generar_clave_acceso
 
 def inicio_visitante(request):
     eventos = Eventos.objects.all()
+
+    # Obtener los filtros del GET
+    categoria = request.GET.get('categoria')
+    area = request.GET.get('area')
+    fecha_inicio = request.GET.get('fecha_inicio')
+
+    # Aplicar filtros si existen
+    if categoria:
+        eventos = EventosCategorias.filter(eve_cat_categoria_fk=categoria)
+    if area:
+        eventos = Eventos.filter(are_codigo_id=area)
+
     categorias = Categorias.objects.all()
     areas = Areas.objects.all()
+
     contexto = {
         'eventos': eventos,
         'categorias': categorias,
         'areas': areas,
     }
+
     return render(request, 'app_visitante/index.html', contexto)
 
 
@@ -149,3 +163,5 @@ def registrar_asistente(request, evento_id):
 
                 
     return redirect('detalle_evento', evento_id=evento_id)
+
+

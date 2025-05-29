@@ -30,6 +30,11 @@ body, html {
     width: 100%;
 }
 
+.card-img-top{
+    object-fit: contain;
+    height: 200px;
+}
+
 .logo-sena {
     width: 110px;
 }

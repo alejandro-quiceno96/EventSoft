@@ -1,12 +1,5 @@
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.utils import ImageReader
-import io
 import random
-import qrcode
 import string
-
-
 import os
 import io
 import qrcode
