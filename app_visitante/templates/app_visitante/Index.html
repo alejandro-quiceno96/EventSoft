@@ -26,11 +26,18 @@
         </div>
 
         <div class="search-section">
-            <input type="text" id="search" placeholder="Busca tu evento..." oninput="filterEvents()">
+            <div class="search-input-group">
+                <input type="text" id="search" placeholder="Busca tu evento..." oninput="filterEvents()">
+            </div>
             <button class="filter-btn" onclick="openFilterEventsModal()">
-                <i class="fa-solid fa-filter"></i> Filtrar eventos
+                <i class="fa-solid fa-filter"></i>
+                <span class="filter-text"> Filtrar eventos</span>
+            </button>
+            <button class="search-icon-btn" onclick="toggleSearchBar()" style="display: none;">
+                <i class="fa-solid fa-magnifying-glass"></i>
             </button>
         </div>
+
     </header>
 
     <!-- Overlay -->
@@ -60,41 +67,52 @@
 
     <!-- Modal Filtros -->
     <div id="filterEventsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeFilterEventsModal()">&times;</span>
-            <h3>Filtrar eventos</h3>
-            <form method="GET" action="">
-                <label for="categoria_modal">Categoría:</label>
-                <select name="categoria" id="categoria_modal">
-                    <option value="">Todas</option>
-                    {% for cat in categorias %}
-                        <option value="{{ cat.cat_codigo }}">{{ cat.cat_nombre }}</option>
-                    {% endfor %}
-                </select>
+    <div class="modal-content">
+        <span class="close" onclick="closeFilterEventsModal()">&times;</span>
+        <h3>Filtrar eventos</h3>
+        <form method="GET" action="">
+            <!-- Filtro por Categoría -->
+            <label for="categoria_modal">Categoría:</label>
+            <select name="categoria" id="categoria_modal">
+                <option value="">Todas</option>
+                {% for cat in categorias %}
+                    <option value="{{ cat.id }}" {% if request.GET.categoria == cat.cat_codigo|stringformat:"s" %}selected{% endif %}>
+                        {{ cat.cat_nombre }}
+                    </option>
+                {% endfor %}
+            </select>
 
-                <label for="area_modal">Área:</label>
-                <select name="area" id="area_modal">
-                    <option value="">Todas</option>
-                    {% for area in areas %}
-                        <option value="{{ area.are_codigo }}">{{ area.are_nombre }}</option>
-                    {% endfor %}
-                </select>
+            <!-- Filtro por Área -->
+            <label for="area_modal">Área:</label>
+            <select name="area" id="area_modal">
+                <option value="">Todas</option>
+                {% for area in areas %}
+                    <option value="{{ area.id }}" {% if request.GET.area == area.are_codigo|stringformat:"s" %}selected{% endif %}>
+                        {{ area.are_nombre }}
+                    </option>
+                {% endfor %}
+            </select>
 
-                <label for="fecha_inicio_modal">Fecha Inicio:</label>
-                <input type="date" name="fecha_inicio" id="fecha_inicio_modal">
+            <!-- Filtro por Fecha -->
+            <label for="fecha_inicio_modal">Fecha Inicio:</label>
+            <input type="date" name="fecha_inicio" id="fecha_inicio_modal" value="{{ request.GET.fecha_inicio }}">
 
-                <button type="submit">Aplicar Filtros</button>
-            </form>
-        </div>
+            <!-- Botones -->
+            <button type="submit">Aplicar Filtros</button>
+            <a href="{% url 'inicio_visitante' %}" class="button-clear-filters">Limpiar Filtros</a>
+        </form>
     </div>
+</div>
+
 
     <!-- Contenido Principal -->
     <main class="content">
         <section class="contenedor-principal-de-eventos">
+            <input type="text" class="buscador-movil" id="searchMovil" placeholder="Busca tu evento..." oninput="filterEvents()">
             {% if eventos %}
                 {% for evento in eventos %}
                     {% if evento.eve_estado == "activo" %}
-                    
+                        
                         <div class="card" style="width: 18rem; margin: 10px; display: inline-block; vertical-align: top;">
                             <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" style="height: 200px; object-fit: contain; width: 100%;">
                             <div class="card-body">
@@ -207,6 +225,13 @@
                 card.style.display = titulo.includes(filter) ? "inline-block" : "none";
             });
         }
+
+        function toggleSearchBar() {
+            const inputGroup = document.querySelector("#searchMovil");
+            inputGroup.style.display = inputGroup.style.display === "inline-block" ? "none" : "inline-block";
+        }
+
+
     </script>
 </body>
 </html>

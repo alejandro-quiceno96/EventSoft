@@ -550,7 +550,7 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
 
 }
 .header-logo-nombre h2{
-    font-size: 40px;
+    font-size: 2.5rem;
     text-decoration: none;
     color: white;
     text-shadow: 2px 2px 4px #000000;
@@ -711,24 +711,47 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
 #filterEventsModal form button[type="submit"]:hover {
     background-color: #FF5800b4;
 }
+
+.button-clear-filters{
+    background-color: #FF5800;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    text-align: center;
+    text-decoration: none;
+}
+
+.button-clear-filters:hover{
+    background-color: #FF5800b4;
+}
+
 /* Estilos para la sección de búsqueda */
 .search-section{
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-wrap: wrap-reverse;
     gap: 10px;
     margin-right: 20px;
 }
 
 .search-section input[type="text"] {
     flex: 1;
-    min-width: 420px;
-    max-width: 500px;
+    width: 100%;
     padding: 10px 14px;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 16px;
     transition: border-color 0.2s ease-in-out;
+}
+
+.buscador-movil{
+    width: 300px;
+    border: 2px solid #FF5800;
 }
 
 .search-section input[type="text"]:focus {
@@ -796,6 +819,63 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
 .card:hover {
     transform: translateY(-10px);
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.445);
+}
+
+/* Ocultar el icono de lupa en pantallas grandes */
+.search-icon-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: white;
+}
+
+/* Estilo de grupo de búsqueda */
+.search-input-group {
+    display: inline-block;
+}
+
+#searchMovil{
+    display: none;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 768px) {
+    /* Oculta barra de búsqueda */
+    .search-input-group {
+        display: none;
+    }
+
+    .header-logo-nombre h2{
+        font-size: 1.6rem;
+    }
+
+    .header-logo-nombre img{
+        display: none;
+    }
+
+    /* Muestra solo el botón de lupa */
+    .search-icon-btn {
+        display: inline-block !important;
+    }
+
+    /* Oculta texto del botón de filtros */
+    .filter-text {
+        display: none;
+    }
+
+    .filter-btn {
+        padding: 8px;
+        font-size: 1.2rem;
+    }
+
+    .abrir-menu span{
+        display: none;
+    }
+
+    .abrir-menu i{
+        font-size: 2rem;
+    }
 }
 
 

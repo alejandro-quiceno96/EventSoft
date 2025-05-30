@@ -10,23 +10,31 @@ from django.utils import timezone
 from app_eventos.models import ParticipantesEventos
 from app_administrador.utils import generar_pdf, generar_clave_acceso
 
-# Create your views here.
-
-
 
 def inicio_visitante(request):
     eventos = Eventos.objects.all()
 
-    # Obtener los filtros del GET
     categoria = request.GET.get('categoria')
     area = request.GET.get('area')
     fecha_inicio = request.GET.get('fecha_inicio')
 
-    # Aplicar filtros si existen
+    print("GET data:", request.GET)
+
+    # Filtrar por categoría (a través del modelo intermedio)
     if categoria:
-        eventos = EventosCategorias.filter(eve_cat_categoria_fk=categoria)
+        eventos = eventos.filter(eventoscategorias__eve_cat_categoria_fk=categoria)
+
+    # Filtrar por área (a través de categoria relacionada al evento)
     if area:
-        eventos = Eventos.filter(are_codigo_id=area)
+        eventos = eventos.filter(
+            eventoscategorias__eve_cat_categoria_fk__cat_area_fk=area
+        )
+
+    # Filtrar por fecha de inicio
+    if fecha_inicio:
+        eventos = eventos.filter(eve_fecha_inicio=fecha_inicio)
+
+    eventos = eventos.distinct()  # Evitar duplicados por joins
 
     categorias = Categorias.objects.all()
     areas = Areas.objects.all()
@@ -38,6 +46,8 @@ def inicio_visitante(request):
     }
 
     return render(request, 'app_visitante/index.html', contexto)
+
+
 
 
 
