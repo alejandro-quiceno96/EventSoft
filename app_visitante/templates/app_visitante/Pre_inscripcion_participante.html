@@ -12,40 +12,68 @@
 
 <body>
     <header class="header">
-        <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo" />
-        EventSoft
         <div class="user-section">
-            <i class="fas fa-user-circle"></i>
-            <span></span>
-            <a href="{% url 'inicio_visitante' %}" class="btn-volver">Volver</a>
+            <a href="{% url 'detalle_evento' evento.id %}" class="btn-volver"><i class="fas fa-arrow-left"></i> Volver</a>
         </div>
+        <div class="header-content">
+            <h1 class="brand">Registro Asistente</h1>
+        </div>   
     </header>
 
     <main class="form-container">
-        <form id="preinscripcion-form" action="{% url 'submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <h1>Formulario de Preinscripción</h1>
+  <form id="preinscripcion-form" action="{% url 'submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h1>Formulario de Preinscripción</h1>
 
-            <label for="nombre">Nombre completo:</label>
-            <input type="text" id="nombre" name="par_nombre" required />
+    <label for="nombre">Nombre completo:</label>
+    <div class="input-group">
+      <i class="fas fa-user"></i>
+      <input type="text" id="nombre" name="par_nombre" placeholder="Ingrese su nombre completo" required />
+    </div>
 
-            <label for="cedula">Cédula:</label>
-            <input type="text" id="cedula" name="par_cedula" required />
+    <label for="cedula">Cédula:</label>
+    <div class="input-group">
+      <i class="fas fa-id-card"></i>
+      <input type="text" id="cedula" name="par_cedula" placeholder="Ingrese su cédula" required />
+    </div>
 
-            <label for="email">Correo electrónico:</label>
-            <input type="email" id="email" name="par_correo" required />
+    <label for="email">Correo electrónico:</label>
+    <div class="input-group">
+      <i class="fas fa-envelope"></i>
+      <input type="email" id="email" name="par_correo" placeholder="Ingrese su correo electrónico" required />
+    </div>
 
-            <label for="telefono">Teléfono:</label>
-            <input type="tel" id="telefono" name="par_telefono" required />
+    <label for="telefono">Teléfono:</label>
+    <div class="input-group">
+      <i class="fas fa-phone"></i>
+      <input type="tel" id="telefono" name="par_telefono" placeholder="Ingrese su teléfono" required />
+    </div>
 
-            <input type="hidden" id="evento_id" name="evento_id" value="{{ evento_id|default:evento.id }}" />
+    <input type="hidden" id="evento_id" name="evento_id" value="{{ evento_id|default:evento.id }}" />
 
-            <label for="documento">Subir documentación (PDF):</label>
-            <input type="file" id="par_eve_documentos" name="par_eve_documentos" accept=".pdf" required />
+    <label for="comprobante_pago" class="file-label">
+            <i class="fas fa-file-upload"></i> Subir Proyecto:
+    </label>
+    <input type="file" id="comprobante_pago" name="comprobante_pago" accept=".pdf" required>
+    <button type="submit">Enviar Preinscripción</button>
+  </form>
+</main>
+<script>
+    const comprobanteInput = document.getElementById("comprobante_pago");
 
-            <button type="submit">Enviar Preinscripción</button>
-        </form>
-    </main>
+    if (comprobanteInput) {
+        const fileNameDisplay = document.createElement("div");
+        fileNameDisplay.className = "file-name";
+        comprobanteInput.parentNode.insertBefore(fileNameDisplay, comprobanteInput.nextSibling);
+
+        comprobanteInput.addEventListener("change", function () {
+            const fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
+            fileNameDisplay.textContent = `Archivo seleccionado: ${fileName}`;
+        });
+    }
+
+</script>
+
 </body>
 
 </html>

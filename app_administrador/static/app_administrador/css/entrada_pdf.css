@@ -1,0 +1,52 @@
+@page {
+    size: A4;
+    margin: 2cm;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 40px;
+}
+
+.entrada-card {
+    background-color: #ffffff;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.titulo {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.info {
+    margin-bottom: 25px;
+    text-align: left;
+}
+
+.label {
+    font-weight: bold;
+    color: #555;
+}
+
+.qr-container {
+    margin-bottom: 20px;
+}
+
+.qr-imagen {
+    width: 180px;
+    height: 180px;
+}
+
+.nota {
+    font-size: 14px;
+    color: #888;
+}

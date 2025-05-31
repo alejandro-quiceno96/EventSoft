@@ -14,7 +14,7 @@ from decimal import Decimal
 import json
 from weasyprint import HTML
 
-from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos
+from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
 from app_categorias.models import Categorias
 from app_administrador.models import Administradores
@@ -599,3 +599,64 @@ def detalle_calificacion(request, participante_id, evaluador_id, evento_id):
         'administrador': request.session.get('admin_nombre'),
         'evento': get_object_or_404(Eventos, id=evento_id)
     })
+
+def ver_evaluadores(request: HttpRequest, evento_id):
+    estado = request.GET.get('estado')
+
+    # Obtener los asistentes del evento utilizando el ORM de Django
+    evaluadores_evento = EvaluadoresEventos.objects.select_related('eva_eve_evaluador_fk').filter(
+        eva_eve_evento_fk=evento_id,
+        eva_estado=estado)
+    
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Preparar los datos
+    evaluadores_data = []
+    for ee in evaluadores_evento:
+        e = ee.eva_eve_evaluador_fk
+        evaluadores_data.append({
+            'asi_id': e.id,
+            'asi_nombre': e.eva_nombre,
+            'asi_correo': e.eva_correo,
+            'asi_telefono': e.eva_telefono,
+            'estado': ee.eva_estado,
+            'hora_inscripcion': ee.eva_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ee.eva_eve_fecha_hora else None,
+        })
+
+    return render(request, 'app_administrador/ver_evaluadores.html', {
+        'evaluadores': evaluadores_data,
+        'evento_id': evento_id,
+        'evento_nombre': evento.eve_nombre,
+    })
+
+@csrf_exempt
+def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
+    if request.method == 'POST':
+        evento_id = request.POST.get('evento_id')
+
+        if not evento_id:
+            return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
+
+        # Generar PDF y clave de acceso
+        if nuevo_estado == 'Admitido':
+            qr_evaluador = generar_pdf(evaluador_id, "Evaluador", evento_id, tipo="evaluador")
+        else:
+            qr_evaluador = None
+        # Buscar el participante_evento
+        try:
+            evaluador_evento = EvaluadoresEventos.objects.get(
+                eva_eve_evaluador_fk=evaluador_id,
+                eva_eve_evento_fk=evento_id
+            )
+        except EvaluadoresEventos.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Asistente no encontrado en el evento'}, status=404)
+
+        # Actualizar los valores
+        evaluador_evento.eva_estado = nuevo_estado
+        evaluador_evento.eva_eve_qr = qr_evaluador
+        evaluador_evento.save()
+        print("Evaluador actualizado con estado:", nuevo_estado)
+        url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+        return redirect(f'{url}?estado={nuevo_estado}')
+
+    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)

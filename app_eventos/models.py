@@ -37,3 +37,11 @@ class ParticipantesEventos(models.Model):
     par_eve_estado = models.CharField(max_length=45)
     par_eve_qr = models.FileField(upload_to='pdf/qr_participante/')
     par_eve_clave = models.CharField(max_length=45)
+    par_eve_calificacion_final = models.FloatField(null=True, blank=True)
+    
+class EvaluadoresEventos(models.Model):
+    eva_eve_evaluador_fk = models.ForeignKey('app_evaluador.Evaluadores', on_delete=models.CASCADE)
+    eva_eve_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)
+    eva_eve_fecha_hora = models.DateTimeField(null=True, blank=True)
+    eva_estado = models.CharField(max_length=45, null=True, blank=True)
+    eva_eve_qr = models.FileField(upload_to='pdf/qr_evaluador/',null=True, blank=True)

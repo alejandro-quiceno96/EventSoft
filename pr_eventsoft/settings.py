@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-!#u)^(+r5soq)mj=s18kessc8gz!y2@&(fjhj6q1)z#+p-@1%&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["192.168.1.104"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -64,7 +64,7 @@ ROOT_URLCONF = 'pr_eventsoft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / 'templates', 'app_administrador/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -140,6 +140,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'app_asistente' / 'static',
     BASE_DIR / 'app_super_admin' / 'static',
     BASE_DIR / 'app_evaluador' / 'static',
+    BASE_DIR / 'app_visitante' / 'static',
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"

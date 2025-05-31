@@ -12,61 +12,59 @@
 
 <body>
     <header class="header">
-        <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo" />
-        EventSoft
         <div class="user-section">
-            <i class="fas fa-user-circle"></i>
-            <span></span>
-            <a href="{% url 'inicio_visitante' %}" class="btn-volver">Volver</a>
+            <a href="{% url 'detalle_evento' evento.id %}" class="btn-volver"><i class="fas fa-arrow-left"></i> Volver</a>
         </div>
+        <div class="header-content">
+            <h1 class="brand">Registro Asistente</h1>
+        </div>   
     </header>
 
     <main class="form-container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
 
         <form action="{% url 'registrar_asistente' evento_id=evento.id %}" method="post" enctype="multipart/form-data">
-
             {% csrf_token %}
-            <h1>Formulario de Registro de Asistente</h1>
+            <h2><i class="fas fa-edit"></i> Registro de Asistente</h2>
 
-            <label for="asi_id">Numero de Identificación:</label>
+            <label for="asi_id"><i class="fas fa-id-card"></i> Número de Identificación:</label>
             <input type="text" id="asi_id" name="numero_identificacion" required>
 
             <input type="hidden" id="eve_id" name="eve_id" value="{{ evento }}">
 
-            <label for="asi_nombre">Nombre completo:</label>
+            <label for="asi_nombre"><i class="fas fa-user"></i> Nombre completo:</label>
             <input type="text" id="asi_nombre" name="nombre" required>
 
-            <label for="asi_correo">Correo electrónico:</label>
+            <label for="asi_correo"><i class="fas fa-envelope"></i> Correo electrónico:</label>
             <input type="email" id="asi_correo" name="correo" required>
 
-            <label for="asi_telefono">Teléfono:</label>
+            <label for="asi_telefono"><i class="fas fa-phone"></i> Teléfono:</label>
             <input type="text" id="asi_telefono" name="telefono" required>
 
             {% if evento.eve_tienecosto == True %}
-            <label for="comprobante_pago">Subir comprobante de pago (PDF o imagen):</label>
+            <label for="comprobante_pago" class="file-label">
+                <i class="fas fa-file-upload"></i> Comprobante de pago:
+            </label>
             <input type="file" id="comprobante_pago" name="comprobante_pago" accept=".pdf,.png,.jpg,.jpeg" required>
             {% endif %}
 
-            <button type="submit">Guardar Registro</button>
+            <button type="submit"><i class="fas fa-save"></i> Guardar Registro</button>
         </form>
     </main>
+<script>
+    const comprobanteInput = document.getElementById("comprobante_pago");
 
-    <script>
-        const comprobanteInput = document.getElementById("comprobante_pago");
-        if (comprobanteInput) {
-            comprobanteInput.addEventListener("change", function () {
-                var fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
-                alert("Archivo seleccionado: " + fileName);
-            });
-        }
-    </script>
+    if (comprobanteInput) {
+        const fileNameDisplay = document.createElement("div");
+        fileNameDisplay.className = "file-name";
+        comprobanteInput.parentNode.insertBefore(fileNameDisplay, comprobanteInput.nextSibling);
+
+        comprobanteInput.addEventListener("change", function () {
+            const fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
+            fileNameDisplay.textContent = `Archivo seleccionado: ${fileName}`;
+        });
+    }
+
+</script>
+
 </body>
-
 </html>

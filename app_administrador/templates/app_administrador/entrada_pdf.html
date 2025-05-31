@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Entrada Digital</title>
+    <link rel="stylesheet" href="{% static 'app_administrador/css/entrada_pdf.css' %}">
+</head>
+<body>
+    <div class="entrada-card">
+        <h2 class="titulo">Entrada al Evento</h2>
+        <div class="info">
+            <p><span class="label">Nombre:</span> {{ usuario }}</p>
+            <p><span class="label">ID Participante:</span> {{ id_participante }}</p>
+            <p><span class="label">ID Evento:</span> {{ id_evento }}</p>
+        </div>
+        <div class="qr-container">
+            <img src="data:image/png;base64,{{ qr_base64 }}" alt="Código QR" class="qr-imagen" />
+        </div>
+        <p class="nota">Presente esta entrada al ingresar al evento</p>
+    </div>
+</body>
+</html>
