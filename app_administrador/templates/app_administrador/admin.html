@@ -40,6 +40,12 @@
                                 <i class="fa-solid fa-users"></i> Asistentes
                             </button>
                         </a>
+
+                        <a href="{% url 'administrador:ver_evaluadores' evento_id=evento.id %}?estado=Pendiente" class="text-decoration-none">
+                            <button class="btn-ver_participantes w-100">
+                                <i class="fa-solid fa-chalkboard-user"></i> Evaluadores
+                            </button>
+                        </a>
                         
                         <a href="{% url 'administrador:tabla_calificaciones' evento_id=evento.id %}" class="text-decoration-none">
                             <button class="btn-ver_participantes w-100">

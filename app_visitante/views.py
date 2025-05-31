@@ -2,12 +2,13 @@ from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
 from app_eventos.models import Eventos, AsistentesEventos
 from app_categorias.models import Categorias
 from app_areas.models import Areas  # O Area si renombraste la clase
-from app_eventos.models import Eventos, EventosCategorias
+from app_eventos.models import Eventos,  ParticipantesEventos, EvaluadoresEventos
 from django.views.decorators.csrf import csrf_exempt
 from app_participante.models import Participantes
 from app_asistente.models import Asistentes
+from app_evaluador.models import Evaluadores
 from django.utils import timezone
-from app_eventos.models import ParticipantesEventos
+from django.urls import reverse
 from app_administrador.utils import generar_pdf, generar_clave_acceso
 
 
@@ -71,6 +72,10 @@ def preinscripcion_asistente(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     return render(request, 'app_visitante/registro_asistente.html', {'evento': evento})
 
+def preinscripcion_evaluador(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    return render(request, 'app_visitante/preinscripcion_evaluador.html', {'evento': evento})
+
 def modificar_participante(request):
     return render(request, 'app_visitante/modificar_participante.html')
 
@@ -118,7 +123,7 @@ def submit_preinscripcion_participante(request):
         )
 
         # Redirigir a la página de inicio del visitante
-        return redirect('inicio_visitante')
+        return redirect(reverse('inicio_visitante') + '?registro=exito_participante')
 
     # Si no es POST, redirigir a la página de inicio del visitante
     return redirect('inicio_visitante')
@@ -172,6 +177,39 @@ def registrar_asistente(request, evento_id):
         asistente_evento.save()
 
                 
-    return redirect('detalle_evento', evento_id=evento_id)
+    return redirect(reverse('inicio_visitante') + '?registro=exito_asistente')
 
+def registrar_evaluador(request, evento_id):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        cedula = request.POST.get('cedula')
+        correo = request.POST.get('correo')
+        telefono = request.POST.get('telefono')
 
+        try:
+            evaluador = Evaluadores.objects.get(eva_cedula=cedula)
+        except Evaluadores.DoesNotExist:
+            evaluador = Evaluadores.objects.create(
+                eva_nombre=nombre,
+                eva_cedula=cedula,
+                eva_correo=correo,
+                eva_telefono=telefono,
+            )
+
+        try:
+            evento = Eventos.objects.get(id=evento_id)
+        except Eventos.DoesNotExist:
+            return redirect('inicio_visitante')
+
+        EvaluadoresEventos.objects.create(
+            eva_eve_evaluador_fk=evaluador,
+            eva_eve_evento_fk=evento,
+            eva_eve_fecha_hora=timezone.now(),
+            eva_estado='Pendiente',
+            eva_eve_qr='',
+        )
+
+        # Redirige agregando un parámetro ?registro=exito
+        return redirect(reverse('inicio_visitante') + '?registro=exito_evaluador')
+
+    return redirect('inicio_visitante')

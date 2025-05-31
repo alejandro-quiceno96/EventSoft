@@ -1,205 +1,77 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Información del Evento</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: url('https://source.unsplash.com/random/1920x1080/?event') no-repeat center center fixed;
-            background-size: cover;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Información del Evento</title>
 
-        .header {
-            background-color: #ff6600;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 32px;
-            font-weight: bold;
-            position: relative;
-        }
-
-        .main-container {
-            display: flex;
-            flex: 1;
-            justify-content: center;
-            align-items: center;
-            padding: 30px 20px;
-        }
-
-        .info-section {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 100%;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .info-section img {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-
-        .info-section h2 {
-            margin-bottom: 15px;
-            font-size: 28px;
-            color: #333;
-        }
-
-        .info-section p {
-            font-size: 18px;
-            color: #555;
-            margin: 12px 0;
-        }
-
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-top: 30px;
-        }
-
-        .action-btn {
-            background: #ff6600;
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: background 0.3s;
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .action-btn:hover {
-            background: #e65c00;
-        }
-
-        .action-btn.secondary {
-            background: #fff;
-            color: #ff6600;
-            border: 2px solid #ff6600;
-        }
-
-        .action-btn.secondary:hover {
-            background: #ffe5d0;
-        }
-
-        .modal-programacion {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .modal-programacion p {
-            margin: 0;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .modal-programacion a {
-            color: #ff6600;
-            font-size: 24px;
-            text-decoration: none;
-        }
-
-        .modal-programacion a:hover {
-            color: #e65c00;
-        }
-
-        /* Botón de inicio flotante */
-        .floating-home-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #ff6600;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s;
-            z-index: 100;
-        }
-
-        .floating-home-btn:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+  <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="{% static 'app_visitante/css/detalle_evento.css' %}" />
 </head>
 
 <body>
-    <div class="header">
-        Información del Evento
-        <button onclick="window.location.href='{% url 'inicio_visitante' %}'" class="floating-home-btn">
-            <i class="fas fa-home"></i>
-        </button>
-    </div>
-    <div class="main-container">
-        <div class="info-section">
-            <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento">
-            <h2>{{ evento.eve_nombre }}</h2>
-            <p>{{ evento.eve_descripcion }} el próximo {{ evento.eve_fecha_inicio }},
-                se realizará en {{ evento.eve_lugar }} en la ciudad de {{ evento.eve_ciudad }}.</p>
-            <p>📍 Lugar: {{ evento.eve_lugar }}</p>
-            <p>📅 Fecha: {{ evento.eve_fecha_inicio }}</p>
-            <p>📝 <strong>Programacion:</strong><a href="{{ evento.eve_programacion.url}}" target="_blank">Ver programacion</a></p>
-            <div class="modal-programacion">
-                <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
-                <a id="modalProgramacion" href="/documento_evento/{{ evento.eve_id }}" target="_blank"
-                    title="Ver programación">
-                    <i class="fa-solid fa-eye"></i>
-                </a>
-                <a id="modalProgramacionDescargar" href="/descargar_programacion/{{ evento.eve_id }}" target="_blank"
-                    download title="Descargar programación">
-                    <i class="fa-solid fa-download"></i>
-                </a>
-            </div>
-            <div class="action-buttons">
-                <button onclick="window.location.href='{% url 'preinscripcion_participante' evento.id %}'"
-                    class="action-btn">
-                    <i class="fas fa-pen"></i> Preinscribirme como participante
-                </button>
-                <button onclick="window.location.href='{% url 'preinscripcion_asistente' evento.id %}'"
-                    class="action-btn">
-                    <i class="fas fa-user"></i> Preinscribirme como asistente
-                </button>
-            </div>
+  <div class="header">
+    <a href="{% url 'inicio_visitante' %}" class="floating-home-btn" title="Inicio">
+      <i class="fas fa-home"></i>
+    </a>
+    Información del Evento
+  </div>
+
+  <div class="main-container">
+    <div class="info-section">
+      <div class="info-image">
+        <img src="{{ evento.eve_imagen.url }}" alt="{{ evento.eve_nombre }}" />
+      </div>
+
+      <div class="info-content">
+        <h2>{{ evento.eve_nombre }}</h2>
+        <p>
+          {{ evento.eve_descripcion }}
+        </p>
+
+        <div class="info-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Lugar: {{ evento.eve_lugar }}</span>
         </div>
+        <div class="info-item">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }} </span>
+        </div>
+
+        <a
+          href="{{ evento.eve_programacion.url }}"
+          target="_blank"
+          rel="noopener"
+          class="programacion-link"
+          ><i class="fas fa-file-alt"></i> Ver programación</a
+        >
+
+        <div class="action-buttons">
+          <a
+            href="{% url 'preinscripcion_participante' evento.id %}"
+            class="action-btn"
+          >
+            <i class="fas fa-pen"></i> Preinscribirme como participante
+          </a>
+        </div>
+        <a
+          href="{% url 'preinscripcion_asistente' evento.id %}"
+          class="action-btn"
+        >
+          <i class="fas fa-user"></i> Preinscribirme como asistente
+        </a>
+        <a
+          href="{% url 'preinscripcion_evaluador' evento.id %}"
+          class="action-btn"
+        >
+          <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como Evaluador
+        </a>
+      </div>
     </div>
+  </div>
 </body>
 
 </html>

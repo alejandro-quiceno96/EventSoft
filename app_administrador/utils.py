@@ -3,79 +3,63 @@ import string
 import os
 import io
 import qrcode
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.utils import ImageReader
+import base64
+from django.template.loader import render_to_string
+from weasyprint import HTML, CSS
 from django.conf import settings
 from django.db.models  import Avg
 
 from app_evaluador.models import Calificaciones
 from app_participante.models import Participantes
+from app_asistente.models import Asistentes
+from app_evaluador.models import Evaluadores
 from app_criterios.models import Criterios
 
 
 def generar_pdf(id_participante, usuario, id_evento, tipo="participante"):
-    """
-    Genera un PDF con QR y lo guarda en media/qr_participantes/ o media/qr_asistentes/.
+    qr_data = f"{id_participante}{id_evento}"
+    qr_img = qrcode.make(qr_data)
+
+    buffer = io.BytesIO()
+    qr_img.save(buffer, format="PNG")
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
     
-    Parámetros:
-    - id_participante: ID del participante o asistente
-    - usuario: nombre o identificador para el PDF
-    - id_evento: ID del evento
-    - tipo: 'participante' o 'asistente'
-    
-    Retorna:
-    - Ruta relativa al archivo para guardar en la base de datos
-    """
-    
-    # 🟢 Crear el código QR
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4
-    )
-    codigo = f"{id_participante}{id_evento}"
-    qr.add_data(codigo)
-    qr.make(fit=True)
-    qr_img = qr.make_image(fill="black", back_color="white")
+    if tipo == "evaluador":
+        evaluador = Evaluadores.objects.get(id=id_participante)
+        usuario = evaluador.eva_nombre
+    elif tipo == "asistente":
+        asistente = Asistentes.objects.get(id=id_participante)
+        usuario = asistente.asi_nombre
+    else:
+        participante = Participantes.objects.get(id=id_participante)
+        usuario = participante.par_nombre
+        
+    html_string = render_to_string("app_administrador/entrada_pdf.html", {
+        "usuario": usuario,
+        "id_participante": id_participante,
+        "id_evento": id_evento,
+        "qr_base64": qr_base64,
+    })
 
-    # 🖼️ Guardar QR en buffer
-    qr_buffer = io.BytesIO()
-    qr_img.save(qr_buffer, format="PNG")
-    qr_buffer.seek(0)
-
-    qr_image = ImageReader(qr_buffer)
-
-    # 📝 Crear PDF en memoria
-    pdf_buffer = io.BytesIO()
-    c = canvas.Canvas(pdf_buffer, pagesize=letter)
-    c.drawString(200, 750, f"Entrada: {usuario}")
-    c.drawImage(qr_image, 200, 600, 150, 150)
-    c.save()
-    pdf_buffer.seek(0)
-
-    # 📁 Definir subcarpeta según tipo
     if tipo == "asistente":
         subcarpeta = "pdf/qr_asistentes"
-    else:
+    elif tipo == "participante":
         subcarpeta = "pdf/qr_participantes"
+    else:
+        subcarpeta = "pdf/qr_evaluador"
 
     carpeta_destino = os.path.join(settings.MEDIA_ROOT, subcarpeta)
     os.makedirs(carpeta_destino, exist_ok=True)
 
-    # 📄 Nombre del archivo
     pdf_filename = f"{tipo}_{id_participante}_{id_evento}.pdf"
     pdf_path = os.path.join(carpeta_destino, pdf_filename)
 
-    # 💾 Guardar en disco
-    with open(pdf_path, 'wb') as f:
-        f.write(pdf_buffer.getvalue())
+    css_path = os.path.join(
+    settings.BASE_DIR, "app_administrador", "static", "app_administrador", "css", "entrada_pdf.css"
+)
+    HTML(string=html_string).write_pdf(pdf_path, stylesheets=[CSS(filename=css_path)])
 
-    # 🔁 Retornar ruta relativa para guardar en modelo o mostrar
-    ruta_relativa = os.path.join(subcarpeta, pdf_filename)
-    return ruta_relativa
-
+    return os.path.join(subcarpeta, pdf_filename)
 
 def generar_clave_acceso(longitud=6):
     caracteres = string.ascii_letters + string.digits  # Letras (mayúsculas y minúsculas) + números

@@ -20,6 +20,10 @@ urlpatterns=[
     path('evento/<int:evento_id>/asistentes/', views.ver_asistentes, name='ver_asistentes'),
     path('actualizar_estado_asistente/<int:asistente_id>/<str:nuevo_estado>/', views.actualizar_estado_asistente, name='actualizar_estado_asistente'),
     
+    path('evento/<int:evento_id>/evaluadores/', views.ver_evaluadores, name='ver_evaluadores'),
+    path('actualizar_estado_evaluador/<int:evaluador_id>/<str:nuevo_estado>/', views.actualizar_estado_evaluador, name='actualizar_evaluador'),
+    
+    
     #criterios de evaluacion
     path('criterios_evaluacion/<int:evento_id>', views.criterios_evaluacion, name='criterios_evaluacion'),
     path('modificar_criterio/<int:criterio_id>', views.modificar_criterio, name='modificar_criterio'),

@@ -1,0 +1,233 @@
+/* ================== VARIABLES CSS ================== */
+:root {
+  --color-principal: #ff6600;
+  --color-principal-hover: #e65c00;
+  --color-blanco: #fff;
+  --color-fondo-btn-flotante: rgba(255, 255, 255, 0.9);
+  --color-texto-btn-flotante: #ff6600;
+  --color-texto-info: #555;
+  --color-titulo: #222;
+  --color-iconos: #ff6600;
+  --color-sombra: rgba(0, 0, 0, 0.2);
+}
+
+/* ================== ESTILOS GENERALES ================== */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: url('https://source.unsplash.com/random/1920x1080/?event') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background-color: var(--color-principal);
+  color: var(--color-blanco);
+  padding: 20px;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  position: relative;
+  animation: slideDown 0.6s ease-out;
+}
+
+.floating-home-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: var(--color-fondo-btn-flotante);
+  color: var(--color-texto-btn-flotante);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px var(--color-sombra);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  z-index: 100;
+  text-decoration: none;
+}
+
+.floating-home-btn:hover {
+  transform: translateY(-2px);
+  background: var(--color-blanco);
+}
+
+.main-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+/* ================== CONTENEDOR EVENTO ================== */
+.info-section {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--color-blanco);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px var(--color-sombra);
+  overflow: hidden;
+  max-width: 1000px;
+  width: 100%;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.info-image {
+  flex: 1 1 350px;
+  padding: 20px;
+}
+
+.info-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.info-image img:hover {
+  transform: scale(1.03);
+}
+
+.info-content {
+  flex: 1 1 400px;
+  padding: 30px;
+  animation: fadeIn 1s ease-in;
+}
+
+.info-content h2 {
+  font-size: 28px;
+  color: var(--color-titulo);
+  margin-bottom: 15px;
+}
+
+.info-content p {
+  font-size: 18px;
+  color: var(--color-texto-info);
+  margin: 10px 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 18px;
+  color: #444;
+}
+
+.info-item i {
+  color: var(--color-iconos);
+  font-size: 20px;
+}
+
+.programacion-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  color: var(--color-principal);
+  font-weight: bold;
+  font-size: 16px;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.programacion-link:hover {
+  color: var(--color-principal-hover);
+}
+
+/* ================== BOTONES ================== */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 25px;
+}
+
+.action-btn {
+  background: var(--color-principal);
+  color: var(--color-blanco);
+  border: none;
+  padding: 14px 24px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  transition: transform 0.3s, background 0.3s;
+}
+
+.action-btn:hover {
+  background: var(--color-principal-hover);
+  transform: scale(1.03);
+}
+
+/* ================== RESPONSIVE ================== */
+@media (max-width: 768px) {
+  .info-section {
+    flex-direction: column;
+  }
+
+  .info-image {
+    height: 220px;
+  }
+
+  .info-content {
+    padding: 20px;
+  }
+
+  .action-btn {
+    font-size: 15px;
+    padding: 12px;
+  }
+  .header{
+    font-size: 1.3rem;
+  }
+}
+
+/* ================== ANIMACIONES ================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

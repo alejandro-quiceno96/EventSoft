@@ -1,0 +1,164 @@
+:root {
+  --primary: #ff6600;
+  --primary-hover: #e65c00;
+  --light-bg: #ffffff;
+  --text-color: #333;
+  --text-light: #666;
+}
+
+/* ====== RESET & BODY ====== */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: url('https://source.unsplash.com/random/1920x1080/?technology,robotics') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ====== HEADER ====== */
+.header {
+  background-color: var(--primary);
+  color: white;
+  padding: 20px;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  position: relative;
+  animation: slideDown 0.6s ease-out;
+}
+
+.floating-home-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--primary);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.floating-home-btn:hover {
+  transform: translateY(-2px);
+  background: white;
+}
+
+/* ====== FORMULARIO ====== */
+.form-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+.form-card {
+  background: var(--light-bg);
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  animation: fadeInUp 0.7s ease-out;
+}
+
+.form-card h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: var(--text-color);
+  font-size: 24px;
+}
+
+/* ====== GRUPOS DE CAMPOS ====== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.form-group input {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* ====== BOTÓN ====== */
+.action-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.3s, transform 0.3s;
+  width: 100%;
+}
+
+.action-btn:hover {
+  background: var(--primary-hover);
+  transform: scale(1.03);
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 600px) {
+  .form-card {
+    padding: 25px 20px;
+  }
+
+  .header {
+    font-size: 1.4rem;
+  }
+}
+
+/* ====== ANIMACIONES ====== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
