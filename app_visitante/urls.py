@@ -15,4 +15,5 @@ urlpatterns = [
     path('guardar_evaluador/<int:evento_id>/', views.registrar_evaluador, name='registrar_evaluador'),
     path('registro/<int:evento_id>/', views.registrar_asistente, name='registrar_asistente'),
     path('inicio_evaluado/', views.inicio_evaluador, name='inicio_sesion_evaluador'),
+    path("chatbot/", views.chatbot, name="chatbot"),
 ]

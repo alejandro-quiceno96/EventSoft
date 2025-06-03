@@ -1,41 +1,58 @@
 {% extends "app_evaluador/base.html" %}
 
-{% block title %}Evaluador{% endblock %}
-
+{% block title %}
+    {{ evaluador|default:'Evaluador' }}
+{% endblock %}
+{% block url_volver %}{% url 'app_evaluador:inicio_sesion_evaluador' %}{% endblock %}
 {% block content %}
-    <h2 class="text-center my-4">Eventos</h2>
-    <section class="contenedor-principal-de-eventos d-flex flex-wrap justify-content-center gap-4">
-        {% if eventos %}
-            {% for evento in eventos %}
-                <div class="card" style="width: 18rem;">
-                    <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" style="height: 180px; object-fit: cover; width: 100%;">
+<h2 class="text-center my-4">Eventos</h2>
 
-                    <div class="card-body">
-                        <h5 class="evento-titulo">{{ evento.eve_nombre }}</h5>
-                        <h6 class="evento-fechas">
-                            <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
-                        </h6>
-                        <a href="{% url 'app_evaluador:criterios_evento' evento.id %}" 
-   class="btn btn-primary" 
-   style="background-color: #FF5800; border: none;">
-    <i class="fa-solid fa-clipboard-list"></i> Subir Rúbrica
-</a>
+<section class="contenedor-principal-de-eventos d-flex flex-wrap justify-content-center gap-3">
+    {% if eventos %}
+        {% now "Y-m-d" as hoy %}
+        {% for relacion in eventos %}
+            {% with evento=relacion.eva_eve_evento_fk %}
+            <div class="card evento-card fade-in-up" style="width: 18rem;">
+                <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" class="card-img-top" style="height: 200px; object-fit: contain;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="evento-titulo">{{ evento.eve_nombre }}</h5>
+                    <h6 class="evento-fechas mb-2">
+                        <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
+                    </h6>
 
-<a href="{% url 'app_evaluador:ver_participantes' evento.id %}" 
-   class="btn btn-primary" 
-   style="background-color: #FF5800; border: none;">
-    <i class="fa-solid fa-users"></i> Evaluar Participantes
-</a>
+                   <a href="{% url 'app_evaluador:criterios_evento' evento.id %}" 
+                    class="btn-funcion mb-1" 
+                    {% if relacion.eva_estado != "Admitido" %}style="display: none;"{% endif %}>
+                        <i class="fa-solid fa-clipboard-list"></i> Subir Rúbrica
+                    </a>
 
-                    </div>
+                    {% if relacion.eva_estado == "Admitido" %}
+                        {% if hoy >= evento.eve_fecha_inicio|stringformat:"s" and hoy <= evento.eve_fecha_fin|stringformat:"s" %}
+                            <a href="{% url 'app_evaluador:ver_participantes' evento.id %}" 
+                            class="btn-funcion mb-1">
+                                <i class="fa-solid fa-users"></i> Evaluar Participantes
+                            </a>
+                        {% else %}
+                            <a  href="{% url 'app_evaluador:ver_participantes' evento.id %}" class="btn btn-funcion mb-1" >
+                                <i class="fa-solid fa-users"></i> Evaluar Participantes
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-warning mt-2 mb-0 py-2 px-3 small" role="alert">
+                            <i class="fa-solid fa-circle-info"></i> Tu solicitud está en revisión por el administrador del evento.
+                        </div>
+                    {% endif %}
+
                 </div>
-            {% endfor %}
-        {% else %}
-            <div class="alert alert-warning text-center w-100">
-                <i class="fa-solid fa-triangle-exclamation"></i> No hay eventos disponibles.
             </div>
-        {% endif %}
-    </section>
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-warning text-center w-100">
+            <i class="fa-solid fa-triangle-exclamation"></i> No hay eventos disponibles.
+        </div>
+    {% endif %}
+</section>
 {% endblock %}
 
 {% block extra_scripts %}

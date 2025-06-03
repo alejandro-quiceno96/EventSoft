@@ -10,7 +10,8 @@ from app_evaluador.models import Evaluadores
 from django.utils import timezone
 from django.urls import reverse
 from app_administrador.utils import generar_pdf, generar_clave_acceso
-
+import json
+from django.http import JsonResponse
 
 def inicio_visitante(request):
     eventos = Eventos.objects.all()
@@ -141,7 +142,7 @@ def registrar_asistente(request, evento_id):
         telefono = request.POST.get('telefono')
         documento = request.FILES.get('comprobante_pago')
         
-        asistente_existente = asistente = Asistentes.objects.filter(asi_cedula=cedula).first()
+        asistente_existente = Asistentes.objects.filter(asi_cedula=cedula).first()
 
        # Crear o usar asistente existente
         if asistente_existente:
@@ -213,3 +214,26 @@ def registrar_evaluador(request, evento_id):
         return redirect(reverse('inicio_visitante') + '?registro=exito_evaluador')
 
     return redirect('inicio_visitante')
+
+
+
+respuestas = {
+    "hola": "¡Hola! Soy el asistente virtual de EventSoft. ¿En qué puedo ayudarte?",
+    "que hace un participante?": "Un participante puede asistir a conferencias, talleres y recibir certificados de participación.",
+    "que hace un visitante?": "Un visitante puede recorrer el evento, conocer los stands, pero no participa en las actividades certificadas.",
+    "cómo me inscribo?": "Puedes inscribirte desde la página principal, usando el botón de inscripción o accediendo con tu número de documento.",
+    "cuáles son los eventos disponibles?": "Puedes ver los eventos disponibles en la sección principal o usar los filtros por categoría y área.",
+    "documentos": "Para participar solo necesitas tu documento de identidad y, si aplica, la invitación del evento.",
+}
+
+@csrf_exempt
+def chatbot(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        mensaje = data.get("mensaje", "").lower()
+
+        for clave, respuesta in respuestas.items():
+            if clave in mensaje:
+                return JsonResponse({"respuesta": respuesta})
+
+        return JsonResponse({"respuesta": "Lo siento, no entendí tu pregunta. ¿Podrías reformularla?"})

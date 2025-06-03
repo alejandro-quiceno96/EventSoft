@@ -129,13 +129,13 @@ def cancelar_inscripcion(request, evento_id, asistente_id):
             return JsonResponse({"success": False, "error": "ID del participante faltante"}, status=400)
 
         try:
-            # Buscar la inscripción en la tabla 'participantes_eventos'
+            
             asistente_evento = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_asistente_fk=asistente_id).first()
 
             if asistente_evento:
-                # Eliminar el documento asociado si existe
+                
                 if asistente_evento.asi_eve_soporte:
-                    # Eliminar el archivo físico de la carpeta media
+                   
                     default_storage.delete(asistente_evento.asi_eve_soporte.path)
                 
                 # Eliminar la inscripción

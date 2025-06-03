@@ -52,7 +52,6 @@ def crear_evento(request):
             fecha_fin = request.POST.get('fecha_fin')
             categoria = request.POST.get('categoria')
             inscripcion = request.POST.get('inscripcion')
-            estado = request.POST.get('estado_evento')
             permitir_participantes = request.POST.get('permitir_participantes')
 
             # Aforo
@@ -73,7 +72,7 @@ def crear_evento(request):
                 eve_lugar=lugar,
                 eve_fecha_inicio=datetime.strptime(fecha_inicio, "%Y-%m-%d").date(),
                 eve_fecha_fin=datetime.strptime(fecha_fin, "%Y-%m-%d").date(),
-                eve_estado=estado,
+                eve_estado="Pendiente",
                 eve_imagen=archivo_imagen,
                 eve_capacidad=int(aforo) if aforo else 0,
                 eve_tienecosto=True if inscripcion == 'Si' else False,
@@ -365,7 +364,7 @@ def ver_asistentes(request: HttpRequest, evento_id):
         'evento_nombre': evento.eve_nombre,
     })
     
-@csrf_exempt 
+@csrf_exempt
 def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')
@@ -380,13 +379,14 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
         else:
             qr_participante = None
             clave_acceso = None
-        # Buscar el participante_evento
-        try:
-            asistente_evento = AsistentesEventos.objects.get(
-                asi_eve_asistente_fk=asistente_id,
-                asi_eve_evento_fk=evento_id
-            )
-        except ParticipantesEventos.DoesNotExist:
+
+        # Buscar el asistente_evento
+        asistente_evento = AsistentesEventos.objects.filter(
+            asi_eve_asistente_fk=asistente_id,
+            asi_eve_evento_fk=evento_id
+        ).first()
+
+        if not asistente_evento:
             return JsonResponse({'status': 'error', 'message': 'Asistente no encontrado en el evento'}, status=404)
 
         # Actualizar los valores
@@ -394,6 +394,7 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
         asistente_evento.asi_eve_qr = qr_participante
         asistente_evento.asi_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
         asistente_evento.save()
+
         url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
         return redirect(f'{url}?estado={nuevo_estado}')
 

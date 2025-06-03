@@ -34,6 +34,12 @@
                                 <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula = "{{cedula_participante}}">
                                     <i class="fa-solid fa-eye"></i> Ver Información
                                 </button>
+                                
+                                <ul>
+                                  {% for comentario in participante.comentarios %}
+                                      <li><strong>{{ comentario.cal_evaluador_fk.eva_nombre }}:</strong> {{ comentario.cal_comentario }}</li>
+                                  {% endfor %}
+                                </ul>
 
                             {% elif evento.par_eve_estado == "Rechazado" %}
                                 <div style="display: flex;">Estado: 
@@ -70,6 +76,11 @@
                     <p class="text-secondary">Explora los eventos disponibles y regístrate para participar.</p>
                 </div>
             {% endif %}
+              
+    
+    
+            
+            
 
             
         </div>

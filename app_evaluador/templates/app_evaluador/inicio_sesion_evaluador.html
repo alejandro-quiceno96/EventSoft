@@ -10,10 +10,6 @@
 </head>
 <body>
     <header class="position-relative py-3 mb-4 header-participante">
-        <div class="contenedor-3">
-                <i class="fas fa-bars fa-2x" style="color: #ff6600;">
-            <button class="btn btn-secondary" onclick="window.history.back()">Volver</button></i>
-            </div>
         <div class="container position-relative text-center">
           <a href="/" class="btn btn-light position-absolute start-0 top-50 translate-middle-y ms-2">
             <i class="fas fa-arrow-left"></i> Regresar
@@ -22,21 +18,18 @@
         </div>
     </header>
     
-    <main class="form-inicio-admin container">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-danger">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        
-        <form action="{% url 'app_evaluador:inicio_sesion_evaluador' %}" method="POST">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="cedula" class="form-label">Ingrese la cédula del evaluador:</label>
-                <input type="text" name="cedula" id="cedula" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Ingresar</button>
-        </form>
-    </main>
+    <div class="form-inicio-admin">
+        <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+            <h4 class="mb-4 text-center">Iniciar Sesión</h4>
+            <form action="{% url 'app_evaluador:inicio_sesion_evaluador'%}" method="POST">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="cedula" class="form-label">Cédula</label>
+                <input type="text" class="form-control" id="cedula" name="cedula" required>
+              </div>
+              <button type="submit" class="btn-ver-mas">Entrar</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>

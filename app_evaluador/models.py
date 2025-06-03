@@ -15,3 +15,4 @@ class Calificaciones(models.Model):
     cal_criterio_fk = models.ForeignKey('app_criterios.Criterios', on_delete=models.CASCADE, related_name='criterio_calificaciones')
     clas_participante_fk = models.ForeignKey('app_participante.Participantes', on_delete=models.CASCADE, related_name='participante_calificaciones')
     cal_valor = models.DecimalField(max_digits=5, decimal_places=2)
+    cal_comentario = models.TextField(null=True, blank=True)

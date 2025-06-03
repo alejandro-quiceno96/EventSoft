@@ -1,318 +1,126 @@
+{% extends "app_evaluador/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Criterios de Evaluación</title>
 
-    <!-- Estilos -->
-    <link rel="stylesheet" href="{% static 'css/criteriosadmin.css' %}">
-    <link rel="stylesheet" href="{% static 'app_evaluador/css/style.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+{% block title %}
+    {{ evaluador|default:'Evaluador' }}
+{% endblock %}
 
-</head>
-<body class="bg-gray-100 font-sans">
+{% block url_volver %}{% url 'app_evaluador:principal_evaluador' evaluador_id %}{% endblock %}
 
-    <header>
-        <section class="header-admin">
-            <div class="contenedor-3">
-                <i class="fas fa-bars fa-2x" style="color: #ff6600;">
-            <button class="btn btn-secondary" onclick="window.history.back()">Volver</button></i>
-            </div>
-            <div class="contenedor-1">
-                <img class="logo-sena" src="{% static 'app_evaluador/image/Logo Sena 1.png' %}" alt="Logo Sena">
-                <a href="#">EventSoft</a>
-            </div>
-            <div class="contenedor-2">
-                <div class="user-icon-container">
-                    <i class="fas fa-user-circle fa-2x" style="color:rgb(211, 201, 195);"></i>
+{% block content %}
+<link rel="stylesheet" href="{% static 'app_administrador/css/criteriosadmin.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+
+<div class="container ">
+    <h2 class="mb-4">Criterios de Evaluación</h2>
+     <div class="alert alert-info" role="alert">
+        <strong>Nota:</strong> Los criterios de evaluación son fundamentales para la calificación de los participantes. Asegúrate de que sean claros y justos.
+        <form id="form-criterios" method="POST">
+        {% csrf_token %}
+            <div class="mb-3">
+                <label for="nuevo_criterio" class="form-label">Nuevo Criterio:</label>
+                <div class="input-group">
+                    <input type="text" class="form-control_descripcion " name="criterio" placeholder="Descripción" required>
+                    <input type="number" class="form-control_porcentaje porcentaje-nuevo" name="porcentaje" placeholder="%" min="0" max="100" required>
+                    <button type="submit" class="btn btn-success">Agregar</button>
                 </div>
             </div>
-        </section>
-    </header>
-    
-<div class="container mt-5">
-    <!-- Botón para volver al evaluador -->
-    <div class="mt-3">
-        <a href="{% url 'app_evaluador:principal_evaluador' evento_actual.id %}" class="btn btn-danger">Volver al Evaluador</a>
+        </form>
     </div>
+</div>
 
-    <h2 class="mb-4">Criterios de Evaluación</h2>
-
-    <!-- Mensajes -->
-    {% if messages %}
-        <div>
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- Alerta de Información -->
-    <div class="alert alert-info" role="alert">
-        <strong>Nota:</strong> Los criterios de evaluación son fundamentales para la calificación de los participantes. Asegúrate de que sean claros y justos.
+<div id="total-porcentaje" class="porcentaje-total" data-aos="fade-up" data-aos-delay="200">
+    <div class="porcentaje">
+        <strong>Porcentaje total: <span id="porcentaje-total">0</span>%</strong>
     </div>
+</div>
 
-    <!-- Formulario para agregar nuevo criterio -->
-    <form id="form-criterios" method="POST" class="mb-4">
-        {% csrf_token %}
-        <div class="mb-3 input-grupos d-flex gap-2 align-items-center">
-            <input type="text" class="form-control" name="criterio" placeholder="Descripción" required>
-            <input type="number" class="form-control form-control-porcentaje" name="porcentaje" placeholder="%" min="0" max="100" required>
-            <input type="hidden" name="evento_id" value="{{ evento_actual.id }}">
-            <button type="submit" class="btn btn-success">Agregar</button>
+<div class="row g-4" data-aos="fade-up" data-aos-delay="300">
+    {% for criterio in criterios %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h5 class="card-title titulo-card">Criterio {{ forloop.counter }}</h5>
+
+                <div class="mb-4">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control descripcion" rows="3" maxlength="100" readonly>{{ criterio.cri_descripcion }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Porcentaje</label>
+                    <input type="number" class="form-control porcentaje-existente"
+                           data-id="{{ criterio.id }}"
+                           value="{{ criterio.cri_peso }}"
+                           readonly>
+                </div>
+
+                <div class="contenedor-botones">
+                    <button class="btn btn-outline-primary btn-sm btn-modificar-criterios"
+                            data-url="{% url 'administrador:modificar_criterio' criterio.id %}">
+                        <i class="fa-solid fa-pen-to-square"></i> Modificar
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm btn-eliminar-criterios"
+                            data-id="{{ criterio.id }}"
+                            data-url="{% url 'administrador:eliminar_criterio' criterio.id %}">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
         </div>
-    </form>
-
-    <!-- Porcentaje total -->
-    <div id="total-porcentaje" class="alert alert-secondary">
-        Porcentaje total: <span id="porcentaje-total">{{ porcentaje_total }}</span>%
     </div>
+    {% endfor %}
+</div>
 
-    <!-- Tabla de criterios -->
-    <!-- Tabla -->
-<table class="table table-bordered" id="tabla-criterios">
-    <thead class="table-dark">
-        <tr>
-            <th>Descripción</th>
-            <th>Porcentaje</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for criterio in criterios %}
-        <tr data-id="{{ criterio.id }}">
-            <td class="criterios-tr">
-                {{ criterio.cri_descripcion }}
-            </td>
-            <td class="columna-porcentaje">
-                {{ criterio.cri_peso }}%
-            </td>
-            <td class="acciones">
-                <button class="btn btn-primary btn-modificar" data-id="{{ criterio.id }}" data-descripcion="{{ criterio.cri_descripcion }}" data-peso="{{ criterio.cri_peso }}" data-bs-toggle="modal" data-bs-target="#modalModificar">Modificar</button>
-                <button class="btn btn-danger btn-eliminar" data-id="{{ criterio.id }}" data-bs-toggle="modal" data-bs-target="#modalEliminar">Eliminar</button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<!-- Modal Modificar -->
-<div class="modal fade" id="modalModificar" tabindex="-1" aria-labelledby="modalModificarLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form id="formModificar">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalModificarLabel">Modificar Criterio</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" id="modificarCriterioId" name="criterio_id">
-          <div class="mb-3">
-            <label for="modDescripcion" class="form-label">Descripción</label>
-            <input type="text" class="form-control" id="modDescripcion" name="descripcion" required>
-          </div>
-          <div class="mb-3">
-            <label for="modPeso" class="form-label">Porcentaje</label>
-            <input type="number" class="form-control" id="modPeso" name="peso" min="0" max="100" required>
-          </div>
-          <div id="errorModificar" class="text-danger"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-        </div>
+<!-- Modales -->
+<div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Éxito</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-    </form>
+      <div class="modal-body text-center"></div>
+    </div>
   </div>
 </div>
 
-<!-- Modal Eliminar -->
-<div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form id="formEliminar">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalEliminarLabel">Eliminar Criterio</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          ¿Estás seguro que deseas eliminar este criterio?
-          <input type="hidden" id="eliminarCriterioId" name="criterio_id">
-          <div id="errorEliminar" class="text-danger"></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-danger">Eliminar</button>
-        </div>
+<div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalConfirmarEliminarLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalConfirmarEliminarLabel">Confirmar eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-    </form>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas eliminar este criterio?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+      </div>
+    </div>
   </div>
 </div>
 
-
-<!-- Scripts -->
-<script src="{% static 'js/criteriosevaluador.js' %}"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'app_administrador/js/criteriosadmin.js' %}"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
+    AOS.init();
 
+    document.getElementById("form-criterios").addEventListener("submit", function(e) {
+        let nuevoPorcentaje = parseFloat(document.querySelector(".porcentaje-nuevo").value) || 0;
+        let sumaExistente = 0;
 
-    // Submit modificar
-document.getElementById('formModificar').addEventListener('submit', e => {
-    e.preventDefault()
-    const id = document.getElementById('modificarCriterioId').value
-    const descripcion = document.getElementById('modDescripcion').value.trim()
-    const peso = document.getElementById('modPeso').value.trim()
+        document.querySelectorAll(".porcentaje-existente").forEach(function(input) {
+            sumaExistente += parseFloat(input.value) || 0;
+        });
 
-    // Validaciones frontend
-    if (descripcion === '') {
-        document.getElementById('errorModificar').textContent = 'La descripción no puede estar vacía.'
-        return
-    }
-    const pesoNum = Number(peso)
-    if (isNaN(pesoNum) || pesoNum < 0 || pesoNum > 100) {
-        document.getElementById('errorModificar').textContent = 'El porcentaje debe ser un número entre 0 y 100.'
-        return
-    }
-
-    fetch(`/evaluador/criterio/modificar/${id}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-        body: new URLSearchParams({ descripcion, peso: pesoNum })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success) {
-            location.reload()
-        } else {
-            document.getElementById('errorModificar').textContent = data.error || 'Error desconocido'
-        }
-    })
-})
-
-document.addEventListener('DOMContentLoaded', () => {
-    const modalModificar = document.getElementById('modalModificar')
-    const modalEliminar = document.getElementById('modalEliminar')
-    
-    // Cuando abres el modal modificar, carga datos
-    modalModificar.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget
-        const id = button.getAttribute('data-id')
-        const descripcion = button.getAttribute('data-descripcion')
-        const peso = button.getAttribute('data-peso')
-        
-        document.getElementById('modificarCriterioId').value = id
-        document.getElementById('modDescripcion').value = descripcion
-        document.getElementById('modPeso').value = peso
-        document.getElementById('errorModificar').textContent = ''
-    })
-
-    // Cuando abres el modal eliminar, setea id
-    modalEliminar.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget
-        const id = button.getAttribute('data-id')
-        document.getElementById('eliminarCriterioId').value = id
-        document.getElementById('errorEliminar').textContent = ''
-    })
-
-    // Submit modificar
-    document.getElementById('formModificar').addEventListener('submit', e => {
-    e.preventDefault();
-    
-    const id = document.getElementById('modificarCriterioId').value;
-    const nuevoPeso = parseFloat(document.getElementById('modPeso').value) || 0;
-    const descripcion = document.getElementById('modDescripcion').value.trim();
-
-    let total = 0;
-    document.querySelectorAll('#tabla-criterios tbody tr').forEach(row => {
-        const rowId = row.getAttribute('data-id');
-        const peso = parseFloat(row.querySelector('.columna-porcentaje').textContent) || 0;
-        if (rowId !== id) total += peso;  // no contar el que estamos modificando
-    });
-
-    if (total + nuevoPeso > 100) {
-        document.getElementById('errorModificar').textContent = 'El total de porcentajes no puede superar el 100%.';
-        return;
-    }
-
-    // Continuar con envío si es válido
-    fetch(`/evaluador/criterio/modificar/${id}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-        body: new URLSearchParams({ descripcion, peso: nuevoPeso })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success) {
-            location.reload();
-        } else {
-            document.getElementById('errorModificar').textContent = data.error || 'Error desconocido';
+        if ((sumaExistente + nuevoPorcentaje) > 100) {
+            e.preventDefault();
+            alert("Error: La suma de los porcentajes no puede superar 100%.");
         }
     });
-});
-
-
-    // Submit eliminar
-    document.getElementById('formEliminar').addEventListener('submit', e => {
-        e.preventDefault()
-        const id = document.getElementById('eliminarCriterioId').value
-        
-        fetch(`/evaluador/criterio/eliminar/${id}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if(data.success) {
-                location.reload()
-            } else {
-                document.getElementById('errorEliminar').textContent = data.error || 'Error desconocido'
-            }
-        })
-    })
-
-    // Función para obtener csrf token
-    function getCookie(name) {
-        let cookieValue = null
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';')
-            for(let i=0; i<cookies.length; i++) {
-                const cookie = cookies[i].trim()
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-                    break
-                }
-            }
-        }
-        return cookieValue
-    }
-})
-
-document.getElementById('form-criterios').addEventListener('submit', function(e) {
-    const nuevoPeso = parseFloat(document.querySelector('input[name="porcentaje"]').value) || 0;
-    let totalActual = 0;
-
-    document.querySelectorAll('.columna-porcentaje').forEach(td => {
-        const val = parseFloat(td.textContent) || 0;
-        totalActual += val;
-    });
-
-    if (totalActual + nuevoPeso > 100) {
-        e.preventDefault();
-        alert('La suma total de los porcentajes no puede superar el 100%.');
-    }
-});
 </script>
-
-
-</body>
-</html>
+{% endblock %}
