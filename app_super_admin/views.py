@@ -6,7 +6,7 @@ from app_administrador.models import Administradores
 
 def index(request):
    
-    eventos = Eventos.objects.filter(eve_estado='activo').select_related('eve_administrador_fk')
+    eventos = Eventos.objects.filter().select_related('eve_administrador_fk')
 
     eventos_por_estado = defaultdict(list)
     for evento in eventos:
@@ -48,3 +48,10 @@ def inicio_sesion_super_admin(request):
         except Administradores.DoesNotExist:
             messages.error(request, '❌ Cédula no registrada.')
     return render(request, 'app_super_admin/inicio_sesion.html')
+
+def modificar_estado_evento(request, evento_id, nuevo_estado):
+    evento = get_object_or_404(Eventos, pk=evento_id)
+    evento.eve_estado = nuevo_estado
+    evento.save()
+
+    return redirect('super_admin:index')

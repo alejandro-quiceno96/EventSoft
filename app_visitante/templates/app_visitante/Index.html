@@ -141,21 +141,26 @@
         </section>
 
         <!-- Chatbot -->
-        <div id="chatbotModal" class="chatbot-modal">
-            <div class="chatbot-header">
-                <span>🤖 Asistente Virtual de EventSoft</span>
-                <button onclick="toggleChatbotModal()">&times;</button>
-            </div>
-            <div id="chatLog" class="chat-log"></div>
-            <div class="questions">
-                <button onclick="enviarPregunta('hola')">Hola</button>
-                <button onclick="enviarPregunta('que hace un participante?')">¿Qué hace un participante?</button>
-                <button onclick="enviarPregunta('que hace un visitante?')">¿Qué hace un visitante?</button>
-                <button onclick="enviarPregunta('cómo me inscribo?')">¿Cómo me inscribo?</button>
-                <button onclick="enviarPregunta('cuáles son los eventos disponibles?')">¿Cuáles son los eventos disponibles?</button>
-                <button onclick="enviarPregunta('documentos')">¿Qué documentos necesito?</button>
-            </div>
-        </div>
+        
+        <!-- Avatar del chatbot -->
+<img src="{% static 'app_visitante/image/chatbot.png' %}" id="chatbot-avatar" alt="Asistente Virtual" onclick="toggleChatbotModal()">
+
+<!-- Modal del chatbot -->
+<div id="chatbotModal" class="chatbot-modal">
+    <div class="chatbot-header">
+        <span>🤖 Asistente Virtual de EventSoft</span>
+        <button onclick="toggleChatbotModal()">&times;</button>
+    </div>
+    <div id="chatLog" class="chat-log"></div>
+    <div class="questions">
+        <button onclick="enviarPregunta('hola')">Hola</button>
+        <button onclick="enviarPregunta('que hace un participante?')">¿Qué hace un participante?</button>
+        <button onclick="enviarPregunta('que hace un visitante?')">¿Qué hace un visitante?</button>
+        <button onclick="enviarPregunta('cómo me inscribo?')">¿Cómo me inscribo?</button>
+        <button onclick="enviarPregunta('cuáles son los eventos disponibles?')">¿Cuáles son los eventos disponibles?</button>
+        <button onclick="enviarPregunta('documentos')">¿Qué documentos necesito?</button>
+    </div>
+</div>
     </main>
 
    <div id="registroModal" class="modal">
@@ -295,5 +300,47 @@
             }
         });
    </script>
+   <script>
+    function toggleChatbotModal() {
+        const modal = document.getElementById("chatbotModal");
+        modal.classList.toggle("open");
+    }
+
+    function enviarPregunta(pregunta) {
+        const log = document.getElementById("chatLog");
+
+        const userMsg = document.createElement("p");
+        userMsg.className = "user-msg";
+        userMsg.textContent = "Tú: " + pregunta;
+        log.appendChild(userMsg);
+
+        fetch("{% url 'chatbot' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({ mensaje: pregunta })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const botMsg = document.createElement("p");
+            botMsg.className = "bot-msg";
+            botMsg.textContent = "Bot: " + data.respuesta;
+            log.appendChild(botMsg);
+            log.scrollTop = log.scrollHeight;
+        })
+        .catch(() => {
+            const errorMsg = document.createElement("p");
+            errorMsg.className = "bot-msg";
+            errorMsg.textContent = "Bot: Ocurrió un error al contactar al servidor.";
+            log.appendChild(errorMsg);
+        });
+    }
+
+    function getCSRFToken() {
+        return document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
+    }
+</script>
 </body>
 </html>

@@ -3,16 +3,22 @@
 
 {% block title %}
     {{ administrador|default:'Administrador' }}
+   
 {% endblock %}
 {% block content %}
+<a href="{% url 'inicio_visitante' %}"
+    style="display: inline-block; margin: 20px 0; background-color: #f05a00; color: white; padding: 10px 20px; border: none; border-radius: 5px; text-decoration: none; font-weight: bold;">
+    ← Volver
+</a>
 
     <div class="contenedor-principal-de-eventos">
         {% for evento in eventos %}
             <div class="card" style="width: 18rem;">
-                <!-- Imagen del Evento -->
+                
                 <img src="{{ evento.eve_imagen.url }}" 
                      class="card-img-top" 
                      alt="{{ evento.eve_nombre }}" >
+                     
                 
                 <!-- Cuerpo de la Card -->
                 <div class="card-body">
@@ -97,7 +103,7 @@
     </div>
 </div>
 
-    <!-- Modal de Confirmación de Eliminación -->
+    
     <div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

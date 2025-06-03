@@ -66,9 +66,9 @@
                     aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                {% if eventos_por_estado.activo %}
+                {% if eventos_por_estado.Pendiente %}
                 <div class="list-group">
-                    {% for evento in eventos_por_estado.activo %}
+                    {% for evento in eventos_por_estado.Pendiente %}
                     <div
                         class="list-group-item d-flex justify-content-between align-items-center flex-wrap shadow-sm rounded mb-3 p-3">
                         <div class="flex-grow-1 me-3">
@@ -80,6 +80,10 @@
                         <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}"
                             class=" btn-ver-mas text-white fw-semibold shadow">
                             Ver
+                        </a>
+                        <a href="{% url 'super_administrador:modificar_eventos' evento.id 'activo' %}"
+                            class=" btn-ver-mas text-white fw-semibold shadow">
+                            Aceptar evento
                         </a>
                     </div>
                     {% endfor %}
