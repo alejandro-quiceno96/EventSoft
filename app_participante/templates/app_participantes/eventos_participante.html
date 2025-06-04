@@ -34,7 +34,10 @@
                                 <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula = "{{cedula_participante}}">
                                     <i class="fa-solid fa-eye"></i> Ver Información
                                 </button>
-                                
+                                <a href="{% url 'app_participante:descargar_comentarios' cedula_participante %}" class="btn-ver-mas">
+                                  Descargar Calificación
+                                </a>
+
                                 <ul>
                                   {% for comentario in participante.comentarios %}
                                       <li><strong>{{ comentario.cal_evaluador_fk.eva_nombre }}:</strong> {{ comentario.cal_comentario }}</li>
@@ -107,7 +110,8 @@
                 <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
                 <p><strong><i class="fa-solid fa-pencil"></i> Inscripción:</strong> <span id="modalInscripcion"></span></p>
                 <p><strong><i class="fa-solid fa-lock"></i> Clave de Acceso: </strong> <span id="modalClave"></span></p>
-                
+
+
 
                 <div class="modal-programacion">
                     <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
@@ -263,6 +267,24 @@
         fileName.textContent = 'No se ha seleccionado ningún archivo';
       }
     });
+    function mostrarModalParticipante(data) {
+  // Llenar los datos del participante
+  document.getElementById('modalNombre').textContent = data.nombre;
+  document.getElementById('modalCorreo').textContent = data.correo;
+  document.getElementById('modalCedula').textContent = data.cedula;
+  document.getElementById('modalTelefono').textContent = data.telefono;
+  document.getElementById('modalDireccion').textContent = data.direccion;
+  document.getElementById('modalInstitucion').textContent = data.institucion;
+  document.getElementById('modalEstado').textContent = data.estado;
+
+  // Enlace al PDF de comentarios
+  document.getElementById('modalComentariosPDF').href = `/comentarios/pdf/${data.id}`;
+
+
+  // Mostrar el modal
+  const modal = new bootstrap.Modal(document.getElementById('modalParticipante'));
+  modal.show();
+}
 
   </script>
   
