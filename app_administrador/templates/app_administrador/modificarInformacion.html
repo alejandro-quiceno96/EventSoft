@@ -114,11 +114,11 @@
                         <label for="estado_evento">Estado del evento:</label>
                         <select class="dropdown" name="estado_evento">
                             {% if evento.eve_estado == 'activo' %}
-                                <option value="activo">Activo</option>
-                                <option value="inactivo">Inactivo</option>
+                                <option value="activo">Recibir Inscripciones</option>
+                                <option value="inactivo">Cancelar Incripciones</option>
                             {% else %}
-                                <option value="inactivo">Inactivo</option>
-                                <option value="activo">Activo</option>
+                                <option value="inactivo">Cancelar Incripciones</option>
+                                <option value="activo">Recibir Inscripciones</option>
                             {% endif %}
                         </select>
                     </div>

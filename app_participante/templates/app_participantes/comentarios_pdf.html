@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comentarios de {{ participante.par_nombre }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        h1 { text-align: center; }
+        .comentario { margin-bottom: 15px; padding: 10px; border: 1px solid #ccc; }
+        .evento { font-weight: bold; }
+        .evaluador { font-style: italic; color: #555; }
+    </style>
+</head>
+<body>
+    <h1>Comentarios para {{ participante.par_nombre }}</h1>
+    {% if comentarios %}
+        {% for c in comentarios %}
+            <div class="comentario">
+                <div class="evento">Evento: {{ c.evento }}</div>
+                <div class="evaluador">Evaluador: {{ c.evaluador }}</div>
+                <p>{{ c.comentario }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay comentarios para este participante.</p>
+    {% endif %}
+</body>
+</html>

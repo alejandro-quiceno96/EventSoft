@@ -12,6 +12,9 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+
 
 @csrf_exempt
 def info_participantes_eventos(request):
@@ -26,6 +29,7 @@ def info_participantes_eventos(request):
             participaciones = ParticipantesEventos.objects.filter(
                 par_eve_participante_fk=participante
             ).select_related("par_eve_evento_fk")
+            participante_id = request.GET.get('participante_id') 
 
             eventos_data = []
 
@@ -59,7 +63,7 @@ def info_participantes_eventos(request):
                     "eve_imagen": evento.eve_imagen,
                     "par_eve_estado": participacion.par_eve_estado,
                     "calificacion": round(promedio, 2) if promedio is not None else "Sin calificar",
-                    "comentarios": comentarios
+                    "comentarios": comentarios,
                 })
                 print(comentarios)
 
@@ -258,75 +262,37 @@ def cancelar_inscripcion(request, evento_id, participante_id):
         return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
 
 
-def generar_pdf_comentarios(request, evento_id):
-    evento = Eventos.objects.get(id=evento_id)
-    participantes = evento.participantes.all()  # Ajusta según tu modelo
+def generar_pdf_comentarios_participante(request, par_cedula):
+    participante = Participantes.objects.get(par_cedula=par_cedula)
+    comentarios = []
+    
 
-    comentarios = Calificaciones.objects.filter(
-        clas_participante_fk__in=participantes,
-        cal_comentario__isnull=False
-    ).select_related('cal_evaluador_fk', 'clas_participante_fk')
+    # Obtener los eventos en los que el participante está inscrito
+    participaciones = ParticipantesEventos.objects.filter(par_eve_participante_fk=participante).select_related('par_eve_evento_fk')
+    
+    for participacion in participaciones:
+        evento = participacion.par_eve_evento_fk
+        # Obtener calificaciones que pertenecen a ese participante y cuyo criterio pertenece al evento actual
+        calificaciones = Calificaciones.objects.filter(
+            clas_participante_fk=participante,
+            cal_criterio_fk__cri_evento_fk=evento
+        ).select_related('cal_evaluador_fk')
 
-    # Agrupar comentarios por participante
-    comentarios_por_participante = {}
-    for c in comentarios:
-        comentarios_por_participante.setdefault(c.clas_participante_fk_id, []).append(c)
+        for calificacion in calificaciones:
+            if calificacion.cal_comentario:
+                comentarios.append({
+                    'evento': evento.eve_nombre,
+                    'evaluador': calificacion.cal_evaluador_fk.eva_nombre,
+                    'comentario': calificacion.cal_comentario,
+                    "cedula_participante": participante.id
+                })
 
-    # Crear respuesta HTTP con PDF
+    template = get_template('app_participantes/comentarios_pdf.html')
+    html = template.render({'participante': participante, 'comentarios': comentarios})
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="comentarios_evento_{evento_id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="comentarios_{par_cedula}.pdf"'
 
-    p = canvas.Canvas(response, pagesize=letter)
-    width, height = letter
-
-    y = height - 50
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(50, y, f"Comentarios de Participantes - Evento: {evento.nombre}")
-    y -= 40
-
-    p.setFont("Helvetica", 12)
-    for participante in participantes:
-        p.drawString(50, y, f"Participante: {participante.nombre}")
-        y -= 20
-
-        comentarios_list = comentarios_por_participante.get(participante.id)
-        if comentarios_list:
-            for comentario in comentarios_list:
-                texto = f"- {comentario.cal_evaluador_fk.eva_nombre}: {comentario.cal_comentario}"
-                # Ajustar texto largo en varias líneas
-                y = dibujar_texto_multilinea(p, texto, 60, y, width - 100, 12)
-        else:
-            p.drawString(60, y, "No hay comentarios para este participante.")
-            y -= 20
-
-        y -= 15
-        # Si falta espacio en la página, agregar nueva página
-        if y < 50:
-            p.showPage()
-            y = height - 50
-            p.setFont("Helvetica", 12)
-
-    p.showPage()
-    p.save()
-
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error al generar el PDF', status=500)
     return response
-
-
-def dibujar_texto_multilinea(canvas, texto, x, y, max_width, font_size):
-    from reportlab.pdfbase.pdfmetrics import stringWidth
-
-    words = texto.split()
-    line = ""
-    line_height = font_size + 2
-    for word in words:
-        test_line = f"{line} {word}".strip()
-        if stringWidth(test_line, "Helvetica", font_size) < max_width:
-            line = test_line
-        else:
-            canvas.drawString(x, y, line)
-            y -= line_height
-            line = word
-    if line:
-        canvas.drawString(x, y, line)
-        y -= line_height
-    return y

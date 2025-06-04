@@ -33,7 +33,7 @@
                                 <i class="fa-solid fa-users"></i> Evaluar Participantes
                             </a>
                         {% else %}
-                            <a  href="{% url 'app_evaluador:ver_participantes' evento.id %}" class="btn btn-funcion mb-1" >
+                            <a class="btn-funcion mb-1 disabled" style="pointer-events: none; opacity: 0.6; cursor: not-allowed;">
                                 <i class="fa-solid fa-users"></i> Evaluar Participantes
                             </a>
                         {% endif %}
@@ -42,6 +42,7 @@
                             <i class="fa-solid fa-circle-info"></i> Tu solicitud está en revisión por el administrador del evento.
                         </div>
                     {% endif %}
+
 
                 </div>
             </div>

@@ -19,12 +19,10 @@ def index(request):
     return render(request, 'app_super_admin/inicio_super_admin.html', context)
 
 def ver_evento_adm(request, evento_id):
-    estados_validos = ['activo']
 
     evento = get_object_or_404(
         Eventos.objects.select_related('eve_administrador_fk'),
         id=evento_id,
-        eve_estado__in=estados_validos
     )
     if evento.eve_imagen:
         evento.imagen_url = request.build_absolute_uri(evento.eve_imagen.url)
