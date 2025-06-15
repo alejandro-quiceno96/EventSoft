@@ -18,6 +18,7 @@ from app_categorias.models import Categorias
 from django.http import JsonResponse, Http404, HttpResponse
 from .forms import EvaluadorForm
 
+
 def principal_evaluador(request, evaluador_id):
     evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
     
@@ -460,8 +461,7 @@ def participantes_por_evaluar(request, evaluador_cedula, evento_id):  # CORRECCI
     
 
 
-
-def detalle_evento_json(request, evento_id, cedula):
+def detalle_evento(request, evento_id, cedula):
     try:
         evento = Eventos.objects.get(id=evento_id)
     except Eventos.DoesNotExist:
@@ -475,18 +475,13 @@ def detalle_evento_json(request, evento_id, cedula):
         categoria_nombre = categoria.cat_nombre
     except (EventosCategorias.DoesNotExist, Categorias.DoesNotExist):
         pass
-    
-    #Obtener Clave de acceso 
 
+    # Obtener Clave de acceso
+    clave_acceso = None
     try:
-        clave_acceso = get_object_or_404(
-            ParticipantesEventos,
-            par_eve_evento_fk=evento_id,
-            
-        )
-        
-    except (ParticipantesEventos.DoesNotExist):
-        pass
+        clave_acceso = ParticipantesEventos.objects.get(par_eve_evento_fk=evento_id)
+    except ParticipantesEventos.DoesNotExist:
+        clave_acceso = None
 
     datos_evento = {
         'eve_id': evento.id,
@@ -499,12 +494,34 @@ def detalle_evento_json(request, evento_id, cedula):
         'eve_estado': evento.eve_estado,
         'eve_imagen': evento.eve_imagen.url if evento.eve_imagen else None,
         'eve_cantidad': evento.eve_capacidad if evento.eve_capacidad is not None else 'Cupos ilimitados',
-        'eve_costo':'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
+        'eve_costo': 'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
         'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
         'eve_categoria': categoria_nombre,
-        'eve_clave': clave_acceso.par_eve_clave,
-        'codigo_qr': clave_acceso.par_eve_qr.url,
+        'eve_clave': clave_acceso.par_eve_clave if clave_acceso else '',
+        'codigo_qr': clave_acceso.par_eve_qr.url if clave_acceso and clave_acceso.par_eve_qr else '',
         'cedula': cedula,
     }
 
-    return JsonResponse(datos_evento)
+    return render(request, 'app_evaluador/detalle_evento.html', {'evento': datos_evento})
+
+def info_evaluador(request, cedula):
+    return render(request, 'app_evaluador/info_evaluador.html', {'cedula': cedula})
+
+def cancelar_preinscripcion(request, evento_id, cedula):
+    evaluador = get_object_or_404(Evaluadores, eva_cedula=cedula)
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Buscar la asignación de evento del evaluador
+    asignacion = EvaluadoresEventos.objects.filter(
+        eva_eve_evaluador_fk=evaluador,
+        eva_eve_evento_fk=evento
+    ).first()
+
+    if asignacion:
+        asignacion.delete()
+        messages.success(request, 'Preinscripción cancelada exitosamente.')
+    else:
+        messages.warning(request, 'No se encontró la preinscripción para cancelar.')
+
+    return redirect('app_evaluador:detalle_evento_evaluador', evento_id=evento.id, cedula=evaluador.eva_cedula)
+

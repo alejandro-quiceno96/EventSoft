@@ -1,0 +1,217 @@
+{% extends 'app_evaluador/base.html' %}
+
+{% block title %}Detalles del Evento{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: orangered;
+        --gray-100: #f3f4f6;
+        --gray-800: #1f2937;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background-color: #f8fafc;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .main-header {
+        background: linear-gradient(135deg, var(--primary-color), #6366f1);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        border: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .info-item {
+        background: var(--gray-100);
+        border-left: 4px solid var(--primary-color);
+        padding: 1rem;
+        border-radius: 8px;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .event-img {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow);
+    }
+
+    .pdf-link {
+        margin-top: 1rem;
+        display: inline-block;
+        color: var(--primary-color);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .pdf-link:hover {
+        text-decoration: underline;
+    }
+
+    .qr-img {
+        margin-top: 1rem;
+        width: 150px;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background: #4338ca;
+    }
+
+    @media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
+
+<div class="container mt-4" style="max-width: 900px;">
+    <div class="main-header">
+        <h2 class="header-title">
+            <i class="fa-solid fa-calendar-days"></i> {{ evento.eve_nombre }}
+        </h2>
+        <p style="margin: 0; opacity: 0.9;">Detalles del Evento Asignado</p>
+    </div>
+
+    {% if evento.eve_imagen %}
+    <img src="{{ evento.eve_imagen }}" alt="Imagen del Evento" class="event-img">
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Descripción</div>
+                    <div class="info-value">{{ evento.eve_descripcion }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Ciudad</div>
+                    <div class="info-value">{{ evento.eve_ciudad }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Lugar</div>
+                    <div class="info-value">{{ evento.eve_lugar }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Fecha Inicio</div>
+                    <div class="info-value">{{ evento.eve_fecha_inicio }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Fecha Fin</div>
+                    <div class="info-value">{{ evento.eve_fecha_fin }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Estado</div>
+                    <div class="info-value">{{ evento.eve_estado }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Capacidad</div>
+                    <div class="info-value">{{ evento.eve_cantidad }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Costo</div>
+                    <div class="info-value">{{ evento.eve_costo }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Categoría</div>
+                    <div class="info-value">{{ evento.eve_categoria }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Clave de Acceso</div>
+                    <div class="info-value">{{ evento.eve_clave }}</div>
+                </div>
+            </div>
+
+            {% if evento.codigo_qr %}
+            <div style="text-align: center; margin-top: 2rem;">
+                <div class="info-label">Código QR</div>
+                <img src="{{ evento.codigo_qr }}" alt="Código QR" class="qr-img">
+            </div>
+            {% endif %}
+
+            {% if evento.eve_programacion %}
+            <div style="margin-top: 2rem;">
+                <span class="info-label">Programación:</span><br>
+                <a href="{{ evento.eve_programacion }}" target="_blank" class="pdf-link">
+                    <i class="fa-solid fa-file-pdf"></i> Ver programación en PDF
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{% url 'app_evaluador:info_evaluador' evento.cedula %}" class="btn btn-primary">
+            <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+{% endblock %}
