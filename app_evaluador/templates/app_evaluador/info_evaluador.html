@@ -1,0 +1,117 @@
+{% extends 'app_participantes/base_par.html' %}
+
+{% block title %}Información del Evaluador{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 800px;">
+    {% if evaluador %}
+        <h3 class="mb-4"><i class="fa-solid fa-user-tie"></i> Información del Evaluador</h3>
+        
+        <!-- Información Principal del Evaluador -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">{{ evaluador.eva_nombre }}</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Cédula:</strong> {{ evaluador.eva_cedula }}</p>
+                        <p class="mb-2"><strong>Correo:</strong> {{ evaluador.eva_correo }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Teléfono:</strong> {{ evaluador.eva_telefono }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas en cards horizontales -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ total_eventos }}</h5>
+                        <p class="card-text">Eventos Asignados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ evaluaciones_completadas }}</h5>
+                        <p class="card-text">Evaluaciones Completadas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ evaluaciones_pendientes }}</h5>
+                        <p class="card-text">Evaluaciones Pendientes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Eventos Asignados -->
+        {% if eventos_asignados %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fa-solid fa-calendar-alt"></i> Eventos Asignados</h5>
+                </div>
+                <div class="card-body">
+                    {% for evento in eventos_asignados %}
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ evento.eve_nombre }}</h6>
+                                    <small class="text-muted">
+                                        <i class="fa-solid fa-map-marker-alt"></i> {{ evento.eve_ciudad }} - 
+                                        <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'app_evaluador:detalle_evento_evaluador' evaluador.eva_cedula evento.id %}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fa-solid fa-eye"></i> Ver Detalles
+                                    </a>
+                                    <a href="{% url 'app_evaluador:editar_evaluador' evaluador.id %}?evento_id={{ evento.id }}" 
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="fa-solid fa-edit"></i> Editar Perfil
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Botones de Acción -->
+        <div class="text-end mt-4">
+            <a href="{% url 'app_evaluador:generar_reporte_evaluador' evaluador.eva_cedula %}" 
+               class="btn btn-success">
+                <i class="fa-solid fa-file-pdf"></i> Generar Reporte PDF
+            </a>
+            <a href="{% url 'app_evaluador:editar_evaluador' evaluador.id %}" 
+               class="btn btn-primary">
+                <i class="fa-solid fa-user-pen"></i> Editar Evaluador
+            </a>
+            <a href="{% url 'app_evaluador:buscar_evaluador' %}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Buscar Otro
+            </a>
+        </div>
+
+    {% else %}
+        <!-- Mensaje cuando no se encuentra el evaluador -->
+        <div class="text-center mt-5">
+            <div class="alert alert-warning d-inline-block" role="alert" style="max-width: 500px;">
+                <h4 class="alert-heading"><i class="fa-solid fa-exclamation-triangle"></i> Evaluador no encontrado</h4>
+                <p class="mb-3">{{ mensaje_error|default:"No se encontró ningún evaluador con la cédula proporcionada." }}</p>
+                <hr>
+                <a href="{% url 'app_evaluador:buscar_evaluador' %}" class="btn btn-primary">
+                    <i class="fa-solid fa-search"></i> Buscar Otro Evaluador
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
