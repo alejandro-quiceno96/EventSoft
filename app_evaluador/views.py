@@ -17,17 +17,20 @@ from weasyprint import HTML
 from app_categorias.models import Categorias
 from django.http import JsonResponse, Http404, HttpResponse
 from .forms import EvaluadorForm
+import os
+from django.conf import settings
 
 
 def principal_evaluador(request, evaluador_id):
     evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
-    
+    print(f"Principal Evaluador: {evaluador.eva_nombre} (ID: {evaluador.id})")
     # Traemos las relaciones EvaluadoresEventos para ese evaluador, incluyendo los eventos relacionados
     evaluadores_eventos = EvaluadoresEventos.objects.filter(eva_eve_evaluador_fk=evaluador).select_related('eva_eve_evento_fk')
     
     # Pasamos ese queryset al contexto
     return render(request, 'app_evaluador/inicio_evaluador.html', {
         'evaluador': evaluador,
+        'evaluador_id': evaluador_id,
         'eventos': evaluadores_eventos
     })
 
@@ -67,6 +70,7 @@ def ver_participantes(request, evento_id):
         'evento': evento,
         'participantes': participantes_evento,
         'evaluador_nombre': request.session.get('evaluador_nombre'),
+        'evaluador_id': request.session.get('evaluador_id'),
         'evaluador': evaluador_id,
         'ranking': ranking,
         'evaluados_dict': evaluados_dict,
@@ -146,33 +150,6 @@ def evaluar_participante(request, evento_id, participante_id, evaluador_id):
     return render(request, 'app_evaluador/evaluar_participante.html', context)
 
 
-def criterios_evaluacion(request, evento_id):
-    evento = get_object_or_404(Eventos, id=evento_id)
-
-    # Obtener los participantes del evento con su calificación final
-    participantes_evento = ParticipantesEventos.objects.filter(
-        par_eve_evento_fk=evento,
-        par_eve_calificacion_final__isnull=False
-    ).select_related('par_eve_participante_fk').order_by('-par_eve_calificacion_final')
-
-    # Construir lista para el ranking
-    ranking = []
-    for p in participantes_evento:
-        participante = p.par_eve_participante_fk
-        ranking.append({
-            'id': participante.id,
-            'nombre': participante.par_nombre,
-            'promedio': round(p.par_eve_calificacion_final, 2)
-        })
-
-    return render(request, 'app_evaluador/evaluador.html', {
-        'ranking': ranking,
-        'evento': evento,
-        'evaluador': request.session.get('evaluador_nombre'),
-        'evaluador_id': request.session.get('evaluador_id'),
-        
-    })
-   
 
     
 def obtener_calificaciones(request, evento_id, participante_id, evaluador_id):
@@ -465,14 +442,21 @@ def participantes_por_evaluar(request, evaluador_cedula, evento_id):  # CORRECCI
     
 
 
-def detalle_evento(request, evento_id, cedula):
+def detalle_evento(request, cedula, evento_id):
     try:
         evento = Eventos.objects.get(id=evento_id)
+        evaluador = Evaluadores.objects.get(id=cedula)
     except Eventos.DoesNotExist:
         raise Http404("Evento no encontrado")
+    evento = get_object_or_404(Eventos, id=evento_id)
+    participantes_evento = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento)
+
 
     # Obtener la categoría relacionada
     categoria_nombre = ""
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+   
     try:
         evento_categoria = EventosCategorias.objects.get(eve_cat_evento_fk=evento_id)
         categoria = Categorias.objects.get(id=evento_categoria.eve_cat_categoria_fk.id)
@@ -483,8 +467,10 @@ def detalle_evento(request, evento_id, cedula):
     # Obtener Clave de acceso
     clave_acceso = None
     try:
-        clave_acceso = ParticipantesEventos.objects.get(par_eve_evento_fk=evento_id)
-    except ParticipantesEventos.DoesNotExist:
+        print(f"Buscando clave de acceso para evento {evento_id} y evaluador {cedula}")
+        clave_acceso = EvaluadoresEventos.objects.get(eva_eve_evento_fk=evento_id, eva_eve_evaluador_fk=cedula)
+
+    except EvaluadoresEventos.DoesNotExist:
         clave_acceso = None
 
     datos_evento = {
@@ -500,32 +486,221 @@ def detalle_evento(request, evento_id, cedula):
         'eve_cantidad': evento.eve_capacidad if evento.eve_capacidad is not None else 'Cupos ilimitados',
         'eve_costo': 'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
         'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
-        'eve_categoria': categoria_nombre,
-        'eve_clave': clave_acceso.par_eve_clave if clave_acceso else '',
-        'codigo_qr': clave_acceso.par_eve_qr.url if clave_acceso and clave_acceso.par_eve_qr else '',
+        'eve_categoria': categoria_nombre, 
+        'eve_clave': clave_acceso.eva_clave_acceso if clave_acceso else '',
+        'codigo_qr': clave_acceso.eva_eve_qr.url if clave_acceso and clave_acceso.eva_eve_qr else '',
         'cedula': cedula,
+        'participantes': participantes_evento,
+        'documento': clave_acceso.eva_eve_documentos.url if clave_acceso and clave_acceso.eva_eve_documentos else None,
+        'informacion_tecnica': evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else None,
     }
 
-    return render(request, 'app_evaluador/detalle_evento.html', {'evento': datos_evento})
+    return render(request, 'app_evaluador/detalle_evento.html', {
+    'evento': datos_evento,
+    'evaluador': evaluador,
+    'participantes_evento': participantes_evento,
+    'evento_obj': evento, 
+})
 
 def inicio_evaluador(request):
     return render(request, 'app_evaluador/inicio_evaluador.html')
 
 
-def cancelar_preinscripcion(request, evento_id, cedula):
-    evaluador = get_object_or_404(Evaluadores, eva_cedula=cedula)
+
+def subir_info_tecnica(request, pk):
+    if request.method == 'POST':
+        evento = get_object_or_404(Eventos, pk=pk)
+        evaluador_cedula = request.POST.get('cedula')
+        evaluador = get_object_or_404(Evaluadores, eva_cedula=evaluador_cedula)
+
+        if not evaluador_cedula:
+            return JsonResponse({'success': False, 'message': 'No se pudo identificar al evaluador.'})
+
+        if 'eve_informacion_tecnica' in request.FILES:
+            evento.eve_informacion_tecnica = request.FILES['eve_informacion_tecnica']
+            evento.save()
+            return redirect('app_evaluador:detalle_evento_evaluador', evento_id=evento.id, cedula=evaluador.id)
+        else:
+            return JsonResponse({'success': False, 'message': 'No se encontró el archivo a subir.'})
+
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'})
+
+
+def modificar_evaluador(request, evaluador_id):
+    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+
+    if request.method == 'POST':
+        nombre = request.POST.get('eva_nombre')
+        correo = request.POST.get('eva_correo')
+        telefono = request.POST.get('eva_telefono')
+
+        evaluador.eva_nombre = nombre
+        evaluador.eva_correo = correo
+        evaluador.eva_telefono = telefono
+        evaluador.save()
+
+        messages.success(request, 'Información actualizada correctamente.')
+        return redirect('app_evaluador:detalle_evento_evaluador', cedula=evaluador.id, evento_id=request.POST.get('evento_id'))
+    
+
+
+
+
+
+def criterios_evaluacion(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
 
-    asignacion = EvaluadoresEventos.objects.filter(
-        eva_eve_evaluador_fk=evaluador,
-        eva_eve_evento_fk=evento
-    ).first()
+    if request.method == 'POST':
+        criterio = request.POST.get('criterio')
+        porcentaje = request.POST.get('porcentaje')
+        
+        if criterio and porcentaje:
+            try:
+                peso = float(porcentaje)
+                Criterios.objects.create(
+                    cri_descripcion=criterio,
+                    cri_peso=peso,
+                    cri_evento_fk=evento
+                )
+                messages.success(request, "Criterio agregado correctamente.")
+            except:
+                messages.error(request, "Error al agregar el criterio.")
+        else:
+            messages.error(request, "Todos los campos son obligatorios.")
+        return redirect('app_evaluador:criterios_evaluacion', evento_id=evento_id)
 
-    if asignacion:
-        asignacion.delete()
-        messages.success(request, 'Preinscripción cancelada exitosamente.')
+    criterios = Criterios.objects.filter(cri_evento_fk=evento)
+    return render(request, 'app_evaluador/criterios_evaluacion.html', {
+        'evento': evento,
+        'criterios': criterios,
+        'evaluador_id': request.session.get('evaluador_id'),
+        'evaluador': request.session.get('evaluador_nombre'),
+    })
+
+
+
+    
+def modificar_criterio(request, criterio_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        try:
+            criterio = Criterios.objects.get(id=criterio_id)
+            criterio.cri_descripcion = data.get('descripcion')
+            criterio.cri_peso = data.get('porcentaje')
+            criterio.save()
+            return JsonResponse({'success': True})
+        except Criterios.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Criterio no encontrado'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+
+
+def eliminar_criterio(request, criterio_id):
+    if request.method == 'POST':
+        try:
+            criterio = Criterios.objects.get(id=criterio_id)
+            criterio.delete()
+            return JsonResponse({'success': True})
+        except Criterios.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'No encontrado'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+
+
+def tabla_calificaciones(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    subquery = (
+        Calificaciones.objects
+        .filter(cal_evento_fk=evento_id)
+        .values('cal_participante_fk', 'cal_criterio_fk')
+        .annotate(promedio_criterio=Avg('cal_valor'))
+    )
+
+    ranking_dict = {}
+    for fila in subquery:
+        criterio = Criterios.objects.filter(id=fila['cal_criterio_fk'], cri_evento_fk=evento_id).first()
+        if criterio:
+            participante_id = fila['cal_participante_fk']
+            ponderado = fila['promedio_criterio'] * criterio.cri_peso / 100
+            ranking_dict[participante_id] = ranking_dict.get(participante_id, 0) + ponderado
+
+    ranking_ordenado = sorted(ranking_dict.items(), key=lambda x: x[1], reverse=True)
+
+    ranking = []
+    for participante_id, promedio in ranking_ordenado:
+        participante = Participantes.objects.get(id=participante_id)
+        ranking.append({
+            'id': participante.id,
+            'nombre': participante.par_nombre,
+            'promedio': round(promedio, 2)
+        })
+
+    return render(request, 'app_evaluador/posiciones.html', {
+        'ranking': ranking,
+        'evento': evento,
+        'evaluador': request.session.get('eva_nombre'),
+    })
+    
+def obtener_datos_preinscripcion(request, evento_id, evaluador_id):
+    evaluador = EvaluadoresEventos.objects.filter(eva_eve_evento_fk = evento_id, eva_eve_evaluador_fk = evaluador_id).first()
+    if evaluador:
+        documento_url = evaluador.eva_eve_documentos.url if evaluador.eva_eve_documentos else None
+        return JsonResponse({
+            'nombre': evaluador.eva_eve_evaluador_fk.eva_nombre,
+            'correo':  evaluador.eva_eve_evaluador_fk.eva_correo,
+            'telefono': evaluador.eva_eve_evaluador_fk.eva_telefono,
+            'documento': documento_url
+        })
     else:
-        messages.warning(request, 'No se encontró la preinscripción para cancelar.')
+        return JsonResponse({'error': 'No encontrado'}, status=404)
 
-    return redirect('app_evaluador:detalle_evento_evaluador', evento_id=evento.id, cedula=evaluador.eva_cedula)
+def modificar_preinscripcion(request, evento_id, evaluador_id):
+    evaluador = get_object_or_404(EvaluadoresEventos, eva_eve_evento_fk=evento_id, eva_eve_evaluador_fk=evaluador_id)
 
+    if request.method == 'POST':
+        # Accede al objeto Evaluador relacionado
+        persona = evaluador.eva_eve_evaluador_fk
+
+        # Modifica los campos del evaluador
+        persona.eva_nombre = request.POST.get('nombre')
+        persona.eva_correo = request.POST.get('correo')
+        persona.eva_telefono = request.POST.get('telefono')
+        persona.save()
+
+        # Verifica y reemplaza el documento si se subió uno nuevo
+        if 'documento' in request.FILES:
+            # Elimina el documento anterior si existe
+            if evaluador.eva_eve_documentos:
+                documento_anterior_path = os.path.join(settings.MEDIA_ROOT, str(evaluador.eva_eve_documentos))
+                if os.path.isfile(documento_anterior_path):
+                    os.remove(documento_anterior_path)
+
+            # Guarda el nuevo documento
+            evaluador.eva_eve_documentos = request.FILES['documento']
+            evaluador.save()
+
+        print(f"Evaluador modificado: {persona.eva_nombre} (ID: {persona.id})")
+        return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador_id)
+
+    else:
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+def cancelar_inscripcion(request, evento_id, evaluador_id):
+    if request.method == 'POST':
+        relacion = get_object_or_404(
+            EvaluadoresEventos,
+            eva_eve_evento_fk=evento_id,
+            eva_eve_evaluador_fk=evaluador_id
+        )
+
+        # Eliminar el documento asociado si existe
+        if relacion.eva_eve_documentos:
+            ruta_documento = relacion.eva_eve_documentos.path
+            if os.path.exists(ruta_documento):
+                os.remove(ruta_documento)
+        
+        relacion.delete()  # Elimina la inscripción
+        return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador_id) 
+    else:
+        return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador_id)  # También redirige si no es POST

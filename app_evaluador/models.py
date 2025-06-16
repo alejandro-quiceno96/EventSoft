@@ -6,8 +6,6 @@ class Evaluadores(models.Model):
     eva_correo = models.EmailField(max_length=100)
     eva_telefono = models.CharField(max_length=15)
 
-    eva_documento = models.FileField(upload_to='documentos_evaluadores/', null=True, blank=True)
-
     def __str__(self):
         return self.eva_nombre
 

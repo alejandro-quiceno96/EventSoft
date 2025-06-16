@@ -5,16 +5,20 @@ from app_eventos.models import Eventos
 from app_administrador.models import Administradores
 
 def index(request):
-   
-    eventos = Eventos.objects.filter().select_related('eve_administrador_fk')
-
+    eventos = Eventos.objects.all().select_related('eve_administrador_fk')
     eventos_por_estado = defaultdict(list)
     for evento in eventos:
-        eventos_por_estado[evento.eve_estado].append(evento)
+        # Normaliza el estado
+        estado = evento.eve_estado.capitalize()
+        eventos_por_estado[estado].append(evento)
+
+    # Cuenta los eventos pendientes
+    pendientes_count = len(eventos_por_estado['Pendiente'])
 
     context = {
         'eventos': eventos,
         'eventos_por_estado': eventos_por_estado,
+        'pendientes_count': pendientes_count,
     }
     return render(request, 'app_super_admin/inicio_super_admin.html', context)
 
@@ -51,5 +55,4 @@ def modificar_estado_evento(request, evento_id, nuevo_estado):
     evento = get_object_or_404(Eventos, pk=evento_id)
     evento.eve_estado = nuevo_estado
     evento.save()
-
     return redirect('super_admin:index')

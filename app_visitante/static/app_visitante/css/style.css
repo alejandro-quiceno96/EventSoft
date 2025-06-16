@@ -1,6 +1,6 @@
-/* ===== VARIABLES ===== */
+
 :root {
-    --color-naranja: #FF5800;
+    --color-naranja: #007832;
     --color-texto: #ffffff;
 }
 
@@ -14,7 +14,7 @@ body, html {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    font-family: "Noto Sans", sans-serif;
+    font-family: 'Work Sans';
     background-image: url(/static/images/fondo_admin.png);
     background-size: cover;
     background-repeat: no-repeat;
@@ -289,7 +289,7 @@ form {
 
 .boton-continuar:hover,
 .boton-modificar:hover {
-    background-color: #ff59009f;
+    background-color: #007832;
     cursor: pointer;
 }
 
@@ -364,7 +364,7 @@ form {
 
 .modal-programacion a:hover {
     text-decoration: underline;
-    background-color: #ff5900e3;
+    background-color: #007832;
 }
 
 .modal-header,
@@ -410,7 +410,7 @@ form {
     gap: 5px;
     font-size: 2rem;
     font-weight: bold;
-    color:  #FF5800;
+    color:  #007832;
 }
 
 .loader-text {

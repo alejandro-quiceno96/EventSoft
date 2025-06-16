@@ -36,7 +36,7 @@
     
                                 {% if evento.asi_eve_estado == "Admitido" %}
                                     <div style="display: flex;">Estado: 
-                                        <p class="card-text" style="color: rgb(39, 119, 39);"> {{ evento.asi_eve_estado }}</p>
+                                        <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
                                     </div>
                                     <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula = "{{cedula_participante}}">
                                         <i class="fa-solid fa-eye"></i> Ver Información del Asistente
@@ -44,7 +44,7 @@
     
                                 {% elif evento.asi_eve_estado == "Rechazado" %}
                                     <div style="display: flex;">Estado: 
-                                        <p class="card-text" style="color: rgb(158, 28, 28);"> {{ evento.asi_eve_estado }}</p>
+                                        <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
                                     </div>
                                     <button type="button" class="btn-cancelar"
                                                 data-id="{{ evento.eve_id }}"
@@ -54,7 +54,7 @@
     
                                 {% else %}
                                     <div style="display: flex;">Estado: 
-                                        <p class="card-text" style="color: rgb(199, 80, 12);"> {{ evento.asi_eve_estado }}</p>
+                                        <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
                                     </div>
                                         <button type="button" class="btn-cancelar"
                                                 data-id="{{ evento.eve_id }}"

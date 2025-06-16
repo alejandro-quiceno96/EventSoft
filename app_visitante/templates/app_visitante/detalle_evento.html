@@ -1,15 +1,23 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Información del Evento</title>
 
   <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="{% static 'app_visitante/css/detalle_evento.css' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link rel="stylesheet" href="{% static 'app_visitante/css/detalle_evento.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    .extra-buttons {
+      display: none;
+      margin-top: 10px;
+    }
+    
+  </style>
 </head>
 
 <body>
@@ -28,9 +36,7 @@
 
       <div class="info-content">
         <h2>{{ evento.eve_nombre }}</h2>
-        <p>
-          {{ evento.eve_descripcion }}
-        </p>
+        <p>{{ evento.eve_descripcion }}</p>
 
         <div class="info-item">
           <i class="fas fa-map-marker-alt"></i>
@@ -38,40 +44,49 @@
         </div>
         <div class="info-item">
           <i class="fas fa-calendar-alt"></i>
-          <span>Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }} </span>
+          <span>Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }}</span>
         </div>
 
-        <a
-          href="{{ evento.eve_programacion.url }}"
-          target="_blank"
-          rel="noopener"
-          class="programacion-link"
-          ><i class="fas fa-file-alt"></i> Ver programación</a
-        >
+        <a href="{{ evento.eve_programacion.url }}" target="_blank" rel="noopener" class="programacion-link">
+          <i class="fas fa-file-alt"></i> Ver programación
+        </a>
 
         <div class="action-buttons">
-          <a
-            href="{% url 'preinscripcion_participante' evento.id %}"
-            class="action-btn"
-          >
-            <i class="fas fa-pen"></i> Preinscribirme como participante
+          <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
+            <i class="fas fa-user"></i> Preinscribirme como asistente
           </a>
+
+          <!-- Botón Más Opciones -->
+          <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
+
+          <!-- Botones ocultos inicialmente -->
+          <div id="opciones-ocultas" class="extra-buttons">
+            <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
+              <i class="fas fa-pen"></i> Preinscribirme como participante
+            </a>
+            <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
+              <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como Evaluador
+            </a>
+          </div>
         </div>
-        <a
-          href="{% url 'preinscripcion_asistente' evento.id %}"
-          class="action-btn"
-        >
-          <i class="fas fa-user"></i> Preinscribirme como asistente
-        </a>
-        <a
-          href="{% url 'preinscripcion_evaluador' evento.id %}"
-          class="action-btn"
-        >
-          <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como Evaluador
-        </a>
+
       </div>
     </div>
   </div>
-</body>
 
+  <script>
+    function mostrarOpciones() {
+      const opciones = document.getElementById('opciones-ocultas');
+      const btn = document.querySelector('.action-btn-outline');
+
+      if (opciones.style.display === 'none' || opciones.style.display === '') {
+        opciones.style.display = 'block';
+        btn.textContent = 'Ocultar opciones';
+      } else {
+        opciones.style.display = 'none';
+        btn.textContent = 'Más opciones';
+      }
+    }
+  </script>
+</body>
 </html>

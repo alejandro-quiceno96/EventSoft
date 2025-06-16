@@ -5,7 +5,7 @@
     {{ evaluador_nombre|default:'Evaluador' }}
 {% endblock %}
 
-{% block url_volver %}{% url 'app_evaluador:principal_evaluador' evaluador %}{% endblock %}
+{% block back_url %}{% url 'app_evaluador:principal_evaluador' evaluador_id %}{% endblock %}
 
 {% block content %}
 <h2 class="text-center my-4 text-orange">Participantes admitidos del evento: {{ evento.eve_nombre }}</h2>

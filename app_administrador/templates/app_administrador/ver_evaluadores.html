@@ -7,9 +7,10 @@
     <title>Evaluadores del Evento</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Work Sans";
             margin: 0;
             padding: 20px;
             background-image: url(/static/app_administrador/image/fondo_admin.png);
@@ -21,7 +22,7 @@
     
         h1 {
             text-align: center;
-            color: #f77604;
+            color: #007832;
         }
     
         table {
@@ -43,7 +44,7 @@
         }
     
         th {
-            background-color: #FF5800;
+            background-color: #007832;
             color: white;
             text-align: center;
         }
@@ -52,7 +53,7 @@
             display: inline-block;
             margin-top: 20px;
             padding: 10px 15px;
-            background-color: #FF5800;
+            background-color: #007832;
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -80,7 +81,7 @@
 
         .container-titulos {
             text-align: center;
-            color: #FF5800;
+            color: #007832;
         }
 
     </style>
@@ -123,7 +124,15 @@
                         </li>
                     </ul>
 
-
+                     {% if asistente.documento %}
+                        <a href="{{ asistente.documento.url }}" class="btn btn-outline-primary mb-2" target="_blank">
+                            <i class="fa-solid fa-file-pdf me-1"></i> Ver Documento
+                        </a>
+                    {% else %}
+                        <span class="text-muted mb-2">
+                            <i class="fa-solid fa-file-circle-xmark me-1 text-danger"></i> Sin documento
+                        </span>
+                    {% endif %}
                     <div class="d-flex justify-content-between mt-auto">
                         {% if asistente.estado == "Pendiente" or asistente.estado == "Rechazado" %}
                             <button class="btn btn-success  btn-admitir"

@@ -23,18 +23,18 @@ urlpatterns = [
     
     path('editar/<int:evaluador_id>/', views.editar_evaluador, name='editar_evaluador'),
 
-    # URL para obtener datos del evaluador (si la necesitas)
-    path('datos/<str:cedula>/', views.obtener_datos_evaluador, name='obtener_datos_evaluador'),
     
 
     # Detalles del evento para evaluador# app_evaluador/urls.py
 # urls.py
-path('evaluador/evaluador/<str:evaluador_cedula>/evento/<int:evento_id>/', views.detalle_evento_evaluador, name='detalle_evento_evaluador'),
+    path('evaluador/evaluador/<str:evaluador_cedula>/evento/<int:evento_id>/', views.detalle_evento_evaluador, name='detalle_evento_evaluador'),
 
     
     # Reportes
     path('reporte/<str:cedula>/', views.generar_reporte_evaluador, name='generar_reporte_evaluador'),
     path('evaluador/evento/<int:evento_id>/evaluador/<str:evaluador_cedula>/', views.detalle_evento_json, name='detalle_evento_json'),
+
+    path('modificar/<int:evaluador_id>/', views.modificar_evaluador, name='modificar_evaluador'),
 
     # Participantes por evaluar
     path('participantes/<str:evaluador_cedula>/<int:evento_id>/', views.participantes_por_evaluar, name='participantes_por_evaluar'),
@@ -44,10 +44,15 @@ path('evaluador/evaluador/<str:evaluador_cedula>/evento/<int:evento_id>/', views
 
 
     #cancelar preinscripción
-    path('cancelar-preinscripcion/<int:evento_id>/<str:cedula>/', views.cancelar_preinscripcion, name='cancelar_preinscripcion'),
-   
+    path('cancelar-inscripcion/<int:evento_id>/<int:evaluador_id>/', views.cancelar_inscripcion, name='cancelar_inscripcion'),
+    path('evento/<int:pk>/subir-info-tecnica/', views.subir_info_tecnica, name='subir_info_tecnica'),
 
-
-
-
+    path('eventos/<int:evento_id>/criterios/', views.criterios_evaluacion, name='criterios_evaluacion'),
+    path('criterio/modificar/<int:criterio_id>/', views.modificar_criterio, name='modificar_criterio'),
+    path('criterio/eliminar/<int:criterio_id>/', views.eliminar_criterio, name='eliminar_criterio'),
+    path('eventos/<int:evento_id>/ranking/', views.tabla_calificaciones, name='tabla_calificaciones'),
+    
+    #modificar inscripcion
+    path('obtener_datos_preinscripcion/<int:evento_id>/<int:evaluador_id>/', views.obtener_datos_preinscripcion, name='obtener_datos_preinscripcion'),
+    path('modificar_preinscripcion/<int:evento_id>/<int:evaluador_id>/', views.modificar_preinscripcion, name='modificar_preinscripcion'),
 ]

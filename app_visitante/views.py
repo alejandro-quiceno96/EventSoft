@@ -186,6 +186,7 @@ def registrar_evaluador(request, evento_id):
         cedula = request.POST.get('cedula')
         correo = request.POST.get('correo')
         telefono = request.POST.get('telefono')
+        documento = request.FILES.get('documento')
 
         try:
             evaluador = Evaluadores.objects.get(eva_cedula=cedula)
@@ -206,6 +207,7 @@ def registrar_evaluador(request, evento_id):
             eva_eve_evaluador_fk=evaluador,
             eva_eve_evento_fk=evento,
             eva_eve_fecha_hora=timezone.now(),
+            eva_eve_documentos=documento,
             eva_estado='Pendiente',
             eva_eve_qr='',
         )

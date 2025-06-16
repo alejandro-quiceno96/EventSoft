@@ -4,15 +4,26 @@
 {% block title %}Super Admin - EventSoft{% endblock %}
 
 {% block content %}
-<header style="background-color: #ff6600; padding: 15px 30px; color: white;"
+<header style="background-color: #007832; padding: 15px 30px; color: white;"
     class="d-flex justify-content-between align-items-center">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <div class="d-flex align-items-center">
         <img src="{% static 'app_super_admin/image/Logo Sena 1.png' %}" alt="Logo SENA" height="60" class="me-2">
     </div>
-    <div>
+    <div class="position-relative">
         <i class="fas fa-user-circle me-2"></i>
         Super Admin
-        <i class="fas fa-bell ms-3" id="notificationBell"></i>
+        <span class="position-relative ms-3" style="cursor:pointer;" data-bs-toggle="modal"
+            data-bs-target="#modalEventosActivos">
+            <i class="fa-regular fa-bell" id="notificationBell"></i>
+            {% if pendientes_count > 0 %}
+            <span id="notificationCount"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size:0.8rem;">
+                {{ pendientes_count }}
+            </span>
+            {% endif %}
+        </span>
     </div>
 </header>
 
@@ -20,6 +31,7 @@
     <h2 class="p-2 mt-4 rounded" style="width: 250px; margin: 0 auto;">Eventos activos</h2>
     <div class="d-flex flex-wrap justify-content-center gap-3 p-3">
         {% for evento in eventos %}
+        {% if evento.eve_estado == "activo" %}
         <div class="event-card card shadow-sm" style="width: 280px;">
             <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="Imagen evento"
                 style="height: 160px; object-fit: cover;">
@@ -31,36 +43,25 @@
                 <p class="card-text mb-1">👤 {{ evento.eve_administrador_fk.adm_nombre|default:"No asignado" }}</p>
                 <p class="card-text mb-2">
                     Estado:
-                    {% if evento.eve_estado == "activo" %}
                     <span class="text-success fw-bold">{{ evento.eve_estado|capfirst }}</span>
-                    {% elif evento.eve_estado == "terminado" %}
-                    <span class="text-danger fw-bold">{{ evento.eve_estado|capfirst }}</span>
-                    {% else %}
-                    <span class="text-warning fw-bold">{{ evento.eve_estado|capfirst }}</span>
-                    {% endif %}
                 </p>
                 <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}"
                     class="btn-ver-mas text-white w-100 fw-semibold">Ver evento</a>
             </div>
         </div>
+        {% endif %}
         {% empty %}
         <p>No hay eventos activos disponibles.</p>
         {% endfor %}
     </div>
 </main>
 
-<!-- Botón flotante en la esquina inferior izquierda -->
-<button id="verEventosActivos" class="btn-ver-mas-creado position-fixed bottom-0 start-0 m-4 shadow" data-bs-toggle="modal"
-    data-bs-target="#modalEventosActivos" style="z-index: 1050;">
-    📋 Ver eventos Creados
-</button>
-
 <!-- Modal de eventos activos -->
 <div class="modal fade" id="modalEventosActivos" tabindex="-1" aria-hidden="true"
     aria-labelledby="modalEventosActivosLabel">
     <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header  text-white">
+            <div class="modal-header text-white" style="background-color: #007832;">
                 <h5 class="modal-title fw-bold" id="modalEventosActivosLabel">Eventos Creados</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Cerrar"></button>
@@ -78,11 +79,11 @@
                             </p>
                         </div>
                         <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}"
-                            class=" btn-ver-mas text-white fw-semibold shadow">
+                            class="btn-ver-mas text-white fw-semibold shadow">
                             Ver
                         </a>
                         <a href="{% url 'super_administrador:modificar_eventos' evento.id 'activo' %}"
-                            class=" btn-ver-mas text-white fw-semibold shadow">
+                            class="btn-ver-mas text-white fw-semibold shadow">
                             Aceptar evento
                         </a>
                     </div>
@@ -101,13 +102,28 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<style>
+    #notificationBell {
+        font-size: 1.6rem;
+        position: relative;
+    }
+
+    #notificationCount {
+        min-width: 22px;
+        padding: 2px 6px;
+        font-size: 0.9rem;
+    }
+</style>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-       
-        if (document.querySelectorAll("#modalEventosActivos .list-group-item").length > 0) {
-            const bell = document.getElementById("notificationBell");
-            bell.classList.add("text-warning", "fa-shake");
-        }
-    });
+    const bell = document.getElementById("notificationBell");
+    const count = document.getElementById("notificationCount");
+    if (count && parseInt(count.textContent) > 0) {
+        // Solo efecto shake sin color amarillo
+        bell.classList.add("fa-shake");
+        // bell.classList.remove("text-warning"); // en caso que ya venga
+    }
+});
+
 </script>
 {% endblock %}

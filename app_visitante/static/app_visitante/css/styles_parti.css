@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #ff6600;
+    --primary-color: #007832;
     --secondary-color: #ffffff;
     --text-color: #333;
     --header-height: 70px;
@@ -14,7 +14,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Work Sans';
     background-color: #f9f9f9;
     color: var(--text-color);
     min-height: 100vh;
@@ -104,7 +104,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background-color: #e65c00;
+    background-color: #007832;
 }
 
 .alert {
@@ -178,7 +178,7 @@ button[type="submit"]:hover {
 }
 
 .file-label:hover {
-    color: #cc5200; /* tono más oscuro para hover */
+    color: #007832; /* tono más oscuro para hover */
 }
 
 /* Ocultamos el input nativo */
@@ -202,7 +202,7 @@ input[type="file"] {
 }
 
 .file-label:hover::after {
-    background-color: #cc5200;
+    background-color: #007832;
 }
 
 /* Mostrar nombre del archivo seleccionado */
