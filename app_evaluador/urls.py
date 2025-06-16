@@ -38,9 +38,10 @@ path('evaluador/evaluador/<str:evaluador_cedula>/evento/<int:evento_id>/', views
 
     # Participantes por evaluar
     path('participantes/<str:evaluador_cedula>/<int:evento_id>/', views.participantes_por_evaluar, name='participantes_por_evaluar'),
-    # Detalle del evento en HTML para evaluador
+    # Detalle del evento  para evaluador
     path('detalle-evento/html/<int:cedula>/<int:evento_id>/', views.detalle_evento, name='detalle_evento_evaluador'),
-    path('info/<str:cedula>/', views.info_evaluador, name='info_evaluador'),
+    path('inicio_evaluador/', views.inicio_evaluador, name='inicio_evaluador'),
+
 
     #cancelar preinscripción
     path('cancelar-preinscripcion/<int:evento_id>/<str:cedula>/', views.cancelar_preinscripcion, name='cancelar_preinscripcion'),
