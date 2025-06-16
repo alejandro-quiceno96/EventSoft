@@ -1,0 +1,108 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Participante</title>
+    <link rel="stylesheet" href="{% static 'app_administrador/css/style.css' %}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            background-color: #FF5800;
+            background-size: cover;
+        }
+
+        header {
+            width: 100%;
+            padding: 15px;
+            background: #FF5800;
+            color: white;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        header button {
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            padding: 8px 15px;
+            background: white;
+            color: #FF5800;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        header button:hover {
+            background: #e0e0e0;
+        }
+
+        main {
+            margin-top: 80px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        label {
+            font-size: 18px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        button[type="submit"] {
+            background: #FF5800;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button[type="submit"]:hover {
+            background: #FF5800;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Buscar evaluador</h1>
+        <button onclick="window.location.href='/'">⬅ Volver</button>
+    </header>
+
+    <main>
+        <form action="{% url 'app_evaluador:informacion_evaluador'%}" method="post">
+            {% csrf_token %}
+            <label for="cedula">Cédula:</label>
+            <input type="text" id="cedula" name="cedula" required>
+            <button type="submit">Buscar</button>
+        </form>
+    </main>
+</body>

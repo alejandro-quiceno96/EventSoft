@@ -1,0 +1,390 @@
+{% extends 'app_participantes/base_par.html' %}
+
+{% block title %}Información del Evaluador{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: orangered;
+        --success-color: orangered;
+        --warning-color: orangered;
+        --gray-100: #f3f4f6;
+        --gray-800: #1f2937;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .main-header {
+        background: linear-gradient(135deg, var(--primary-color), #6366f1);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow);
+    }
+
+    .header-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        border: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background: var(--gray-100);
+        border-bottom: 1px solid #e5e7eb;
+        padding: 1rem 1.5rem;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .info-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .info-item {
+        padding: 1rem;
+        background: var(--gray-100);
+        border-radius: 8px;
+        border-left: 4px solid var(--primary-color);
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: var(--shadow);
+        border-top: 4px solid var(--primary-color);
+    }
+
+    .stat-card.success {
+        border-top-color: var(--success-color);
+    }
+
+    .stat-card.warning {
+        border-top-color: var(--warning-color);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card.success .stat-number {
+        color: var(--success-color);
+    }
+
+    .stat-card.warning .stat-number {
+        color: var(--warning-color);
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .event-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s;
+    }
+
+    .event-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow);
+    }
+
+    .event-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .event-meta {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .event-meta i {
+        color: var(--primary-color);
+        margin-right: 0.5rem;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.875rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        background: #4338ca;
+    }
+
+    .btn-outline-secondary {
+        background: white;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-outline-secondary:hover {
+        background: #f9fafb;
+    }
+
+    .btn-success {
+        background: var(--success-color);
+        color: white;
+        border: 1px solid var(--success-color);
+    }
+
+    .btn-success:hover {
+        background: #059669;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        border: 1px solid #6b7280;
+    }
+
+    .btn-secondary:hover {
+        background: #4b5563;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 3rem 0 2rem;
+        /* Ajuste para más espacio inferior */
+    }
+
+    .error-container {
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+
+    .error-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 400px;
+        margin: 0 auto;
+        box-shadow: var(--shadow);
+    }
+
+    .error-icon {
+        font-size: 3rem;
+        color: var(--warning-color);
+        margin-bottom: 1rem;
+    }
+
+    .error-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 1rem;
+    }
+
+    .error-message {
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .main-header {
+            padding: 1.5rem;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+        }
+
+        .stats-grid,
+        .info-row {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons,
+        .btn-group {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
+
+<div class="container mt-4" style="max-width: 900px;">
+    {% if evaluador %}
+    
+    <div class="main-header">
+        <h1 class="header-title"><i class="fa-solid fa-user-tie"></i> {{ evaluador.eva_nombre }}</h1>
+        <p style="margin: 0; opacity: 0.9;">Información del Evaluador</p>
+    </div>
+
+   
+    <div class="card">
+        <div class="card-header">
+            <h5>Datos Personales</h5>
+        </div>
+        <div class="card-body">
+            <div class="info-row">
+                <div class="info-item">
+                    <div class="info-label">Cédula</div>
+                    <div class="info-value">{{ evaluador.eva_cedula }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Correo Electrónico</div>
+                    <div class="info-value">{{ evaluador.eva_correo }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Teléfono</div>
+                    <div class="info-value">{{ evaluador.eva_telefono }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_eventos }}</div>
+            <div class="stat-label">Eventos Asignados</div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-number">{{ evaluaciones_completadas }}</div>
+            <div class="stat-label">Evaluaciones Completadas</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-number">{{ evaluaciones_pendientes }}</div>
+            <div class="stat-label">Evaluaciones Pendientes</div>
+        </div>
+    </div>
+
+   
+    {% if eventos_asignados %}
+    <div class="card">
+        <div class="card-header">
+            <h5><i class="fa-solid fa-calendar-alt"></i> Eventos Asignados</h5>
+        </div>
+        <div class="card-body">
+            {% for evento in eventos_asignados %}
+            <div class="event-item">
+                <h6 class="event-title">{{ evento.eve_nombre }}</h6>
+                <div class="event-meta">
+                    <i class="fa-solid fa-map-marker-alt"></i> {{ evento.eve_ciudad }}
+                    <span>•</span>
+                    <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio|date:"d/m/Y" }}
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'app_evaluador:detalle_evento_evaluador' evaluador.eva_cedula evento.id %}"
+                        class="btn btn-primary">
+                        <i class="fa-solid fa-eye"></i> Ver Detalles
+                    </a>
+                    <a href="{% url 'app_evaluador:editar_evaluador' evaluador.id %}?evento_id={{ evento.id }}"
+                        class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-edit"></i> Editar Perfil
+                    </a>
+                        <a href="{% url 'app_evaluador:cancelar_preinscripcion' cedula=evaluador.eva_cedula evento_id=evento.id %}"
+                            class="btn btn-outline-secondary"
+                            onclick="return confirm('¿Estás seguro de que deseas cancelar la preinscripción a este evento?');">
+                            <i class="fa-solid fa-xmark-circle"></i> Cancelar Preinscripción
+                        </a>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    
+    <div class="action-buttons">
+        <a href="{% url 'app_evaluador:generar_reporte_evaluador' evaluador.eva_cedula %}" class="btn btn-success">
+            <i class="fa-solid fa-file-pdf"></i> Generar PDF
+        </a>
+        <a href="{% url 'app_evaluador:editar_evaluador' evaluador.id %}" class="btn btn-primary">
+            <i class="fa-solid fa-user-pen"></i> Editar
+        </a>
+        <a href="{% url 'app_evaluador:buscar_evaluador' %}" class="btn btn-secondary">
+            <i class="fa-solid fa-arrow-left"></i> Buscar Otro
+        </a>
+    </div>
+    {% else %}
+    
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-icon"><i class="fa-solid fa-exclamation-triangle"></i></div>
+            <h4 class="error-title">Evaluador no encontrado</h4>
+            <p class="error-message">{{ mensaje_error|default:"No se encontró ningún evaluador con la cédula
+                proporcionada." }}</p>
+            <a href="{% url 'app_evaluador:buscar_evaluador' %}" class="btn btn-primary">
+                <i class="fa-solid fa-search"></i> Buscar Otro Evaluador
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
