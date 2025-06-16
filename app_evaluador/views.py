@@ -160,7 +160,11 @@ def criterios_evaluacion(request, evento_id):
     return render(request, 'app_evaluador/evaluador.html', {
         'ranking': ranking,
         'evento': evento,
+        'evaluador': request.session.get('evaluador_nombre'),
+        'evaluador_id': request.session.get('evaluador_id'),
+        
     })
+   
 
     
 def obtener_calificaciones(request, evento_id, participante_id, evaluador_id):
