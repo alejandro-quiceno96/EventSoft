@@ -15,4 +15,39 @@ urlpatterns = [
     path('calificaciones/<int:evento_id>/<int:participante_id>/<int:evaluador_id>/', 
      views.obtener_calificaciones, 
      name='api_calificaciones'),
+    path('buscar evaluador/', views.buscar_evaluador, name='buscar_evaluador'),
+   path('informacion/', views.informacion_evaluador, name='informacion_evaluador'),
+    
+    # APIs para obtener y modificar datos del evaluador
+    path('api/obtener/<str:cedula>/', views.obtener_datos_evaluador, name='obtener_datos_evaluador'),
+    
+    path('editar/<int:evaluador_id>/', views.editar_evaluador, name='editar_evaluador'),
+
+    # URL para obtener datos del evaluador (si la necesitas)
+    path('datos/<str:cedula>/', views.obtener_datos_evaluador, name='obtener_datos_evaluador'),
+    
+
+    # Detalles del evento para evaluador# app_evaluador/urls.py
+# urls.py
+path('evaluador/evaluador/<str:evaluador_cedula>/evento/<int:evento_id>/', views.detalle_evento_evaluador, name='detalle_evento_evaluador'),
+
+    
+    # Reportes
+    path('reporte/<str:cedula>/', views.generar_reporte_evaluador, name='generar_reporte_evaluador'),
+    path('evaluador/evento/<int:evento_id>/evaluador/<str:evaluador_cedula>/', views.detalle_evento_json, name='detalle_evento_json'),
+
+    # Participantes por evaluar
+    path('participantes/<str:evaluador_cedula>/<int:evento_id>/', views.participantes_por_evaluar, name='participantes_por_evaluar'),
+    # Detalle del evento  para evaluador
+    path('detalle-evento/html/<int:cedula>/<int:evento_id>/', views.detalle_evento, name='detalle_evento_evaluador'),
+    path('inicio_evaluador/', views.inicio_evaluador, name='inicio_evaluador'),
+
+
+    #cancelar preinscripción
+    path('cancelar-preinscripcion/<int:evento_id>/<str:cedula>/', views.cancelar_preinscripcion, name='cancelar_preinscripcion'),
+   
+
+
+
+
 ]
