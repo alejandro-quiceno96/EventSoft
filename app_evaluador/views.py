@@ -504,14 +504,14 @@ def detalle_evento(request, evento_id, cedula):
 
     return render(request, 'app_evaluador/detalle_evento.html', {'evento': datos_evento})
 
-def info_evaluador(request, cedula):
-    return render(request, 'app_evaluador/info_evaluador.html', {'cedula': cedula})
+def inicio_evaluador(request):
+    return render(request, 'app_evaluador/inicio_evaluador.html')
+
 
 def cancelar_preinscripcion(request, evento_id, cedula):
     evaluador = get_object_or_404(Evaluadores, eva_cedula=cedula)
     evento = get_object_or_404(Eventos, id=evento_id)
 
-    # Buscar la asignación de evento del evaluador
     asignacion = EvaluadoresEventos.objects.filter(
         eva_eve_evaluador_fk=evaluador,
         eva_eve_evento_fk=evento
