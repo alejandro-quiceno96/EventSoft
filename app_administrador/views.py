@@ -621,6 +621,7 @@ def ver_evaluadores(request: HttpRequest, evento_id):
             'asi_correo': e.eva_correo,
             'asi_telefono': e.eva_telefono,
             'estado': ee.eva_estado,
+            'documento': ee.eva_eve_documentos,
             'hora_inscripcion': ee.eva_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ee.eva_eve_fecha_hora else None,
         })
 
@@ -641,8 +642,10 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
         # Generar PDF y clave de acceso
         if nuevo_estado == 'Admitido':
             qr_evaluador = generar_pdf(evaluador_id, "Evaluador", evento_id, tipo="evaluador")
+            clave_acceso = generar_clave_acceso()
         else:
             qr_evaluador = None
+            clave_acceso = 0
         # Buscar el participante_evento
         try:
             evaluador_evento = EvaluadoresEventos.objects.get(
@@ -655,9 +658,22 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
         # Actualizar los valores
         evaluador_evento.eva_estado = nuevo_estado
         evaluador_evento.eva_eve_qr = qr_evaluador
+        evaluador_evento.eva_clave_acceso = clave_acceso
         evaluador_evento.save()
         print("Evaluador actualizado con estado:", nuevo_estado)
-        url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+        url = reverse('administrador:ver_evaluadores', kwargs={'evento_id': evento_id})
         return redirect(f'{url}?estado={nuevo_estado}')
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+
+
+
+
+
+
+
+
+
+
+

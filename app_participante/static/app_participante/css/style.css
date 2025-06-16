@@ -1,5 +1,5 @@
 :root {
-    --color-naranja: #FF5800;
+    --color-naranja: #007832;
     --color-texto: #ffffff;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .btn-guardar-usuario:hover{
-    background-color: #ff5900c2;
+    background-color: #007832;
     color: var(--color-texto);
 }
 
@@ -34,7 +34,7 @@
 }
 
 .btn-ver-documento:hover{
-    background-color: #ff5900c2;
+    background-color: #007832;
     color: var(--color-texto);
 }
 
@@ -55,4 +55,8 @@
 .card-img-top{
     height: 200px;
     object-fit: contain;
+}
+
+* {
+    font-family: 'Work Sans';
 }

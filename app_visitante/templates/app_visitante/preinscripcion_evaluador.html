@@ -7,7 +7,17 @@
   <title>Formulario de Registro</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
   <link rel="stylesheet" href="{% static 'app_visitante/css/preinscripcion_evaluador.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body, h1, h2, h3, h4, h5, h6, p, a, button, input, label, span, div {
+      font-family: 'Work Sans', sans-serif !important;
+    }
+
+    
+  </style>
 </head>
+
 <body>
   <div class="header">
     Registro del evaluador
@@ -17,8 +27,8 @@
   </div>
 
   <div class="form-container">
-    <form class="form-card"  action="{% url 'registrar_evaluador' evento.id %}" method="POST">
-        {% csrf_token %}
+    <form class="form-card" action="{% url 'registrar_evaluador' evento.id %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
       <h2><i class="fas fa-user-edit"></i> Datos del Evaluador</h2>
 
       <div class="form-group">
@@ -41,8 +51,25 @@
         <input type="tel" id="telefono" name="telefono" required />
       </div>
 
+      <!-- Nuevo input para documentos -->
+      <div class="form-group">
+        <label for="documento"><i class="fas fa-file-upload"></i> Subir Documento</label>
+        <label for="documento" class="custom-file-upload">
+          <i class="fas fa-upload"></i> Seleccionar archivo
+        </label>
+        <input type="file" id="documento" name="documento" accept=".pdf,.png,.jpg" />
+        <div id="filename" class="filename-preview">Ningún archivo seleccionado</div>
+      </div>
+
       <button type="submit" class="action-btn"><i class="fas fa-paper-plane"></i> Enviar</button>
     </form>
   </div>
+
+  <script>
+    document.getElementById('documento').addEventListener('change', function () {
+      const fileName = this.files[0] ? this.files[0].name : 'Ningún archivo seleccionado';
+      document.getElementById('filename').textContent = fileName;
+    });
+  </script>
 </body>
 </html>

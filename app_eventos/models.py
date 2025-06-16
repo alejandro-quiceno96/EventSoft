@@ -14,7 +14,7 @@ class Eventos(models.Model):
     eve_tienecosto = models.BooleanField(default=False)
     eve_programacion = models.FileField(upload_to='pdf/programacion/')
     eve_administrador_fk = models.ForeignKey('app_administrador.Administradores', on_delete=models.CASCADE)
-   
+    eve_informacion_tecnica = models.FileField(upload_to='pdf/info_tecnica/', blank=True, null=True)
 
 class EventosCategorias(models.Model):
     eve_cat_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)
@@ -43,5 +43,7 @@ class EvaluadoresEventos(models.Model):
     eva_eve_evaluador_fk = models.ForeignKey('app_evaluador.Evaluadores', on_delete=models.CASCADE)
     eva_eve_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)
     eva_eve_fecha_hora = models.DateTimeField(null=True, blank=True)
+    eva_eve_documentos = models.FileField(upload_to='pdf/soporte_evaluador/',null=True, blank=True)
     eva_estado = models.CharField(max_length=45, null=True, blank=True)
     eva_eve_qr = models.FileField(upload_to='pdf/qr_evaluador/',null=True, blank=True)
+    eva_clave_acceso = models.CharField(max_length=45, null=True, blank=True)

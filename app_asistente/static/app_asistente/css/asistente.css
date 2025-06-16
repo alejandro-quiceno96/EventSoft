@@ -1,5 +1,4 @@
 body {
-    font-family: sans-serif;
     background-image: url(/static/app_administrador/image/fondo_admin.png);
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -8,12 +7,13 @@ body {
     color: #333;
     min-height: 100vh;
     position: relative;
+    font-family: 'Work Sans';
     
 }
 
 
 .btn-volver:hover {
-    background-color: #b04d02;
+    background-color: #007832;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -43,7 +43,7 @@ body {
 }
 
 .btn-guardar-usuario:hover{
-    background-color: #ff5900c2;
+    background-color: #007832;
     color: var(--color-texto);
 }
 
@@ -53,6 +53,6 @@ body {
 }
 
 .btn-ver-documento:hover{
-    background-color: #ff5900c2;
+    background-color: #007832;
     color: var(--color-texto);
 }

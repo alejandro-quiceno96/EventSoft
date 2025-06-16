@@ -10,12 +10,35 @@
     <link rel="stylesheet" href="{% static 'app_visitante/css/style_visitante.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"> 
+
+    <style>
+        /* SOLO TEXTO */
+        body,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p,
+        a,
+        button,
+        input,
+        label,
+        span,
+        div {
+            font-family: 'Work Sans', sans-serif !important;
+        }
+    
+        </style>
 </head>
 
 <body>
 
     <!-- Header -->
     <header class="header">
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
         <div class="header-logo-nombre">
             <button class="abrir-menu" onclick="openMenu()">
                 <i class="fa-solid fa-bars"></i>
@@ -57,9 +80,7 @@
             <a class="btn-menu" href="{% url 'app_asistente:buscar_asistentes' %}">
                 <i class="fa-solid fa-user"></i> Mis inscripciones como asistente
             </a>
-            <a class="btn-menu" href="{% url 'app_evaluador:buscar_evaluador' %}">
-                <i class="fa-solid fa-user"></i> Mis inscripciones como evaluador
-            </a>
+                
             <a class="btn-menu" href="{% url 'super_admin:inicio_sesion_super_admin' %}">
                 <i class="fa-solid fa-user-shield"></i> Super Administrador
             </a>
@@ -126,11 +147,11 @@
                                 </h6>
                                 <p class="evento-descripcion">{{ evento.eve_descripcion|truncatechars:100 }}</p>
                                 {% if evento.eve_estado == "Terminado" %}
-                                    <button class="btn btn-primary" disabled style="background-color: #FF5800;">
+                                    <button class="btn btn-primary" disabled style="background-color: #007832;">
                                         <i class="fa-solid fa-circle-check"></i> Evento Terminado
                                     </button>
                                 {% else %}
-                                    <a href="{% url 'detalle_evento' evento.id %}" class="btn" style="background-color: #FF5800; color: white;">Ver más</a>
+                                    <a href="{% url 'detalle_evento' evento.id %}" class="btn" style="background-color: #007832; color: white;">Ver más</a>
                                 {% endif %}
                             </div>
                         </div>

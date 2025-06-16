@@ -2,7 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: 'Work Sans';
 }
 
 body {
@@ -12,13 +12,13 @@ body {
     justify-content: center;
     background-size: cover;
     height: 100vh;
-    background-color: #FF5800;
+    background-color: #007832;
 }
 
 header {
     width: 100%;
     padding: 15px;
-    background: #FF5800;
+    background: #007832;
     color: white;
     text-align: center;
     position: fixed;
@@ -32,7 +32,7 @@ header button {
     top: 10px;
     padding: 8px 15px;
     background: white;
-    color: #FF5800;
+    color: #007832;
     border: none;
     cursor: pointer;
     border-radius: 5px;
@@ -67,7 +67,7 @@ input {
 }
 
 button[type="submit"] {
-    background: #FF5800;
+    background: #007832;
     color: white;
     padding: 10px 15px;
     border: none;
@@ -77,7 +77,7 @@ button[type="submit"] {
 }
 
 button[type="submit"]:hover {
-    background: #FF5800;
+    background: #007832;
 }
 
 /* Estilos para el botón "Volver" */

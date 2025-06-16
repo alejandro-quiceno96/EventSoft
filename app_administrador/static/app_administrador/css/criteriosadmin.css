@@ -1,5 +1,5 @@
 :root {
-    --color-naranja: #FF5800;
+    --color-naranja: #007832;
     --color-texto: #ffffff;
 }
 
@@ -30,7 +30,7 @@
 }
 
 .btn-modificar-criterios:hover {
-    background-color: #ff59009f;
+    background-color: #007832;
     transition: 5.s ease;
     cursor: pointer;
 }
@@ -45,7 +45,7 @@
     margin-top: 5px;
 }
 .btn-eliminar-criterios:hover {
-    background-color: #ff59009f;
+    background-color: #007832;
     transition: 5.s ease;
     cursor: pointer;
 }
@@ -90,13 +90,13 @@
 }
 
 .btn-detalle-calificacion{
-        border: 1px solid var(--color-naranja);
-        color: var(--color-naranja);
+        border: 1px solid var(--color-verde);
+        color: var(--color-verde);
         background-color: transparent;
 }
 
 .btn-detalle-calificacion:hover{
-        background-color: var(--color-naranja);
+        background-color: var(--color-verde);
         color: var(--color-texto);
         transition: .5 ease-in-out;
 }

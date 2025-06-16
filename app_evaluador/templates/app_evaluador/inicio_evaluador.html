@@ -3,9 +3,30 @@
 {% block title %}
     {{ evaluador|default:'Evaluador' }}
 {% endblock %}
-{% block url_volver %}{% url 'app_evaluador:inicio_sesion_evaluador' %}{% endblock %}
 {% block content %}
-<h2 class="text-center my-4">Eventos</h2>
+<h2 class="text-center ">Eventos</h2>
+
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+    /* SOLO TEXTO */
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    a,
+    button,
+    input,
+    label,
+    span,
+    div {
+        font-family: 'Work Sans', sans-serif !important;
+    }
+</style>
+
 
 <section class="contenedor-principal-de-eventos d-flex flex-wrap justify-content-center gap-3">
     {% if eventos %}
@@ -27,22 +48,57 @@
                     </a>
 
                     {% if relacion.eva_estado == "Admitido" %}
-                        {% if hoy >= evento.eve_fecha_inicio|stringformat:"s" and hoy <= evento.eve_fecha_fin|stringformat:"s" %}
-                            <a href="{% url 'app_evaluador:ver_participantes' evento.id %}" 
-                            class="btn-funcion mb-1">
-                                <i class="fa-solid fa-users"></i> Evaluar Participantes
-                            </a>
-                        {% else %}
-                            <a class="btn-funcion mb-1 disabled" style="pointer-events: none; opacity: 0.6; cursor: not-allowed;">
-                                <i class="fa-solid fa-users"></i> Evaluar Participantes
-                            </a>
-                        {% endif %}
-                    {% else %}
-                        <div class="alert alert-warning mt-2 mb-0 py-2 px-3 small" role="alert">
-                            <i class="fa-solid fa-circle-info"></i> Tu solicitud está en revisión por el administrador del evento.
-                        </div>
-                    {% endif %}
+    <a href="{% url 'app_evaluador:detalle_evento_evaluador' evaluador.id evento.id %}" 
+        class="btn-funcion mb-1">
+        <i class="fa-solid fa-circle-info"></i> Ver Información
+    </a>
 
+    {% if hoy >= evento.eve_fecha_inicio|stringformat:"s" and hoy <= evento.eve_fecha_fin|stringformat:"s" %}
+        <a href="{% url 'app_evaluador:ver_participantes' evento.id %}" 
+            class="btn-funcion mb-1">
+            <i class="fa-solid fa-users"></i> Evaluar Participantes
+        </a>
+    {% else %}
+        <a class="btn-funcion mb-1 disabled" style="pointer-events: none; opacity: 0.6; cursor: not-allowed;">
+            <i class="fa-solid fa-users"></i> Evaluar Participantes
+        </a>
+    {% endif %}
+
+{% elif relacion.eva_estado == "Pendiente" %}
+    <div class="alert alert-warning mt-2 mb-0 py-2 px-3 small" role="alert">
+        <i class="fa-solid fa-circle-info"></i> Tu solicitud está en revisión por el administrador del evento.
+    </div>
+    <a href="#" class="btn-funcion mt-2" id="btn-preinscripcion" data-evento="{{ evento.id }}" data-evaluador="{{ evaluador.id }}">
+        <i class="fa-solid fa-file"></i> Mi Preinscripción
+    </a>
+    <a href="#" 
+        class="btn-funcion mt-2" 
+        id="btn-cancelar-inscripcion" 
+        data-evento="{{ evento.id }}" 
+        data-evaluador="{{ evaluador.id }}" 
+        data-bs-toggle="modal" 
+        data-bs-target="#modalCancelarInscripcion">
+        <i class="fa-solid fa-circle-xmark"></i> Cancelar inscripción
+    </a>
+{% elif relacion.eva_estado == "Rechazado" %}
+    <div class="alert alert-danger mt-2 mb-0 py-2 px-3 small" role="alert">
+        <i class="fa-solid fa-circle-xmark"></i> Tu preinscripción fue rechazada. Puedes revisar o modificar tus datos.
+    </div>
+    <a href="#" class="btn-funcion mt-2" id="btn-preinscripcion" data-evento="{{ evento.id }}" data-evaluador="{{ evaluador.id }}">
+        <i class="fa-solid fa-file-pen"></i> Modificar Preinscripción
+    </a>
+    <a href="#" 
+        class="btn-funcion mt-2" 
+        id="btn-cancelar-inscripcion" 
+        data-evento="{{ evento.id }}" 
+        data-evaluador="{{ evaluador.id }}" 
+        data-bs-toggle="modal" 
+        data-bs-target="#modalCancelarInscripcion">
+        <i class="fa-solid fa-circle-xmark"></i> Cancelar inscripción
+    </a>
+{% endif %}
+
+                    
 
                 </div>
             </div>
@@ -54,8 +110,101 @@
         </div>
     {% endif %}
 </section>
+
+<!-- Modal -->
+<div class="modal fade" id="modalPreinscripcion" tabindex="-1" aria-labelledby="modalPreinscripcionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <form id="formPreinscripcion" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalPreinscripcionLabel">Modificar Preinscripción</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="input-nombre" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Correo</label>
+            <input type="email" name="correo" id="input-correo" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="telefono" id="input-telefono" class="form-control" required>
+          </div>
+
+          <div class="mb-4">
+    <label class="form-label fw-semibold">Documento actual</label>
+
+    <!-- Enlace al documento si existe -->
+    <div id="documento-actual">
+        <a href="#" id="link-documento" target="_blank" class="btn btn-outline-primary btn-sm mb-2 d-inline-flex align-items-center" style="display: none;">
+            <i class="fa-solid fa-file-pdf me-2"></i> Ver Documento
+        </a>
+        <p id="sin-documento" class="text-muted fst-italic mb-2" style="display: none;">Sin documento</p>
+    </div>
+
+    <!-- Input de archivo con nombre dinámico -->
+    <div class="input-group">
+        <label for="documento" class="btn btn-outline-success">
+            <i class="fa-solid fa-upload me-2"></i> Reemplazar Documento
+        </label>
+        <input type="file" class="form-control d-none" name="documento" id="documento">
+    </div>
+
+    <!-- Nombre del archivo nuevo -->
+    <p id="nombre-archivo" class="mt-2" style="display: none;"></p>
+
+    <div class="form-text mt-1 text-muted">
+        Al seleccionar un nuevo documento, el anterior será reemplazado.
+    </div>
+</div>
+
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cancelar Inscripción -->
+<div class="modal fade" id="modalCancelarInscripcion" tabindex="-1" aria-labelledby="modalCancelarInscripcionLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-3 shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalCancelarInscripcionLabel"><i class="fa-solid fa-triangle-exclamation me-2"></i>Confirmar Cancelación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas cancelar tu inscripción a este evento? Esta acción no se puede deshacer.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, conservar</button>
+        <form id="form-cancelar-inscripcion" method="POST" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Sí, cancelar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_scripts %}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const urlPreinscripcion = "{% url 'app_evaluador:obtener_datos_preinscripcion' 123 456 %}";
+        const urlModificarPreinscripcion = "{% url 'app_evaluador:modificar_preinscripcion' 123 456 %}";
+        const urlCancelarInscripcion = "{% url 'app_evaluador:cancelar_inscripcion' 123 456 %}";
+    </script>
 {% endblock %}
