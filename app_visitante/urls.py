@@ -6,6 +6,12 @@ from app_areas.models import Areas  # O Area si renombraste la clase
 
 urlpatterns = [
     path('', views.inicio_visitante, name='inicio_visitante'),
+    path('login/', views.login_view, name='login'),
+    path('registro/', views.registro_usuario_view, name='registro'),
+    path('editar_perfil/', views.editar_perfil, name='editar_perfil'),
+    path('verificar-documento/', views.verificar_documento, name='verificar_documento'),
+    path('confirmar-rol/', views.confirmar_rol, name='confirmar_rol'),
+    path('logout/', views.cerrar_sesion, name='logout'),
     path('evento/<int:evento_id>/', views.detalle_evento, name='detalle_evento'),
     path('preinscripcion_participante/<int:evento_id>/', views.preinscripcion_participante, name='preinscripcion_participante'),
     path('preinscripcion_asistente/<int:evento_id>/', views.preinscripcion_asistente, name='preinscripcion_asistente'),

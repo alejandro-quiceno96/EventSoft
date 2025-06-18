@@ -1,0 +1,361 @@
+/* Variables CSS */
+:root {
+    --color-naranja: #007832;
+    --color-texto: #ffffff;
+    --color-hover: #005e29;
+    --border-radius: 12px;
+    --border-radius-small: 6px;
+    --shadow: 0 0 10px #00000040;
+    --transition: 0.3s ease;
+}
+
+/* Reset básico */
+* {
+    box-sizing: border-box;
+}
+
+/* Estilos del body */
+body {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.418), rgba(0, 88, 47, 0.712)), 
+                url("/static/app_visitante/image/fondo_login.jpg") center/cover no-repeat;
+    font-family: 'Work Sans', sans-serif;
+    color: black;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 1rem;
+    background-attachment: fixed;
+}
+
+/* Contenedor principal */
+.container {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    background-color: white !important;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    color: black !important;
+    position: relative;
+}
+
+/* Título del formulario */
+form h2 {
+    text-align: center;
+    color: black !important;
+    margin-bottom: 1.5rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+}
+
+/* Filas del formulario */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.row > * {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Wrapper de campos */
+.field-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+/* Labels */
+label {
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+    color: #333;
+}
+
+/* Campos de entrada */
+input,
+select {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid #ccc !important;
+    border-radius: var(--border-radius-small);
+    font-size: 1rem;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+/* Estados de focus y hover */
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--color-naranja) !important;
+    box-shadow: 0 0 0 2px rgba(0, 120, 50, 0.2) !important;
+}
+
+input:hover,
+select:hover {
+    border-color: var(--color-naranja);
+}
+
+/* Botón principal */
+button {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: var(--color-naranja);
+    color: var(--color-texto);
+    border: none;
+    border-radius: var(--border-radius-small);
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+    margin-top: 0.5rem;
+}
+
+button:hover {
+    background-color: var(--color-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 88, 47, 0.3);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+button:focus {
+    outline: 2px solid var(--color-naranja);
+    outline-offset: 2px;
+}
+
+/* Errores del formulario */
+.errors, 
+.errorlist {
+    background-color: #ff000020;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-small);
+    margin-bottom: 1rem;
+    color: red;
+    font-size: 0.9rem;
+    border-left: 4px solid #ff0000;
+    list-style: none;
+}
+
+.errorlist li {
+    margin: 0.2rem 0;
+}
+
+/* Mensajes del sistema */
+.messages {
+    margin-bottom: 1rem;
+}
+
+.messages .alert {
+    padding: 0.75rem;
+    border-radius: var(--border-radius-small);
+    margin-bottom: 0.5rem;
+}
+
+.messages .alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.messages .alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+/* Texto de ayuda */
+.helptext {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.2rem;
+}
+
+/* Enlace de login */
+.login-link {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.login-link a {
+    color: var(--color-naranja);
+    text-decoration: underline;
+    transition: var(--transition);
+}
+
+.login-link a:hover {
+    color: var(--color-hover);
+    text-decoration: none;
+}
+
+/* RESPONSIVE DESIGN */
+
+/* Tablets grandes y pantallas medianas */
+@media (max-width: 768px) {
+    body {
+        padding: 0.5rem;
+    }
+    
+    .container {
+        max-width: 90%;
+        padding: 1.5rem;
+        margin: 1rem auto;
+    }
+    
+    form h2 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Tablets y móviles grandes */
+@media (max-width: 640px) {
+    .row {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .container {
+        padding: 1.2rem;
+        border-radius: 8px;
+    }
+    
+    input,
+    select {
+        padding: 0.8rem;
+        font-size: 1rem;
+    }
+    
+    button {
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+}
+
+/* Móviles */
+@media (max-width: 480px) {
+    body {
+        padding: 0.25rem;
+        background-attachment: scroll; /* Mejor rendimiento en móviles */
+    }
+    
+    .container {
+        max-width: 95%;
+        padding: 1rem;
+        margin: 0.5rem auto;
+        border-radius: 6px;
+    }
+    
+    form h2 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+    
+    input,
+    select {
+        padding: 0.9rem;
+        font-size: 1rem;
+        border-radius: 4px;
+    }
+    
+    button {
+        padding: 1.1rem;
+        font-size: 1.1rem;
+        border-radius: 4px;
+    }
+    
+    .row {
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .errors {
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+}
+
+/* Móviles muy pequeños */
+@media (max-width: 320px) {
+    .container {
+        max-width: 98%;
+        padding: 0.8rem;
+    }
+    
+    form h2 {
+        font-size: 1.2rem;
+    }
+    
+    input,
+    select,
+    button {
+        font-size: 0.9rem;
+    }
+}
+
+/* Pantallas muy grandes */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 600px;
+        padding: 2.5rem;
+    }
+    
+    form h2 {
+        font-size: 2.2rem;
+        margin-bottom: 2rem;
+    }
+    
+    input,
+    select {
+        padding: 0.8rem;
+        font-size: 1.1rem;
+    }
+    
+    button {
+        padding: 0.9rem;
+        font-size: 1.1rem;
+    }
+}
+
+/* Mejoras para accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Asegurar modo claro siempre */
+.container {
+    background-color: white !important;
+    color: black !important;
+}
+
+form h2 {
+    color: black !important;
+}
+
+input,
+select {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #ccc !important;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--color-naranja) !important;
+    box-shadow: 0 0 0 2px rgba(0, 120, 50, 0.2) !important;
+}

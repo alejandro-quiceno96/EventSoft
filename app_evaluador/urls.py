@@ -21,7 +21,6 @@ urlpatterns = [
     # APIs para obtener y modificar datos del evaluador
     path('api/obtener/<str:cedula>/', views.obtener_datos_evaluador, name='obtener_datos_evaluador'),
     
-    path('editar/<int:evaluador_id>/', views.editar_evaluador, name='editar_evaluador'),
 
     
 

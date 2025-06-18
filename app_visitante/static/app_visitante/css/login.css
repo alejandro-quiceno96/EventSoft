@@ -1,0 +1,108 @@
+:root {
+    --color-naranja: #007832;
+    --color-texto: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.418), rgba(0, 88, 47, 0.712)), 
+                url("/static/app_visitante/image/fondo_login.jpg") center/cover no-repeat;
+    font-family: 'Work Sans', sans-serif;
+    color: black;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.login-wrapper {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.login-box {
+    background-color: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-box h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    color: #333;
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--color-naranja);
+    color: var(--color-texto);
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-login:hover {
+    background-color: #005e29;
+}
+
+.no-cuenta {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn-registro {
+    color: var(--color-naranja);
+    text-decoration: underline;
+    margin-left: 5px;
+    transition: color 0.3s ease;
+}
+
+.btn-registro:hover {
+    color: #005e29;
+}
+
+@media screen and (max-width: 480px) {
+    .login-box {
+        padding: 25px;
+    }
+
+    .form-group input,
+    .btn-login {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .login-box h2 {
+        font-size: 22px;
+    }
+}
+

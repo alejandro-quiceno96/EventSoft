@@ -1,0 +1,391 @@
+/* Variables para el sidebar de perfil */
+:root {
+    --color-principal: #007832;
+    --color-secundario: #00a845;
+    --color-acento: #66d998;
+    --color-texto: #ffffff;
+    --color-texto-oscuro: #2c3e50;
+    --color-fondo: #f8f9fa;
+    --sombra-suave: 0 8px 32px rgba(0, 120, 50, 0.1);
+    --sombra-hover: 0 12px 40px rgba(0, 120, 50, 0.2);
+}
+
+/* Estilos personalizados para el offcanvas */
+.offcanvas-end {
+    width: 380px !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 249, 250, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(0, 120, 50, 0.1);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+}
+
+.offcanvas-header {
+    background: linear-gradient(135deg, var(--color-principal) 0%, var(--color-secundario) 100%);
+    color: var(--color-texto);
+    padding: 1.5rem;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.offcanvas-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.offcanvas-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin: 0;
+    z-index: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.offcanvas-title::before {
+    content: '\f007';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 1;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-close:focus {
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.offcanvas-body {
+    padding: 2rem 1.5rem;
+    background: transparent;
+}
+
+/* Contenedor de avatar */
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: white;
+    font-size: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 120, 50, 0.3);
+    animation: profilePulse 3s infinite;
+}
+
+@keyframes profilePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Estilos para la información del perfil */
+.profile-info {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 120, 50, 0.1);
+    box-shadow: var(--sombra-suave);
+}
+
+.profile-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 120, 50, 0.1);
+    transition: all 0.3s ease;
+}
+
+.profile-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.profile-item:hover {
+    transform: translateX(5px);
+    background: rgba(0, 120, 50, 0.05);
+    border-radius: 8px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+.profile-item-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.profile-item-content {
+    flex: 1;
+}
+
+.profile-item-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.profile-item-value {
+    font-size: 1rem;
+    color: var(--color-texto-oscuro);
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Badge para el rol */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.role-badge.super-admin {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.role-badge.admin {
+    background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 120, 50, 0.3);
+}
+
+.role-badge.visitor {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+/* Botón de cerrar sesión mejorado */
+.logout-btn {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.logout-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.3s ease;
+}
+
+.logout-btn:hover::before {
+    left: 0;
+}
+
+.logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(220, 53, 69, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+.logout-btn i {
+    font-size: 1.1rem;
+}
+
+/* Elementos decorativos */
+.decorative-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-acento), transparent);
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.decorative-circle.top {
+    width: 120px;
+    height: 120px;
+    top: -60px;
+    right: -60px;
+}
+
+.decorative-circle.bottom {
+    width: 80px;
+    height: 80px;
+    bottom: -40px;
+    left: -40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .offcanvas-end {
+        width: 320px !important;
+    }
+    
+    .offcanvas-header {
+        padding: 1.25rem;
+    }
+    
+    .offcanvas-title {
+        font-size: 1.2rem;
+    }
+    
+    .offcanvas-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .profile-avatar {
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
+    }
+    
+    .profile-info {
+        padding: 1.25rem;
+    }
+    
+    .profile-item-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 0.8rem;
+    }
+    
+    .profile-item-value {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .offcanvas-end {
+        width: 280px !important;
+    }
+    
+    .offcanvas-header {
+        padding: 1rem;
+    }
+    
+    .offcanvas-body {
+        padding: 1rem;
+    }
+    
+    .profile-info {
+        padding: 1rem;
+    }
+    
+    .profile-item {
+        padding: 0.5rem 0;
+    }
+    
+    .profile-item-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+        margin-right: 0.75rem;
+    }
+    
+    .logout-btn {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animaciones de entrada */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.offcanvas.show {
+    animation: slideInRight 0.3s ease-out;
+}
+
+/* Animación para los elementos del perfil */
+.profile-item {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.profile-item:nth-child(1) { animation-delay: 0.1s; }
+.profile-item:nth-child(2) { animation-delay: 0.2s; }
+.profile-item:nth-child(3) { animation-delay: 0.3s; }
+.profile-item:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

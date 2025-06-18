@@ -1,7 +1,9 @@
 from django.db import models
+from app_usuarios.models import Usuario
 
 class Administradores(models.Model):
-    adm_cedula = models.CharField(max_length=10)
-    adm_nombre = models.CharField(max_length=100)
-    adm_correo = models.EmailField(max_length=100)
-    adm_telefono = models.CharField(max_length=15)
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='administrador')
+    
+    def __str__(self):
+        return f"Administrador: {self.usuario.username} ({self.usuario.tipo_documento} {self.usuario.documento_identidad})"
+    

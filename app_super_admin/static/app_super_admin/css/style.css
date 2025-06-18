@@ -16,7 +16,7 @@ html {
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-    font-family: "Calibri";
+    font-family: "work sans", sans-serif;
     background-image: url(/static/images/fondo_admin.png);
     background-size: cover;
     background-repeat: no-repeat;

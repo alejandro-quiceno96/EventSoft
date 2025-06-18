@@ -1,13 +1,10 @@
 from django.db import models
-
+from app_usuarios.models import Usuario
 class Evaluadores(models.Model):
-    eva_cedula = models.CharField(max_length=10, unique=True)
-    eva_nombre = models.CharField(max_length=100)
-    eva_correo = models.EmailField(max_length=100)
-    eva_telefono = models.CharField(max_length=15)
-
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='evaluador')
+    
     def __str__(self):
-        return self.eva_nombre
+        return f"Evaluador: {self.usuario.username} ({self.usuario.tipo_documento} {self.usuario.documento_identidad})"
 
 
 class Calificaciones(models.Model):

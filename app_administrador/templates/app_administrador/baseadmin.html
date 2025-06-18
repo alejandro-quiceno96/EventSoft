@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'app_administrador/css/style.css'%}">
+    <link rel="stylesheet" href="{% static 'app_administrador/css/sidebarderecha.css'%}">
+    <link rel="stylesheet" href="{% static 'app_administrador/css/modaleditarperfil.css'%}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -75,14 +77,296 @@
                 </div>
                 <div class="contenedor-2">
                     <img class="img-user" src="{% static 'app_administrador/image/user.png' %}" alt="user">
-                    <a href="#">{% block title %}{% endblock %}</a>
+                    <button class="btn btn-link text-white text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
+                        Mi Perfil
+                    </button>
                 </div>
             </section>
         </header>
 
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="perfilSidebar" aria-labelledby="perfilSidebarLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="perfilSidebarLabel">Perfil del Usuario</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+  </div>
+  
+  <div class="offcanvas-body">
+    <!-- Elementos decorativos -->
+    <div class="decorative-circle top"></div>
+    <div class="decorative-circle bottom"></div>
+    
+    <!-- Avatar del usuario -->
+    <div class="profile-avatar">
+      <i class="fas fa-user"></i>
+    </div>
+    
+    <!-- Información del perfil -->
+    <div class="profile-info">
+      
+      <!-- Nombre completo -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Nombre completo</div>
+          <div class="profile-item-value">
+            {{ request.user.first_name }}
+            {% if request.user.segundo_nombre %}{{ request.user.segundo_nombre }}{% endif %}
+            {{ request.user.last_name }}
+            {% if request.user.segundo_apellido %}{{ request.user.segundo_apellido }}{% endif %}
+        </div>
+        </div>
+      </div>
+      
+      <!-- Correo electrónico -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Correo electrónico</div>
+          <div class="profile-item-value">{{ request.user.email }}</div>
+        </div>
+      </div>
+      
+      <!-- Nombre de usuario -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fas fa-at"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Usuario</div>
+          <div class="profile-item-value">{{ request.user.username }}</div>
+        </div>
+      </div>
+
+      <!-- Telefono -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-phone"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Telefono</div>
+          <div class="profile-item-value">{{ request.user.telefono }}</div>
+        </div>
+      </div>
+
+      <!-- Fecha de nacimiento-->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Fecha de Nacimiento</div>
+          <div class="profile-item-value">{{ request.user.fecha_nacimiento }}</div>
+        </div>
+      </div>
+      
+      
+    </div>
+    <!-- Botón para activar el modal (agregar donde necesites) -->
+    <button type="button" class="edit-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        <i class="fas fa-edit"></i>
+        Editar Perfil
+    </button>
+    <!-- Botón de cerrar sesión -->
+    <a href="{% url 'logout' %}" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i>
+      Cerrar sesión
+    </a>
+  </div>
+</div>
+
+<!-- Modal de Editar Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Encabezado -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">
+                    <i class="fas fa-user-edit me-2"></i> Editar Perfil
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" style="filter: invert(1);"></button>
+            </div>
+
+            <!-- Cuerpo -->
+            <div class="modal-body">
+                <!-- Contenedor para errores generales de contraseña -->
+                <div id="passwordValidationErrors" class="alert alert-danger d-none" role="alert"></div>
+
+                <form id="editProfileForm" method="POST" action="{% url 'administrador:editar_perfil' %}">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName" class="form-label">Primer Nombre</label>
+                            <input type="text" class="form-control" id="firstName" name="first_name" value="{{ request.user.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="secondName" class="form-label">Segundo Nombre</label>
+                            <input type="text" class="form-control" id="secondName" name="segundo_nombre" value="{{ request.user.segundo_nombre|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName" class="form-label">Primer Apellido</label>
+                            <input type="text" class="form-control" id="lastName" name="last_name" value="{{ request.user.last_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="secondLastName" class="form-label">Segundo Apellido</label>
+                            <input type="text" class="form-control" id="secondLastName" name="segundo_apellido" value="{{ request.user.segundo_apellido|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ request.user.email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="phone" name="telefono" value="{{ request.user.telefono|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ request.user.username }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="birthDate" name="fecha_nacimiento" value="{{ request.user.fecha_nacimiento|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+
+                    <!-- Sección para cambiar contraseña -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="changePassword">
+                        <label class="form-check-label" for="changePassword">
+                            <i class="fas fa-key me-1"></i> Cambiar contraseña
+                        </label>
+                    </div>
+
+                    <div id="passwordFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Contraseña Actual</label>
+                            <input type="password" class="form-control" id="currentPassword" name="current_password" placeholder="Ingresa tu contraseña actual">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newPassword" class="form-label">Nueva Contraseña</label>
+                                <input type="password" class="form-control" id="newPassword" name="new_password" placeholder="Nueva contraseña">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirma la nueva contraseña">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Pie de modal -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="saveProfileBtn">
+                    <i class="fas fa-save me-1"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Validación JS en tiempo real -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const changePasswordCheckbox = document.getElementById("changePassword");
+    const passwordFields = document.getElementById("passwordFields");
+    const newPasswordInput = document.getElementById("newPassword");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    const currentPasswordInput = document.getElementById("currentPassword");
+    const errorBox = document.getElementById("passwordValidationErrors");
+    const saveButton = document.getElementById("saveProfileBtn");
+
+    function validatePasswordFields() {
+        const currentPassword = currentPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        let errors = [];
+
+        if (!currentPassword) {
+            errors.push("Debes ingresar la contraseña actual.");
+        }
+
+        if (newPassword.length < 8) {
+            errors.push("La nueva contraseña debe tener al menos 8 caracteres.");
+        }
+
+        if (/^\d+$/.test(newPassword)) {
+            errors.push("La contraseña no puede ser completamente numérica.");
+        }
+
+        if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+            errors.push("La confirmación de la contraseña no coincide.");
+        }
+
+        showErrors(errors);
+        return errors.length === 0;
+    }
+
+    function showErrors(errors) {
+        if (errors.length > 0) {
+            const list = errors.map(e => `<li>${e}</li>`).join('');
+            errorBox.innerHTML = `<ul class="mb-0">${list}</ul>`;
+            errorBox.classList.remove("d-none");
+        } else {
+            errorBox.innerHTML = '';
+            errorBox.classList.add("d-none");
+        }
+    }
+
+    function clearErrors() {
+        errorBox.innerHTML = "";
+        errorBox.classList.add("d-none");
+    }
+
+    changePasswordCheckbox.addEventListener("change", function () {
+        passwordFields.style.display = this.checked ? "block" : "none";
+        if (!this.checked) clearErrors();
+    });
+
+    newPasswordInput.addEventListener("input", validatePasswordFields);
+    confirmPasswordInput.addEventListener("input", validatePasswordFields);
+    currentPasswordInput.addEventListener("input", validatePasswordFields);
+
+    saveButton.addEventListener("click", function (e) {
+        if (changePasswordCheckbox.checked) {
+            const isValid = validatePasswordFields();
+            if (!isValid) {
+                return;
+            }
+        }
+        document.getElementById("editProfileForm").submit();
+    });
+});
+</script>
+
+
+
+
+
         {% block content %}{% endblock %}
     </div>
     <script src="{% static 'app_administrador/js/baseadmin.js' %}"></script>
+    <script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
+    <script src="{% static 'app_administrador/js/modaleditarperfil.js' %}"></script>
     <script src="{% static 'js/loader.js'%}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
