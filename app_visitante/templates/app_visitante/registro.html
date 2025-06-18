@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+    <!-- Bootstrap CSS (en <head>) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'app_visitante/css/registro.css' %}">
+</head>
+<body>
+    <div class="container">
+
+        <!-- Errores no relacionados con campos específicos -->
+        {% if form.non_field_errors %}
+            <div class="errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            <h2>Registro de Usuario</h2>
+            {% csrf_token %}
+            
+            <!-- Nombre de usuario -->
+            <div class="field-wrapper">
+                <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="errorlist">
+                        {% for error in form.username.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if form.username.help_text %}
+                    <div class="helptext">{{ form.username.help_text }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Tipo y número de documento -->
+            <div class="row">
+                <div class="field-wrapper">
+                    <label for="{{ form.tipo_documento.id_for_label }}">{{ form.tipo_documento.label }}</label>
+                    {{ form.tipo_documento }}
+                    {% if form.tipo_documento.errors %}
+                        <div class="errorlist">
+                            {% for error in form.tipo_documento.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="field-wrapper">
+                    <label for="{{ form.documento_identidad.id_for_label }}">{{ form.documento_identidad.label }}</label>
+                    {{ form.documento_identidad }}
+                    {% if form.documento_identidad.errors %}
+                        <div class="errorlist">
+                            {% for error in form.documento_identidad.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Nombres -->
+            <div class="row">
+                <div class="field-wrapper">
+                    <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="errorlist">
+                            {% for error in form.first_name.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="field-wrapper">
+                    <label for="{{ form.segundo_nombre.id_for_label }}">Segundo Nombre (Opcional)</label>
+                    {{ form.segundo_nombre }}
+                    {% if form.segundo_nombre.errors %}
+                        <div class="errorlist">
+                            {% for error in form.segundo_nombre.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Apellidos -->
+            <div class="row">
+                <div class="field-wrapper">
+                    <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="errorlist">
+                            {% for error in form.last_name.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="field-wrapper">
+                    <label for="{{ form.segundo_apellido.id_for_label }}">Segundo Apellido (Opcional)</label>
+                    {{ form.segundo_apellido }}
+                    {% if form.segundo_apellido.errors %}
+                        <div class="errorlist">
+                            {% for error in form.segundo_apellido.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Teléfono y Email -->
+            <div class="row">
+                <div class="field-wrapper">
+                    <label for="{{ form.telefono.id_for_label }}">Teléfono</label>
+                    {{ form.telefono }}
+                    {% if form.telefono.errors %}
+                        <div class="errorlist">
+                            {% for error in form.telefono.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="field-wrapper">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="errorlist">
+                            {% for error in form.email.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fecha de nacimiento -->
+            <div class="field-wrapper">
+                <label for="{{ form.fecha_nacimiento.id_for_label }}">{{ form.fecha_nacimiento.label }}</label>
+                {{ form.fecha_nacimiento }}
+                {% if form.fecha_nacimiento.errors %}
+                    <div class="errorlist">
+                        {% for error in form.fecha_nacimiento.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Contraseñas -->
+            <div class="row">
+                <div class="field-wrapper">
+                    <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <div class="errorlist">
+                            {% for error in form.password1.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if form.password1.help_text %}
+                        <div class="helptext">{{ form.password1.help_text }}</div>
+                    {% endif %}
+                </div>
+                <div class="field-wrapper">
+                    <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <div class="errorlist">
+                            {% for error in form.password2.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if form.password2.help_text %}
+                        <div class="helptext">{{ form.password2.help_text }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="submit">Registrarse</button>
+        </form>
+
+        <div class="login-link">
+            ¿Ya tienes una cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a>
+        </div>
+    </div>
+   
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const password1 = document.getElementById('id_password1');
+            const password2 = document.getElementById('id_password2');
+            const submitBtn = document.querySelector('form button[type="submit"]');
+
+            const mostrarErrores = (mensajes) => {
+                let contenedor = document.getElementById('errores-password');
+                if (!contenedor) {
+                    contenedor = document.createElement('div');
+                    contenedor.id = 'errores-password';
+                    contenedor.classList.add('errorlist');
+                    password2.parentElement.appendChild(contenedor);
+                }
+                contenedor.innerHTML = '';
+                mensajes.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.textContent = msg;
+                    contenedor.appendChild(div);
+                });
+            };
+
+            const validarPassword = () => {
+                const pass1 = password1.value;
+                const pass2 = password2.value;
+                const errores = [];
+
+                if (pass1.length < 8) {
+                    errores.push("La contraseña debe tener al menos 8 caracteres.");
+                }
+                if (!/[a-zA-Z]/.test(pass1)) {
+                    errores.push("La contraseña debe incluir al menos una letra.");
+                }
+                if (!/\d/.test(pass1)) {
+                    errores.push("La contraseña debe incluir al menos un número.");
+                }
+                if (/^\d+$/.test(pass1)) {
+                    errores.push("La contraseña no puede ser solo numérica.");
+                }
+                if (pass1 !== pass2) {
+                    errores.push("Las contraseñas no coinciden.");
+                }
+
+                if (errores.length > 0) {
+                    mostrarErrores(errores);
+                    submitBtn.disabled = true;
+                } else {
+                    mostrarErrores([]);
+                    submitBtn.disabled = false;
+                }
+            };
+
+            if (password1 && password2) {
+                password1.addEventListener('input', validarPassword);
+                password2.addEventListener('input', validarPassword);
+            }
+        });
+    </script>
+     <!-- Bootstrap JS (antes de </body>) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

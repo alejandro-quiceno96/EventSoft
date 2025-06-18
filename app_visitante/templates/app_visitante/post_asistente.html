@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirigiendo...</title>
+</head>
+<body>
+    <form id="postForm" action="{% url 'registrar_asistente' evento_id %}" method="POST">
+        {% csrf_token %}
+        <!-- puedes incluir campos ocultos si necesitas -->
+    </form>
+
+    <script>
+        document.getElementById('postForm').submit();
+    </script>
+</body>
+</html>

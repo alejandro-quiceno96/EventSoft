@@ -30,7 +30,7 @@
 
         <!-- Nombre del administrador -->
         <h3>
-            Evento de {{ evento.eve_administrador_fk.adm_nombre|default:"No asignado" }}
+            Evento de {{ evento.eve_administrador_fk.usuario.first_name }} {{ evento.eve_administrador_fk.usuario.last_name }}
         </h3>
 
         <!-- Descripción -->
@@ -78,8 +78,8 @@
     </div>
 
     <div class="btn-container">
-        <a href="{% url 'super_admin:index' %}" class="open-menu-btn"
-            style="position: fixed; top: 10px; right: 20px; background: white; color: #ff9100; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; z-index: 1000;">
+        <a href="{% url 'super_admin:index_super_admin' %}" class="open-menu-btn"
+            style="position: fixed; top: 10px; left: 20px; background: white; color: #007832; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; z-index: 1000;">
             Volver
         </a>
     </div>

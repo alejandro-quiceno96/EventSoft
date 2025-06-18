@@ -1,4 +1,6 @@
-from django.shortcuts import render, get_object_or_404, redirect, HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 from app_eventos.models import Eventos, AsistentesEventos
 from app_categorias.models import Categorias
 from app_areas.models import Areas  # O Area si renombraste la clase
@@ -7,11 +9,95 @@ from django.views.decorators.csrf import csrf_exempt
 from app_participante.models import Participantes
 from app_asistente.models import Asistentes
 from app_evaluador.models import Evaluadores
+from app_super_admin.models import SuperAdministradores
+from app_administrador.models import Administradores
 from django.utils import timezone
 from django.urls import reverse
 from app_administrador.utils import generar_pdf, generar_clave_acceso
 import json
 from django.http import JsonResponse
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import logout
+from django.contrib.auth.models import User
+from .forms import RegistroUsuarioForm
+from app_usuarios.models import Usuario
+from django.db import IntegrityError
+from django.contrib import messages
+from django.views.decorators.http import require_http_methods
+
+def login_view(request):
+    if request.method == 'POST':
+        identificador = request.POST['username']
+        password = request.POST['password']
+
+        try:
+            if '@' in identificador:
+                user = Usuario.objects.get(email=identificador)
+            else:
+                user = Usuario.objects.get(username=identificador)
+        except Usuario.DoesNotExist:
+            messages.error(request, "Usuario no encontrado.")
+            return render(request, 'login.html')
+
+        usuario = authenticate(request, username=user.username, password=password)
+
+        if usuario is not None:
+            # Verificar roles desde tus modelos
+            roles = []
+            if SuperAdministradores.objects.filter(usuario=usuario).exists():
+                roles.append('Super Administrador')
+            if Administradores.objects.filter(usuario=usuario).exists():
+                roles.append('Administrador de Eventos')
+
+            # Guardamos ID en sesión para confirmación de rol
+            request.session['prelogin_user_id'] = usuario.id
+
+            if len(roles) >= 1:
+                return render(request, 'app_visitante/seleccionar_rol.html', {'roles': roles, 'usuario': usuario})
+            else:
+                auth_login(request, usuario)
+                return redirect('inicio_visitante')  # o ruta por defecto
+        else:
+            messages.error(request, 'Contraseña incorrecta.')
+    return render(request, 'app_visitante/login.html')
+
+
+def registro_usuario_view(request):
+    """
+    Vista para registrar un nuevo usuario
+    """
+    if request.method == 'POST':
+        form = RegistroUsuarioForm(request.POST)
+        if form.is_valid():
+            try:
+                usuario = form.save()
+                messages.success(request, 'Cuenta creada exitosamente.')
+                return redirect('login')
+            except IntegrityError:
+                messages.error(request, 'Ya existe un usuario con este documento.')
+            except Exception as e:
+                messages.error(request, f'Ocurrió un error: {str(e)}')
+        else:
+            messages.error(request, 'Corrige los errores en el formulario.')
+    else:
+        form = RegistroUsuarioForm()
+
+    return render(request, 'app_visitante/registro.html', {'form': form})
+
+@require_http_methods(["POST"])
+def verificar_documento(request):
+    try:
+        data = json.loads(request.body)
+        documento = data.get('documento_identidad')
+        if documento:
+            existe = Usuario.objects.filter(documento_identidad=documento).exists()
+            return JsonResponse({'existe': existe})
+        return JsonResponse({'error': 'Documento no proporcionado.'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Datos inválidos.'}, status=400)
+    except Exception:
+        return JsonResponse({'error': 'Error del servidor.'}, status=500)
+
 
 def inicio_visitante(request):
     eventos = Eventos.objects.all()
@@ -69,9 +155,18 @@ def preinscripcion_participante(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     return render(request, 'app_visitante/Pre_inscripcion_participante.html', {'evento': evento})
 
+@login_required(login_url='login')
 def preinscripcion_asistente(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
-    return render(request, 'app_visitante/registro_asistente.html', {'evento': evento})
+
+    if not evento.eve_tienecosto:
+        # Redirige a una plantilla que envía un POST automáticamente
+        return render(request, 'app_visitante/post_asistente.html', {
+            'evento_id': evento.id
+        })
+    else:
+        return render(request, 'app_visitante/registro_asistente.html', {'evento': evento})
+
 
 def preinscripcion_evaluador(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
@@ -136,25 +231,16 @@ def registrar_asistente(request, evento_id):
     evento = get_object_or_404(Eventos, pk=evento_id)
 
     if request.method == 'POST':
-        cedula = request.POST.get('numero_identificacion')
-        nombre = request.POST.get('nombre')
-        correo = request.POST.get('correo')
-        telefono = request.POST.get('telefono')
         documento = request.FILES.get('comprobante_pago')
-        
-        asistente_existente = Asistentes.objects.filter(asi_cedula=cedula).first()
 
-       # Crear o usar asistente existente
-        if asistente_existente:
-            asistente = asistente_existente
-        else:
+        # Verificar si el usuario ya es un asistente registrado
+        try:
+            asistente = Asistentes.objects.get(usuario_id=request.user.id)
+        except Asistentes.DoesNotExist:
+            # Si no existe, crear un nuevo asistente
             asistente = Asistentes.objects.create(
-                asi_cedula=cedula,
-                asi_nombre=nombre,
-                asi_correo=correo,
-                asi_telefono=telefono
+                usuario_id = request.user.id,
             )
-            asistente.save()
 
         # Crear la inscripción del asistente al evento
         if evento.eve_tienecosto:
@@ -163,7 +249,7 @@ def registrar_asistente(request, evento_id):
             clave = ''
         else:
             estado = 'Admitido'
-            qr = generar_pdf(cedula, 'Asistente', evento_id, tipo="asistente")
+            qr = generar_pdf(asistente.id, 'Asistente', evento_id, tipo="asistente")
             clave = generar_clave_acceso()
 
         asistente_evento = AsistentesEventos.objects.create(
@@ -239,3 +325,65 @@ def chatbot(request):
                 return JsonResponse({"respuesta": respuesta})
 
         return JsonResponse({"respuesta": "Lo siento, no entendí tu pregunta. ¿Podrías reformularla?"})
+
+def confirmar_rol(request):
+    if request.method == 'POST':
+        user_id = request.session.get('prelogin_user_id')
+        rol = request.POST.get('rol')
+
+        if not user_id:
+            return redirect('login')
+
+        usuario = get_object_or_404(Usuario, id=user_id)
+        auth_login(request, usuario)
+
+        if rol == 'Super Administrador':
+            return redirect('super_admin:index_super_admin')
+        elif rol == 'Administrador de Eventos':
+            return redirect('administrador:index_administrador')
+        elif rol == 'Visitante':
+            return redirect('inicio_visitante')  # Asegúrate de definir esta ruta
+
+def cerrar_sesion(request):
+    logout(request)
+    return redirect('inicio_visitante')
+
+login_required(login_url='login')  # Protege la vista para usuarios logueados
+def editar_perfil(request):
+    user = request.user  # Es instancia de tu modelo Usuario
+
+    if request.method == 'POST':
+        # Campos básicos
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.username = request.POST.get('username', '')
+        user.email = request.POST.get('email', '')
+
+        # Campos adicionales de tu modelo
+        user.segundo_nombre = request.POST.get('segundo_nombre', '')
+        user.segundo_apellido = request.POST.get('segundo_apellido', '')
+        user.telefono = request.POST.get('telefono', '')
+        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
+
+        # Manejo de contraseña si el usuario desea cambiarla
+        if request.POST.get('current_password'):
+            current_password = request.POST.get('current_password')
+            if user.check_password(current_password):
+                new_password = request.POST.get('new_password')
+                confirm_password = request.POST.get('confirm_password')
+                if new_password == confirm_password and new_password != '':
+                    user.set_password(new_password)
+                    update_session_auth_hash(request, user)  # Mantener sesión
+                    messages.success(request, 'Contraseña actualizada correctamente.')
+                else:
+                    messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+                    return redirect('inicio_visitante')
+            else:
+                messages.error(request, 'La contraseña actual es incorrecta.')
+                return redirect('inicio_visitante')
+
+        user.save()
+        messages.success(request, 'Perfil actualizado correctamente.')
+        return redirect('inicio_visitante')  # Redirige a la página de inicio del visitante
+
+    return redirect('inicio_visitante')  # Redirige a la página de inicio si no es POST

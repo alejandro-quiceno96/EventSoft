@@ -54,7 +54,6 @@ body, html {
     font-size: 40px;
     text-decoration: none;
     color: var(--color-texto);
-    text-shadow: 2px 2px 4px #000000;
 }
 
 .contenedor-2 a {

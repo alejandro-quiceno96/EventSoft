@@ -3,9 +3,11 @@ from django.utils.dateparse import parse_datetime
 from django.http import JsonResponse, Http404, HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Avg, F, Sum, FloatField
+from django.db.models import Avg
 from django.template.loader import render_to_string
+from django.contrib.auth import update_session_auth_hash
 from datetime import datetime
 import os
 from .utils import generar_pdf, generar_clave_acceso, obtener_ranking
@@ -13,6 +15,7 @@ from django.urls import reverse
 from decimal import Decimal
 import json
 from weasyprint import HTML
+
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
@@ -39,6 +42,7 @@ def get_categorias(request, area_id):
 
 # Crear un nuevo evento
 @csrf_exempt
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 @require_http_methods(["GET", "POST"])
 def crear_evento(request):
     if request.method == 'POST':
@@ -62,7 +66,8 @@ def crear_evento(request):
             archivo_programacion = request.FILES.get('documento_evento')
 
             # Obtener ID de administrador (puede estar vacío si no hay login aún)
-            administrador_id = request.session.get('admin_cedula')
+            administrador = Administradores.objects.get(usuario=request.user)
+
 
             # Crear evento
             evento = Eventos.objects.create(
@@ -77,7 +82,7 @@ def crear_evento(request):
                 eve_capacidad=int(aforo) if aforo else 0,
                 eve_tienecosto=True if inscripcion == 'Si' else False,
                 eve_programacion=archivo_programacion,
-                eve_administrador_fk_id= 1 if administrador_id is None else administrador_id,
+                eve_administrador_fk_id= administrador.id,  # Asignar el ID del administrador
             )
 
             # Relación con categoría
@@ -100,16 +105,17 @@ def crear_evento(request):
     }
     return render(request, 'app_administrador/crearevento.html', context)
 
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def inicio(request):
-    # Obtener eventos (si tienes el modelo)
-    eventos = Eventos.objects.filter(eve_administrador_fk = request.session.get('admin_cedula'))
-    
-    # Por ahora con datos hardcodeados como en tu ejemplo
+    administrador = Administradores.objects.get(usuario_id=request.user.id)
+    # Obtener eventos relacionados con el administrador autenticado
+    eventos = Eventos.objects.filter(eve_administrador_fk=administrador.id)
+
     context = {
-        'administrador': request.session.get('admin_nombre'),
+        'administrador': f"{request.user.first_name} {request.user.last_name}",
         'eventos': eventos,
     }
-    
+
     return render(request, 'app_administrador/admin.html', context)
 
 @require_http_methods(["GET"])
@@ -179,22 +185,6 @@ def eliminar_evento(request, evento_id):
     except Exception as e:
         return JsonResponse({'mensaje': f'Error al eliminar el evento: {str(e)}'}, status=500)
 
-def inicio_sesion_administrador(request):
-    if request.method == "POST":
-        cedula = request.POST.get("cedula")
-
-        try:
-            admin = Administradores.objects.get(adm_cedula=cedula)
-            # Guardar en la sesión
-            request.session['admin_cedula'] = admin.id
-            request.session['admin_nombre'] = admin.adm_nombre
-
-            # Redirigir pasando el nombre como parámetro de URL
-            return redirect('administrador:index_administrador')
-        except Administradores.DoesNotExist:
-            messages.error(request, "Cédula no válida")
-
-    return render(request, 'app_administrador/inicio_sesion.html')
 
 @require_http_methods(["GET", "POST"])
 def editar_evento(request, evento_id):
@@ -666,7 +656,45 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
+login_required(login_url='login')  # Protege la vista para usuarios logueados
+def editar_perfil(request):
+    user = request.user  # Es instancia de tu modelo Usuario
 
+    if request.method == 'POST':
+        # Campos básicos
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.username = request.POST.get('username', '')
+        user.email = request.POST.get('email', '')
+
+        # Campos adicionales de tu modelo
+        user.segundo_nombre = request.POST.get('segundo_nombre', '')
+        user.segundo_apellido = request.POST.get('segundo_apellido', '')
+        user.telefono = request.POST.get('telefono', '')
+        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
+
+        # Manejo de contraseña si el usuario desea cambiarla
+        if request.POST.get('current_password'):
+            current_password = request.POST.get('current_password')
+            if user.check_password(current_password):
+                new_password = request.POST.get('new_password')
+                confirm_password = request.POST.get('confirm_password')
+                if new_password == confirm_password and new_password != '':
+                    user.set_password(new_password)
+                    update_session_auth_hash(request, user)  # Mantener sesión
+                    messages.success(request, 'Contraseña actualizada correctamente.')
+                else:
+                    messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+                    return redirect('administrador:index_administrador')
+            else:
+                messages.error(request, 'La contraseña actual es incorrecta.')
+                return redirect('administrador:index_administrador')
+
+        user.save()
+        messages.success(request, 'Perfil actualizado correctamente.')
+        return redirect('administrador:index_administrador')
+
+    return redirect('administrador:index_administrador')
 
 
 

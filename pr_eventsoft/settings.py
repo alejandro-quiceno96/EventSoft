@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'app_evaluador',
     'app_criterios',
     'app_visitante',
-    'app_super_admin'
+    'app_super_admin',
+    'app_usuarios',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +65,10 @@ ROOT_URLCONF = 'pr_eventsoft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates', 'app_administrador/templates'],
+        'DIRS': [BASE_DIR / 'templates', 'app_administrador/templates', 
+                 'app_participante/templates', 'app_asistente/templates',
+                 'app_super_admin/templates', 'app_evaluador/templates',
+                 'app_visitante/templates', 'app_usuarios/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -112,6 +116,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'app_usuarios.Usuario'
+LOGIN_URL = 'login' 
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

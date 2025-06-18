@@ -16,7 +16,6 @@ from django.http import HttpResponse
 from weasyprint import HTML
 from app_categorias.models import Categorias
 from django.http import JsonResponse, Http404, HttpResponse
-from .forms import EvaluadorForm
 import os
 from django.conf import settings
 
@@ -262,50 +261,6 @@ def obtener_datos_evaluador(request, cedula):
     except Exception as e:
         return JsonResponse({"error": f"Error en el servidor: {str(e)}"}, status=500)
     
-def editar_evaluador(request, evaluador_id):
-    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
-
-    eventos_asignados = Eventos.objects.filter(
-        evaluadoreseventos__eva_eve_evaluador_fk=evaluador
-    ).distinct()
-
-    evento_id = request.GET.get('evento_id') or request.POST.get('evento_id')
-    evento = None
-
-    if evento_id:
-        try:
-            evento = Eventos.objects.get(id=evento_id)
-        except Eventos.DoesNotExist:
-            messages.warning(request, "El evento no fue encontrado.")
-            evento = None
-
-    if request.method == 'POST':
-        form = EvaluadorForm(request.POST, instance=evaluador)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Evaluador actualizado correctamente.")
-            
-            # Redirección mejorada sin usar reverse con parámetros complejos
-            if evento:
-                # Construir la URL manualmente para evitar problemas
-                redirect_url = f"/evaluador/informacion/?cedula={evaluador.eva_cedula}&evento_id={evento.id}"
-                return redirect(redirect_url)
-            else:
-                # Redirección simple a la página de información del evaluador
-                redirect_url = f"/evaluador/informacion/?cedula={evaluador.eva_cedula}"
-                return redirect(redirect_url)
-        else:
-            messages.error(request, "Por favor corrige los errores en el formulario.")
-    else:
-        form = EvaluadorForm(instance=evaluador)
-
-    return render(request, 'app_evaluador/editar_evaluador.html', {
-        'form': form,
-        'evaluador': evaluador,
-        'evento': evento,
-        'evento_id': evento_id,
-        'eventos_asignados': eventos_asignados,
-    })
 
 def detalle_evento_evaluador(request, evento_id, evaluador_cedula):
     """Obtener detalles de un evento para el evaluador"""

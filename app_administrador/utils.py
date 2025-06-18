@@ -30,8 +30,8 @@ def generar_pdf(id_participante, usuario, id_evento, tipo="participante"):
         id_participante = evaluador.eva_cedula
     elif tipo == "asistente":
         asistente = Asistentes.objects.get(id=id_participante)
-        usuario = asistente.asi_nombre
-        id_participante = asistente.asi_cedula
+        usuario = asistente.usuario.first_name + " " + asistente.usuario.last_name
+        id_participante = asistente.usuario.documento_identidad
     else:
         participante = Participantes.objects.get(id=id_participante)
         usuario = participante.par_nombre
