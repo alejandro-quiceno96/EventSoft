@@ -1,5 +1,4 @@
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from app_criterios.models import Criterios
 from django.shortcuts import render, get_object_or_404,  redirect
 from app_participante.models import Participantes
@@ -8,7 +7,6 @@ from django.contrib import messages
 from app_eventos.models import ParticipantesEventos, EvaluadoresEventos,Eventos
 from .models import Calificaciones
 from django.db.models import Avg,F
-from decimal import Decimal, InvalidOperation
 from django.urls import reverse
 from app_eventos.models import EventosCategorias
 import json
@@ -18,45 +16,51 @@ from app_categorias.models import Categorias
 from django.http import JsonResponse, Http404, HttpResponse
 import os
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
 
 
-def principal_evaluador(request, evaluador_id):
-    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
-    print(f"Principal Evaluador: {evaluador.eva_nombre} (ID: {evaluador.id})")
-    # Traemos las relaciones EvaluadoresEventos para ese evaluador, incluyendo los eventos relacionados
-    evaluadores_eventos = EvaluadoresEventos.objects.filter(eva_eve_evaluador_fk=evaluador).select_related('eva_eve_evento_fk')
-    
-    # Pasamos ese queryset al contexto
-    return render(request, 'app_evaluador/inicio_evaluador.html', {
-        'evaluador': evaluador,
-        'evaluador_id': evaluador_id,
-        'eventos': evaluadores_eventos
-    })
+@login_required(login_url='login')
+def principal_evaluador(request):
+    try:
+        evaluador = get_object_or_404(Evaluadores, usuario = request.user)
+        # Traemos las relaciones EvaluadoresEventos para ese evaluador, incluyendo los eventos relacionados
+        evaluadores_eventos = EvaluadoresEventos.objects.filter(eva_eve_evaluador_fk=evaluador).select_related('eva_eve_evento_fk')
+        request.session['evaluador_id'] = evaluador.id
+        request.session['evaluador_nombre'] = evaluador.usuario.username
+
+        # Pasamos ese queryset al contexto
+        return render(request, 'app_evaluador/inicio_evaluador.html', {
+            'evaluador': evaluador,
+
+            'evaluador_id': request.user.id,
+            'eventos': evaluadores_eventos
+        })
+    except Exception as e:
+        return render(request, 'app_evaluador/inicio_evaluador.html', {
+            'evaluador': request.user.username,
+
+            'evaluador_id': request.user.id,
+            'eventos':  []
+        })
 
 
 
-def inicio_sesion_evaluador(request):
-    if request.method == 'POST':
-        cedula = request.POST.get('cedula')
-        try:
-            evaluador = Evaluadores.objects.get(eva_cedula=cedula)
-            request.session['evaluador_id'] = evaluador.id  # Guarda el evaluador en la sesión
-            request.session['evaluador_nombre'] = evaluador.eva_nombre  # Guarda el evaluador en la sesión
-            return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador.id)
-        except Evaluadores.DoesNotExist:
-            messages.error(request, 'No se encontró ningún evaluador con esa cédula.')
-            return redirect('app_evaluador:inicio_sesion_evaluador')
-    return render(request, 'app_evaluador/inicio_sesion_evaluador.html')
 
-
+@login_required(login_url='login')
 def ver_participantes(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     participantes_evento = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento)
-    evaluador_id = request.session.get('evaluador_id')
+    evaluador = get_object_or_404(Evaluadores, usuario=request.user)
+    evaluadores_eventos = EvaluadoresEventos.objects.filter(eva_eve_evaluador_fk=evaluador).select_related('eva_eve_evento_fk')
+
+    # Guardamos el ID en sesión
+    request.session['evaluador_id'] = evaluador.id
+    request.session['evaluador_nombre'] = evaluador.usuario.username
 
     # Participantes evaluados por este evaluador
     calificados_ids = Calificaciones.objects.filter(
-        cal_evaluador_fk_id=evaluador_id,
+        cal_evaluador_fk_id=evaluador.id,
         cal_criterio_fk__cri_evento_fk=evento
     ).values_list('clas_participante_fk_id', flat=True).distinct()
 
@@ -70,14 +74,34 @@ def ver_participantes(request, evento_id):
         'participantes': participantes_evento,
         'evaluador_nombre': request.session.get('evaluador_nombre'),
         'evaluador_id': request.session.get('evaluador_id'),
-        'evaluador': evaluador_id,
+        'evaluador_id': evaluador.id,
         'ranking': ranking,
         'evaluados_dict': evaluados_dict,
     }
 
     return render(request, 'app_evaluador/participantes_evento.html', context)
 
+def api_calificaciones(request, evento_id, participante_id, evaluador_usuario_id):
+    calificaciones = Calificaciones.objects.filter(
+        cal_evaluador_fk__usuario__id=evaluador_usuario_id,
+        clas_participante_fk__id=participante_id,
+        cal_criterio_fk__cri_evento_fk__id=evento_id
+    ).select_related('cal_criterio_fk')
 
+    data = {
+        'calificaciones': [
+            {
+                'criterio': cal.cal_criterio_fk.cri_nombre,
+                'peso': cal.cal_criterio_fk.cri_peso,
+                'puntaje': cal.cal_puntaje,
+                'comentario': cal.cal_comentario,
+            }
+            for cal in calificaciones
+        ]
+    }
+    return JsonResponse(data)
+
+@login_required(login_url='login')
 def evaluar_participante(request, evento_id, participante_id, evaluador_id):
     participante = get_object_or_404(Participantes, id=participante_id)
     evento = get_object_or_404(Eventos, id=evento_id)
@@ -150,7 +174,7 @@ def evaluar_participante(request, evento_id, participante_id, evaluador_id):
 
 
 
-    
+@login_required(login_url='login') 
 def obtener_calificaciones(request, evento_id, participante_id, evaluador_id):
     calificaciones = Calificaciones.objects.filter(
         cal_criterio_fk__cri_evento_fk__id=evento_id,
@@ -169,64 +193,8 @@ def obtener_calificaciones(request, evento_id, participante_id, evaluador_id):
     ]
     return JsonResponse({'calificaciones': data})
 
-def buscar_evaluador(request):
-    return render(request, 'app_evaluador/buscar_evaluador.html')
-
-
-def informacion_evaluador(request):
-    if request.method == 'POST':
-        cedula = request.POST.get('cedula')
-
-        try:
-            evaluador = Evaluadores.objects.get(eva_cedula=cedula)
-
-            # Obtenemos las calificaciones hechas por ese evaluador
-            calificaciones = Calificaciones.objects.filter(
-                cal_evaluador_fk=evaluador
-            ).select_related('clas_participante_fk')  # Ya no ponemos doble relación aquí
-
-            # Extraemos los IDs de eventos relacionados con los participantes calificados
-            eventos_ids = set()
-
-            for cal in calificaciones:
-                participante_evento = cal.clas_participante_fk
-                if hasattr(participante_evento, 'par_eve_evento_fk'):
-                    evento = participante_evento.par_eve_evento_fk
-                    if evento:
-                        eventos_ids.add(evento.id)
-
-            eventos_asignados = Eventos.objects.filter(
-                    evaluadoreseventos__eva_eve_evaluador_fk=evaluador
-                ).distinct()
-
-            # Cálculo de estadísticas simples
-            total_eventos = eventos_asignados.count()
-            evaluaciones_completadas = calificaciones.filter(cal_valor__isnull=False).count()
-            evaluaciones_pendientes = calificaciones.filter(cal_valor__isnull=True).count()
-
-            contexto = {
-                'evaluador': evaluador,
-                'eventos_asignados': eventos_asignados,
-                'total_eventos': total_eventos,
-                'evaluaciones_completadas': evaluaciones_completadas,
-                'evaluaciones_pendientes': evaluaciones_pendientes,
-            }
-
-            return render(request, 'app_evaluador/info_evaluador.html', contexto)
-
-        except Evaluadores.DoesNotExist:
-            return render(request, 'app_evaluador/info_evaluador.html', {
-                'evaluador': None,
-                'eventos_asignados': [],
-                'total_eventos': 0,
-                'evaluaciones_completadas': 0,
-                'evaluaciones_pendientes': 0,
-                'mensaje_error': 'Evaluador no encontrado.',
-            })
-
-    return render(request, 'app_evaluador/buscar_evaluador.html')
  
-
+login_required(login_url='login')
 def detalle_evento_json(request, evento_id, evaluador_id):
     evento = get_object_or_404(Eventos, pk=evento_id)
 
@@ -241,25 +209,6 @@ def detalle_evento_json(request, evento_id, evaluador_id):
     }
     return JsonResponse(data)
 
-@csrf_exempt
-def obtener_datos_evaluador(request, cedula):
-    """Obtener datos del evaluador en formato JSON"""
-    try:
-        evaluador = Evaluadores.objects.get(eva_cedula=cedula)
-        
-        datos = {
-            "eva_cedula": evaluador.eva_cedula,
-            "eva_nombre": evaluador.eva_nombre,
-            "eva_correo": evaluador.eva_correo,
-            "eva_telefono": evaluador.eva_telefono,
-        }
-        
-        return JsonResponse(datos)
-        
-    except Evaluadores.DoesNotExist:
-        return JsonResponse({"error": "Evaluador no encontrado"}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": f"Error en el servidor: {str(e)}"}, status=500)
     
 
 def detalle_evento_evaluador(request, evento_id, evaluador_cedula):
@@ -461,15 +410,18 @@ def inicio_evaluador(request):
     return render(request, 'app_evaluador/inicio_evaluador.html')
 
 
-
 def subir_info_tecnica(request, pk):
     if request.method == 'POST':
         evento = get_object_or_404(Eventos, pk=pk)
-        evaluador_cedula = request.POST.get('cedula')
-        evaluador = get_object_or_404(Evaluadores, eva_cedula=evaluador_cedula)
+        evaluador_id = request.POST.get('cedula')
 
-        if not evaluador_cedula:
+        if not evaluador_id:
             return JsonResponse({'success': False, 'message': 'No se pudo identificar al evaluador.'})
+
+        try:
+            evaluador = Evaluadores.objects.get(id=evaluador_id)
+        except Evaluadores.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Evaluador no encontrado.'})
 
         if 'eve_informacion_tecnica' in request.FILES:
             evento.eve_informacion_tecnica = request.FILES['eve_informacion_tecnica']
@@ -479,28 +431,7 @@ def subir_info_tecnica(request, pk):
             return JsonResponse({'success': False, 'message': 'No se encontró el archivo a subir.'})
 
     return JsonResponse({'success': False, 'message': 'Método no permitido.'})
-
-
-def modificar_evaluador(request, evaluador_id):
-    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
-
-    if request.method == 'POST':
-        nombre = request.POST.get('eva_nombre')
-        correo = request.POST.get('eva_correo')
-        telefono = request.POST.get('eva_telefono')
-
-        evaluador.eva_nombre = nombre
-        evaluador.eva_correo = correo
-        evaluador.eva_telefono = telefono
-        evaluador.save()
-
-        messages.success(request, 'Información actualizada correctamente.')
-        return redirect('app_evaluador:detalle_evento_evaluador', cedula=evaluador.id, evento_id=request.POST.get('evento_id'))
     
-
-
-
-
 
 def criterios_evaluacion(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
@@ -602,9 +533,6 @@ def obtener_datos_preinscripcion(request, evento_id, evaluador_id):
     if evaluador:
         documento_url = evaluador.eva_eve_documentos.url if evaluador.eva_eve_documentos else None
         return JsonResponse({
-            'nombre': evaluador.eva_eve_evaluador_fk.eva_nombre,
-            'correo':  evaluador.eva_eve_evaluador_fk.eva_correo,
-            'telefono': evaluador.eva_eve_evaluador_fk.eva_telefono,
             'documento': documento_url
         })
     else:
@@ -614,14 +542,6 @@ def modificar_preinscripcion(request, evento_id, evaluador_id):
     evaluador = get_object_or_404(EvaluadoresEventos, eva_eve_evento_fk=evento_id, eva_eve_evaluador_fk=evaluador_id)
 
     if request.method == 'POST':
-        # Accede al objeto Evaluador relacionado
-        persona = evaluador.eva_eve_evaluador_fk
-
-        # Modifica los campos del evaluador
-        persona.eva_nombre = request.POST.get('nombre')
-        persona.eva_correo = request.POST.get('correo')
-        persona.eva_telefono = request.POST.get('telefono')
-        persona.save()
 
         # Verifica y reemplaza el documento si se subió uno nuevo
         if 'documento' in request.FILES:
@@ -634,9 +554,7 @@ def modificar_preinscripcion(request, evento_id, evaluador_id):
             # Guarda el nuevo documento
             evaluador.eva_eve_documentos = request.FILES['documento']
             evaluador.save()
-
-        print(f"Evaluador modificado: {persona.eva_nombre} (ID: {persona.id})")
-        return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador_id)
+        return redirect('app_evaluador:principal_evaluador')
 
     else:
         return JsonResponse({'error': 'Método no permitido'}, status=405)
@@ -648,14 +566,67 @@ def cancelar_inscripcion(request, evento_id, evaluador_id):
             eva_eve_evento_fk=evento_id,
             eva_eve_evaluador_fk=evaluador_id
         )
+        # Obtener el participante
+        evaluador = Evaluadores.objects.get(id=evaluador_id)
+            
+        # Verificar cuántas inscripciones tiene este participante ANTES de eliminar
+        total_inscripciones = EvaluadoresEventos.objects.filter(
+            eva_eve_evaluador_fk= evaluador_id
+        ).count()
 
         # Eliminar el documento asociado si existe
         if relacion.eva_eve_documentos:
             ruta_documento = relacion.eva_eve_documentos.path
             if os.path.exists(ruta_documento):
                 os.remove(ruta_documento)
+                
+        
         
         relacion.delete()  # Elimina la inscripción
-        return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador_id) 
+        
+        # Si era la única inscripción, eliminar el participante
+        if total_inscripciones == 1:
+            evaluador.delete()
+        return redirect('app_evaluador:principal_evaluador') 
     else:
-        return redirect('app_evaluador:principal_evaluador', evaluador_id=evaluador_id)  # También redirige si no es POST
+        return redirect('app_evaluador:principal_evaluador')  # También redirige si no es POST
+    
+login_required(login_url='login')  # Protege la vista para usuarios logueados
+def editar_perfil(request):
+    user = request.user  # Es instancia de tu modelo Usuario
+
+    if request.method == 'POST':
+        # Campos básicos
+        user.first_name = request.POST.get('first_name', '')
+        user.last_name = request.POST.get('last_name', '')
+        user.username = request.POST.get('username', '')
+        user.email = request.POST.get('email', '')
+
+        # Campos adicionales de tu modelo
+        user.segundo_nombre = request.POST.get('segundo_nombre', '')
+        user.segundo_apellido = request.POST.get('segundo_apellido', '')
+        user.telefono = request.POST.get('telefono', '')
+        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
+
+        # Manejo de contraseña si el usuario desea cambiarla
+        if request.POST.get('current_password'):
+            current_password = request.POST.get('current_password')
+            if user.check_password(current_password):
+                new_password = request.POST.get('new_password')
+                confirm_password = request.POST.get('confirm_password')
+                if new_password == confirm_password and new_password != '':
+                    user.set_password(new_password)
+                    update_session_auth_hash(request, user)  # Mantener sesión
+                    messages.success(request, 'Contraseña actualizada correctamente.')
+                else:
+                    messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+                    return redirect('app_evaluador:principal_evaluador')
+            else:
+                messages.error(request, 'La contraseña actual es incorrecta.')
+                return redirect('app_evaluador:principal_evaluador')
+
+        user.save()
+        messages.success(request, 'Perfil actualizado correctamente.')
+        return redirect('app_evaluador:principal_evaluador')  # Redirige a la página de inicio del visitante
+
+    return redirect('app_evaluador:principal_evaluador')  # Redirige a la página de inicio si no es POST

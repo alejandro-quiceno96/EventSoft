@@ -90,9 +90,6 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch(url)
       .then(res => res.json())
       .then(data => {
-          document.getElementById("inputNombre").value = data.par_nombre;
-          document.getElementById("inputCorreo").value = data.par_correo;
-          document.getElementById("inputTelefono").value = data.par_telefono;
           document.getElementById("modalProyecto").href =data.par_eve_evento_fk;
 
         new bootstrap.Modal(document.getElementById("modificarInscripcionModal")).show();
@@ -169,10 +166,8 @@ document.addEventListener("DOMContentLoaded", function () {
     })
         .then(res => res.json())
         .then(data => {
-            document.getElementById("inputNombre").value = data.par_nombre;
-            document.getElementById("inputCorreo").value = data.par_correo;
-            document.getElementById("inputTelefono").value = data.par_telefono;
-            document.getElementById("modalProyecto").href =data.par_eve_evento_fk;
+          console.log(data)
+          document.getElementById("modalProyecto").href =data.par_eve_evento_fk;
 
           new bootstrap.Modal(document.getElementById("modificarInscripcionModal")).show();
         });

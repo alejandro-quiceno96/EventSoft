@@ -35,7 +35,7 @@
                                 <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula = "{{cedula_participante}}">
                                     <i class="fa-solid fa-eye"></i> Ver Información
                                 </button>
-                                <a href="{% url 'app_participante:descargar_comentarios' cedula_participante %}" class="btn-ver-mas">
+                                <a href="{% url 'app_participante:descargar_comentarios' evento.eve_id %}" class="btn-ver-mas">
                                   Descargar Calificación
                                 </a>
 
@@ -178,38 +178,7 @@
       </div>
       <div class="modal-body">
         <form id="formModificarInscripcion" enctype="multipart/form-data" method="POST">
-          <!-- Nombre -->
-          <div class="mb-3">
-            <label for="inputNombre" class="form-label">Nombre:</label>
-            <div class="input-group">
-              <input type="text" class="form-control" id="inputNombre" name="par_nombre" disabled>
-              <button type="button" class="btn btn-editar-campo" data-target="inputNombre">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Correo -->
-          <div class="mb-3">
-            <label for="inputCorreo" class="form-label">Correo:</label>
-            <div class="input-group">
-              <input type="email" class="form-control" id="inputCorreo" name="par_correo" disabled>
-              <button type="button" class="btn btn-outline-primary btn-editar-campo" data-target="inputCorreo">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Teléfono -->
-          <div class="mb-3">
-            <label for="inputTelefono" class="form-label">Teléfono:</label>
-            <div class="input-group">
-              <input type="text" class="form-control" id="inputTelefono" name="par_telefono" disabled>
-              <button type="button" class="btn btn-outline-primary btn-editar-campo" data-target="inputTelefono">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-            </div>
-          </div>
+          {% csrf_token %}
 
           <!-- Proyecto -->
           <div class="mb-3">
@@ -288,6 +257,8 @@
 }
 
   </script>
+
+  
   
 {% endblock %}
 

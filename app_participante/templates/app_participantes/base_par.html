@@ -7,6 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Eventos{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'app_administrador/css/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/loader.css'}">
+    <link rel="stylesheet" href="{% static 'app_administrador/css/sidebarderecha.css'%}">
+    <link rel="stylesheet" href="{% static 'app_administrador/css/modaleditarperfil.css'%}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -36,13 +39,32 @@
     
 </head>
 <body>
-    <header class="position-relative py-3 mb-4 header-participante">
-        <div class="container position-relative text-center">
-          <a href="/" class="btn btn-light position-absolute start-0 top-50 translate-middle-y ms-2">
-            <i class="fas fa-home"></i>
-          </a>
-          <h1 class="text-white m-0 fs-4">{% block header_title %}Eventos{% endblock %}</h1>
+    <header class="header">
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <div class="header-logo-nombre">
+            {% if request.user.is_authenticated %}
+                <button class="abrir-menu" onclick="openMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                    <span class="tooltiptext">Menú</span>
+                </button>
+            {% endif %}
+            <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo">
+            <h2>EventSoft</h2>
         </div>
+
+       <div class="search-section">
+
+
+
+            {% if request.user.is_authenticated %}
+                <button class="filter-btn" style="text-decoration: none;"  data-bs-toggle="offcanvas" data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="filter-text"> Mi Perfil</span>
+                </button>
+            {% endif %}
+        </div>
+        {% block extra_content %}{% endblock %}
+
     </header>
      <div id="loader">
         <div class="loader-content">
@@ -61,13 +83,319 @@
         </div>
     </div>
 
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
+    <!-- Sidebar Menu -->
+    <div id="sidebarMenu" class="sidebar-menu">
+        <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
+        <div class="menu-content">
+            <a class="btn-menu" href="{% url 'app_participante:ver_info_participante' %}">
+                <i class="fa-solid fa-user"></i> Mis inscripciones como participante
+            </a>
+            <a class="btn-menu" href="{% url 'app_asistente:inicio_asistente' %}">
+                <i class="fa-solid fa-user"></i> Mis inscripciones como asistente
+            </a>
+            <a class="btn-menu" href="{% url 'app_evaluador:principal_evaluador' %}">
+                <i class="fas fa-chalkboard-user"></i> Evaluador
+            </a>
+            <a class="btn-menu" href="{% url 'inicio_visitante' %}">
+                <i class="fas fa-chalkboard-user"></i> Vistante Web
+            </a>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="perfilSidebar" aria-labelledby="perfilSidebarLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="perfilSidebarLabel">Perfil del Usuario</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"><i class="fa-solid fa-x"></i></button>
+  </div>
+  
+  <div class="offcanvas-body">
+    <!-- Elementos decorativos -->
+    <div class="decorative-circle top"></div>
+    <div class="decorative-circle bottom"></div>
+    
+    <!-- Avatar del usuario -->
+    <div class="profile-avatar">
+      <i class="fas fa-user"></i>
+    </div>
+    
+    <!-- Información del perfil -->
+    <div class="profile-info">
+      
+      <!-- Nombre completo -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Nombre completo</div>
+          <div class="profile-item-value">
+            {{ request.user.first_name }}
+            {% if request.user.segundo_nombre %}{{ request.user.segundo_nombre }}{% endif %}
+            {{ request.user.last_name }}
+            {% if request.user.segundo_apellido %}{{ request.user.segundo_apellido }}{% endif %}
+        </div>
+        </div>
+      </div>
+      
+      <!-- Correo electrónico -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Correo electrónico</div>
+          <div class="profile-item-value">{{ request.user.email }}</div>
+        </div>
+      </div>
+      
+      <!-- Nombre de usuario -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fas fa-at"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Usuario</div>
+          <div class="profile-item-value">{{ request.user.username }}</div>
+        </div>
+      </div>
+
+      <!-- Telefono -->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-phone"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Telefono</div>
+          <div class="profile-item-value">{{ request.user.telefono }}</div>
+        </div>
+      </div>
+
+      <!-- Fecha de nacimiento-->
+      <div class="profile-item">
+        <div class="profile-item-icon">
+          <i class="fa-solid fa-calendar-days"></i>
+        </div>
+        <div class="profile-item-content">
+          <div class="profile-item-label">Fecha de Nacimiento</div>
+          <div class="profile-item-value">{{ request.user.fecha_nacimiento }}</div>
+        </div>
+      </div>
+      
+      
+    </div>
+    <!-- Botón para activar el modal (agregar donde necesites) -->
+    <button type="button" class="edit-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        <i class="fas fa-edit"></i>
+        Editar Perfil
+    </button>
+    <!-- Botón de cerrar sesión -->
+    <a href="{% url 'logout' %}" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i>
+      Cerrar sesión
+    </a>
+  </div>
+</div>
+
+<!-- Modal de Editar Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Encabezado -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProfileModalLabel">
+                    <i class="fas fa-user-edit me-2"></i> Editar Perfil
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" style="filter: invert(1);"><i class="fa-solid fa-x"></i></button>
+            </div>
+
+            <!-- Cuerpo -->
+            <div class="modal-body">
+                <!-- Contenedor para errores generales de contraseña -->
+                <div id="passwordValidationErrors" class="alert alert-danger d-none" role="alert"></div>
+
+                <form id="editProfileForm" method="POST" action="{% url 'app_participante:editar_perfil' %}">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName" class="form-label">Primer Nombre</label>
+                            <input type="text" class="form-control" id="firstName" name="first_name" value="{{ request.user.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="secondName" class="form-label">Segundo Nombre</label>
+                            <input type="text" class="form-control" id="secondName" name="segundo_nombre" value="{{ request.user.segundo_nombre|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName" class="form-label">Primer Apellido</label>
+                            <input type="text" class="form-control" id="lastName" name="last_name" value="{{ request.user.last_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="secondLastName" class="form-label">Segundo Apellido</label>
+                            <input type="text" class="form-control" id="secondLastName" name="segundo_apellido" value="{{ request.user.segundo_apellido|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ request.user.email }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="phone" name="telefono" value="{{ request.user.telefono|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ request.user.username }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="birthDate" name="fecha_nacimiento" value="{{ request.user.fecha_nacimiento|date:'Y-m-d' }}">
+                        </div>
+                    </div>
+
+                    <!-- Sección para cambiar contraseña -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="changePassword">
+                        <label class="form-check-label" for="changePassword">
+                            <i class="fas fa-key me-1"></i> Cambiar contraseña
+                        </label>
+                    </div>
+
+                    <div id="passwordFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">Contraseña Actual</label>
+                            <input type="password" class="form-control" id="currentPassword" name="current_password" placeholder="Ingresa tu contraseña actual">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newPassword" class="form-label">Nueva Contraseña</label>
+                                <input type="password" class="form-control" id="newPassword" name="new_password" placeholder="Nueva contraseña">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirma la nueva contraseña">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Pie de modal -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="saveProfileBtn">
+                    <i class="fas fa-save me-1"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <main>
         {% block content %}{% endblock %}
     </main>
 
     {% block modals %}{% endblock %}
+    <script>
+        function openMenu() {
+            document.getElementById("sidebarMenu").style.left = "0";
+            document.getElementById("overlay").style.display = "block";
+        }
 
+            function closeMenu() {
+            document.getElementById("sidebarMenu").style.left = "-350px";
+            document.getElementById("overlay").style.display = "none";
+        }
+    </script>
+    <!-- Validación JS en tiempo real -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const changePasswordCheckbox = document.getElementById("changePassword");
+    const passwordFields = document.getElementById("passwordFields");
+    const newPasswordInput = document.getElementById("newPassword");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    const currentPasswordInput = document.getElementById("currentPassword");
+    const errorBox = document.getElementById("passwordValidationErrors");
+    const saveButton = document.getElementById("saveProfileBtn");
+
+    function validatePasswordFields() {
+        const currentPassword = currentPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        let errors = [];
+
+        if (!currentPassword) {
+            errors.push("Debes ingresar la contraseña actual.");
+        }
+
+        if (newPassword.length < 8) {
+            errors.push("La nueva contraseña debe tener al menos 8 caracteres.");
+        }
+
+        if (/^\d+$/.test(newPassword)) {
+            errors.push("La contraseña no puede ser completamente numérica.");
+        }
+
+        if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+            errors.push("La confirmación de la contraseña no coincide.");
+        }
+
+        showErrors(errors);
+        return errors.length === 0;
+    }
+
+    function showErrors(errors) {
+        if (errors.length > 0) {
+            const list = errors.map(e => `<li>${e}</li>`).join('');
+            errorBox.innerHTML = `<ul class="mb-0">${list}</ul>`;
+            errorBox.classList.remove("d-none");
+        } else {
+            errorBox.innerHTML = '';
+            errorBox.classList.add("d-none");
+        }
+    }
+
+    function clearErrors() {
+        errorBox.innerHTML = "";
+        errorBox.classList.add("d-none");
+    }
+
+    changePasswordCheckbox.addEventListener("change", function () {
+        passwordFields.style.display = this.checked ? "block" : "none";
+        if (!this.checked) clearErrors();
+    });
+
+    newPasswordInput.addEventListener("input", validatePasswordFields);
+    confirmPasswordInput.addEventListener("input", validatePasswordFields);
+    currentPasswordInput.addEventListener("input", validatePasswordFields);
+
+    saveButton.addEventListener("click", function (e) {
+        if (changePasswordCheckbox.checked) {
+            const isValid = validatePasswordFields();
+            if (!isValid) {
+                return;
+            }
+        }
+        document.getElementById("editProfileForm").submit();
+    });
+});
+</script>
     <script src="{% static 'app_participante/js/partcipante_evento.js' %}"></script>
+    <script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
+    <script src="{% static 'app_administrador/js/modaleditarperfil.js' %}"></script>
     <script src="{% static 'js/loader.js'%}"></script>
     <!-- Bootstrap JS y Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-..." crossorigin="anonymous"></script>

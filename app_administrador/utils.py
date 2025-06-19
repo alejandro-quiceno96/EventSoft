@@ -26,16 +26,16 @@ def generar_pdf(id_participante, usuario, id_evento, tipo="participante"):
     
     if tipo == "evaluador":
         evaluador = Evaluadores.objects.get(id=id_participante)
-        usuario = evaluador.eva_nombre
-        id_participante = evaluador.eva_cedula
+        usuario = evaluador.usuario.first_name + " " + evaluador.usuario.last_name
+        id_participante = evaluador.usuario.documento_identidad
     elif tipo == "asistente":
         asistente = Asistentes.objects.get(id=id_participante)
         usuario = asistente.usuario.first_name + " " + asistente.usuario.last_name
         id_participante = asistente.usuario.documento_identidad
     else:
         participante = Participantes.objects.get(id=id_participante)
-        usuario = participante.par_nombre
-        id_participante = participante.par_cedula
+        usuario = participante.usuario.first_name + " " + participante.usuario.last_name
+        id_participante = participante.usuario.documento_identidad
         
     html_string = render_to_string("app_administrador/entrada_pdf.html", {
         "usuario": usuario,
@@ -99,8 +99,8 @@ def obtener_ranking(evento_id):
     for participante_id, promedio in ranking_ordenado:
         participante = Participantes.objects.get(id=participante_id)
         ranking.append({
-            'id': participante.par_cedula,
-            'nombre': participante.par_nombre,
+            'id': participante.usuario.id,
+            'nombre': participante.usuario.first_name + " " + participante.usuario.last_name,
             'promedio': round(promedio, 2)
         })
 

@@ -4,7 +4,6 @@
 {% block title %}
     {{ evaluador|default:'Evaluador' }}
 {% endblock %}
-{% block back_url %}{% url 'app_evaluador:principal_evaluador' evaluador_id %}{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'app_administrador/css/criteriosadmin.css' %}">
@@ -34,6 +33,9 @@
 
 
 <div class="container ">
+  <a href="{% url 'app_evaluador:principal_evaluador' %}" class="btn btn-detalle-calificacion mb-2">
+            <i class="fa-solid fa-arrow-left"></i></i> Volver al panel principal
+    </a>
     <h2 class="mb-4">Criterios de Evaluación</h2>
      <div class="alert alert-info" role="alert">
         <strong>Nota:</strong> Los criterios de evaluación son fundamentales para la calificación de los participantes. Asegúrate de que sean claros y justos.
