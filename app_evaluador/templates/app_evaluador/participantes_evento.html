@@ -5,9 +5,12 @@
     {{ evaluador_nombre|default:'Evaluador' }}
 {% endblock %}
 
-{% block back_url %}{% url 'app_evaluador:principal_evaluador' evaluador_id %}{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'app_administrador/css/criteriosadmin.css' %}">
+<a href="{% url 'app_evaluador:principal_evaluador' %}" class="btn btn-detalle-calificacion mb-2">
+            <i class="fa-solid fa-arrow-left"></i></i> Volver al panel principal
+    </a>
 <h2 class="text-center my-4 text-orange">Participantes admitidos del evento: {{ evento.eve_nombre }}</h2>
 
 <div class="row g-4 justify-content-center">
@@ -15,23 +18,24 @@
     <div class="col-lg-4 col-md-6 col-sm-12">
         <div class="card participante-card shadow-sm h-100">
             <div class="card-body d-flex flex-column justify-content-between">
-                <h5 class="card-title text-center text-dark">{{ participante.par_eve_participante_fk.par_nombre }}</h5>
+                <h5 class="card-title text-center text-dark">{{ participante.par_eve_participante_fk.usuario.first_name }} {{ participante.par_eve_participante_fk.usuario.last_name }}</h5>
                 <div class="d-grid gap-2 mt-3">
                    {% if participante.par_eve_participante_fk.id in evaluados_dict %}
                         <!-- Mostrar botón si este evaluador ya calificó -->
-                        <button class="btn-orange btn-ver-calificaciones"
-                                data-evento-id="{{ evento.id }}"
-                                data-url="{% url 'app_evaluador:api_calificaciones' 123 456 789 %}"
-                                data-participante-id="{{ participante.par_eve_participante_fk.id }}"
-                                data-evaluador-id="{{ evaluador }}"
-                                data-bs-toggle="modal"
-                                data-bs-target="#modalCalificaciones">
-                            Ver Calificaciones Emitidas
-                        </button>
+                        <button
+    class="btn-orange btn-ver-calificaciones"
+    data-url="{% url 'app_evaluador:api_calificaciones' evento.id participante.par_eve_participante_fk.id evaluador_id %}"
+    data-bs-toggle="modal"
+    data-bs-target="#modalCalificaciones"
+>
+    Ver Calificaciones
+</button>
+
                    {% else %}
                         <!-- Botón para evaluar si aún no ha sido calificado por este evaluador -->
-                        <a href="{% url 'app_evaluador:evaluar_participante' evento.id participante.par_eve_participante_fk.id evaluador %}" 
-                           class="btn-orange">Evaluar</a>
+                        <a href="{% url 'app_evaluador:evaluar_participante' evento.id participante.par_eve_participante_fk.id evaluador_id %}" 
+   class="btn-orange">Evaluar</a>
+
                    {% endif %}
                 </div>
             </div>
@@ -74,7 +78,7 @@
                             {{ forloop.counter }}
                         {% endif %}
                     </td>
-                    <td>{{ participante.par_eve_participante_fk.par_nombre }}</td>
+                    <td>{{ participante.par_eve_participante_fk.usuario.first_name }} {{ participante.par_eve_participante_fk.usuario.last_name }}</td>
                     <td class="text-center">{{ participante.par_eve_calificacion_final|floatformat:2 }}</td>
                 </tr>
                 {% empty %}
@@ -157,48 +161,43 @@
         }
 
         document.querySelectorAll('.btn-ver-calificaciones').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const eventoId = btn.dataset.eventoId;
-                const participanteId = btn.dataset.participanteId;
-                const evaluadorId = btn.dataset.evaluadorId;
-                const baseUrl = btn.getAttribute('data-url');
-                const url = baseUrl.replace('/123/', `/${eventoId}/`)
-                                   .replace('/456/', `/${participanteId}/`)
-                                   .replace('/789', `/${evaluadorId}`);
-                const modalBody = document.getElementById('modal-calificaciones-body');
-                modalBody.innerHTML = '<div class="text-center text-muted">Cargando calificaciones...</div>';
+    btn.addEventListener('click', () => {
+        const url = btn.getAttribute('data-url');
+        const modalBody = document.getElementById('modal-calificaciones-body');
+        modalBody.innerHTML = '<div class="text-center text-muted">Cargando calificaciones...</div>';
 
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.calificaciones.length === 0) {
-                            modalBody.innerHTML = '<p class="text-center text-muted">No se encontraron calificaciones.</p>';
-                        } else {
-                            let html = '<div class="row g-3">';
-                            data.calificaciones.forEach(cal => {
-                                html += `
-                                    <div class="col-md-6">
-                                        <div class="card shadow-sm border-orange hover-shadow">
-                                            <div class="card-body">
-                                                <h6 class="card-title text-orange">
-                                                    <i class="bi bi-check2-circle me-1"></i> ${cal.criterio} (${cal.peso}%)
-                                                </h6>
-                                                <p><strong>Puntaje:</strong> ${cal.puntaje}</p>
-                                                ${cal.comentario ? `<p><strong>Comentario:</strong> ${cal.comentario}</p>` : ''}
-                                            </div>
-                                        </div>
-                                    </div>`;
-                            });
-                            html += '</div>';
-                            modalBody.innerHTML = html;
-                        }
-                    })
-                    .catch(() => {
-                        modalBody.innerHTML = '<p class="text-danger">Error al cargar calificaciones.</p>';
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.calificaciones.length === 0) {
+                    modalBody.innerHTML = '<p class="text-center text-muted">No se encontraron calificaciones.</p>';
+                } else {
+                    let html = '<div class="row g-3">';
+                    data.calificaciones.forEach(cal => {
+                        html += `
+                            <div class="col-md-6">
+                                <div class="card shadow-sm border-orange hover-shadow">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-orange">
+                                            <i class="bi bi-check2-circle me-1"></i> ${cal.criterio} (${cal.peso}%)
+                                        </h6>
+                                        <p><strong>Puntaje:</strong> ${cal.puntaje}</p>
+                                        ${cal.comentario ? `<p><strong>Comentario:</strong> ${cal.comentario}</p>` : ''}
+                                    </div>
+                                </div>
+                            </div>`;
                     });
+                    html += '</div>';
+                    modalBody.innerHTML = html;
+                }
+            })
+            .catch(() => {
+                modalBody.innerHTML = '<p class="text-danger">Error al cargar calificaciones.</p>';
             });
-        });
     });
+});
+    });
+
 </script>
 
 {% endblock %}

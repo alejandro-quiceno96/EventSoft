@@ -1,19 +1,18 @@
 {% extends 'app_evaluador/base.html' %}
 
 {% block title %}
-    {{ evaluador|default:'Evaluador' }}
+{{ evaluador|default:'Evaluador' }}
 {% endblock %}
-{% block back_url %}{% url 'app_evaluador:principal_evaluador' evaluador.id %}{% endblock %}
+{% load static %}
 {% block content %}
 <style>
-
     :root {
         --primary-color: #007832;
         --gray-100: #f3f4f6;
         --gray-800: #1f2937;
         --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
-    
+
 
 
     /* Tabla responsive mejorada */
@@ -44,7 +43,7 @@
 
 
 
-    
+
 
     .main-header {
         background: linear-gradient(135deg, var(--primary-color), #6366f1);
@@ -101,9 +100,10 @@
         margin-bottom: 1.5rem;
         box-shadow: var(--shadow);
     }
+
     .modal-xxxl {
-    max-width: 98% !important;
-}
+        max-width: 98% !important;
+    }
 
 
     .pdf-link {
@@ -168,135 +168,95 @@
     }
 </style>
 
-<div class="container mt-4" style="max-width: 900px;">
 
-    <div class="main-header">
-        <h1 class="header-title"><i class="fa-solid fa-user-tie"></i> {{ evaluador.eva_nombre }}</h1>
-        <p style="margin: 0; opacity: 0.9;">Información del Evaluador</p>
-    </div>
 
-   <div class="card">
-    <div class="card-header">
-        <h5>Datos Personales</h5>
-    </div>
-    <div class="card-body">
-        <div class="info-grid"> <!-- Clase corregida -->
-            <div class="info-item">
-                <div class="info-label">Cédula</div>
-                <div class="info-value">{{ evaluador.eva_cedula }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Nombre:</div>
-                <div class="info-value">{{ evaluador.eva_nombre }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Correo Electrónico</div>
-                <div class="info-value">{{ evaluador.eva_correo }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Teléfono</div>
-                <div class="info-value">{{ evaluador.eva_telefono }}</div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">Documento</div>
-                <div class="info-value">
-                    <a href="{{ evento.documento}}" target="_blank" class="pdf-link">
-                        <i class="fa-solid fa-eye"></i> Documento del Evaluador
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="text-end mt-3">
-        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalEditarEvaluador">
-    <i class="fa-solid fa-eye"></i> Modificar Información
+</div>
+<link rel="stylesheet" href="{% static 'app_administrador/css/criteriosadmin.css' %}">
+<a href="{% url 'app_evaluador:principal_evaluador' %}" class="btn btn-detalle-calificacion mb-2">
+    <i class="fa-solid fa-arrow-left"></i></i> Volver al panel principal
 </a>
-
-    </div>
-    </div>
+<div class="main-header">
+    <h2 class="header-title">
+        <i class="fa-solid fa-calendar-days"></i> {{ evento.eve_nombre }}
+    </h2>
+    <p style="margin: 0; opacity: 0.9;">Detalles del Evento Asignado</p>
 </div>
 
-    <div class="main-header">
-        <h2 class="header-title">
-            <i class="fa-solid fa-calendar-days"></i> {{ evento.eve_nombre }}
-        </h2>
-        <p style="margin: 0; opacity: 0.9;">Detalles del Evento Asignado</p>
-    </div>
+{% if evento.eve_imagen %}
+<img src="{{ evento.eve_imagen }}" alt="Imagen del Evento" class="event-img">
+{% endif %}
 
-    {% if evento.eve_imagen %}
-    <img src="{{ evento.eve_imagen }}" alt="Imagen del Evento" class="event-img">
-    {% endif %}
-
-    <div class="card">
-        <div class="card-body">
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Descripción</div>
-                    <div class="info-value">{{ evento.eve_descripcion }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Ciudad</div>
-                    <div class="info-value">{{ evento.eve_ciudad }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Lugar</div>
-                    <div class="info-value">{{ evento.eve_lugar }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Fecha Inicio</div>
-                    <div class="info-value">{{ evento.eve_fecha_inicio }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Fecha Fin</div>
-                    <div class="info-value">{{ evento.eve_fecha_fin }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Estado</div>
-                    <div class="info-value">{{ evento.eve_estado }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Capacidad</div>
-                    <div class="info-value">{{ evento.eve_cantidad }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Costo</div>
-                    <div class="info-value">{{ evento.eve_costo }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Categoría</div>
-                    <div class="info-value">{{ evento.eve_categoria }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Clave de Acceso</div>
-                    <div class="info-value">{{ evento.eve_clave }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Informacion técnica</div>
-                    <div class="info-value">
-                        {% if evento_obj.eve_informacion_tecnica %}
-                            <a href="{{ evento_obj.eve_informacion_tecnica.url }}" target="_blank" class="pdf-link" download>
-                                <i class="fa-solid fa-download"></i> Descargar Información Técnica
-                            </a>
-                        {% else %}
-                            <span class="text-muted">No se ha subido ningún archivo</span>
-                        {% endif %}
-                    </div>
-
-
-
-                
+<div class="card">
+    <div class="card-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Descripción</div>
+                <div class="info-value">{{ evento.eve_descripcion }}</div>
             </div>
             <div class="info-item">
-                    <div class="info-label">QR</div>
-                    <div class="info-value">
-                        {% if evento.codigo_qr %}
-                        <a href="{{ evento.codigo_qr }}" target="_blank" class="pdf-link">
-                            <i class="fa-solid fa-qrcode"></i> Ver QR
-                        </a>
-                        {% else %}
-                        No disponible
-                        {% endif %}
-                    </div>
+                <div class="info-label">Ciudad</div>
+                <div class="info-value">{{ evento.eve_ciudad }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Lugar</div>
+                <div class="info-value">{{ evento.eve_lugar }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Fecha Inicio</div>
+                <div class="info-value">{{ evento.eve_fecha_inicio }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Fecha Fin</div>
+                <div class="info-value">{{ evento.eve_fecha_fin }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Estado</div>
+                <div class="info-value">{{ evento.eve_estado }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Capacidad</div>
+                <div class="info-value">{{ evento.eve_cantidad }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Costo</div>
+                <div class="info-value">{{ evento.eve_costo }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Categoría</div>
+                <div class="info-value">{{ evento.eve_categoria }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Clave de Acceso</div>
+                <div class="info-value">{{ evento.eve_clave }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Informacion técnica</div>
+                <div class="info-value">
+                    {% if evento_obj.eve_informacion_tecnica %}
+                    <a href="{{ evento_obj.eve_informacion_tecnica.url }}" target="_blank" class="pdf-link" download>
+                        <i class="fa-solid fa-download"></i> Descargar Información Técnica
+                    </a>
+                    {% else %}
+                    <span class="text-muted">No se ha subido ningún archivo</span>
+                    {% endif %}
                 </div>
+
+
+
+
+            </div>
+            <div class="info-item">
+                <div class="info-label">QR</div>
+                <div class="info-value">
+                    {% if evento.codigo_qr %}
+                    <a href="{{ evento.codigo_qr }}" target="_blank" class="pdf-link">
+                        <i class="fa-solid fa-qrcode"></i> Ver QR
+                    </a>
+                    {% else %}
+                    No disponible
+                    {% endif %}
+                </div>
+            </div>
 
             {% if evento.eve_programacion %}
             <div style="margin-top: 2rem;">
@@ -306,7 +266,7 @@
                 </a>
             </div>
             {% endif %}
-            
+
             <div style="margin-top: 2rem;">
                 <span class="info-label">Participantes:</span><br>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalParticipantes">
@@ -315,215 +275,180 @@
             </div>
             <div style="margin-top: 2rem;">
                 <span class="info-label ">Información Técnica:</span><br>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalSubirInfoTecnica">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#modalSubirInfoTecnica">
                     <i class="fa-solid fa-upload"></i> Subir Información Técnica
                 </button>
 
             </div>
-            
+
         </div>
     </div>
     <!-- Modal para Subir Información Técnica -->
-<div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel" aria-hidden="true">
-  <div id="mensaje-subida" class="alert d-none" role="alert"></div>
+    <div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel"
+        aria-hidden="true">
+        <div id="mensaje-subida" class="alert d-none" role="alert"></div>
 
-    <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-     <form method="post" enctype="multipart/form-data" action="{% url 'app_evaluador:subir_info_tecnica' evento.eve_id %}">
-  {% csrf_token %}
-  <input type="hidden" name="cedula" value="{{ evaluador.eva_cedula }}">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" enctype="multipart/form-data"
+                    action="{% url 'app_evaluador:subir_info_tecnica' evento.eve_id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="cedula" value="{{ evaluador.eva_cedula }}">
 
-  <div class="modal-header">
-    <h5 class="modal-title" id="modalSubirInfoTecnicaLabel">
-      <i class="fa-solid fa-file-arrow-up"></i> Subir Información Técnica del Evento
-    </h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-  </div>
-  <div class="modal-body">
-    <div class="mb-3">
-      <label for="info_tecnica" class="form-label">Selecciona el archivo (PDF)</label>
-      <input class="form-control" type="file" id="info_tecnica" name="eve_informacion_tecnica" accept=".pdf" required>
-    </div>
-    {% if evento.eve_informacion_tecnica %}
-      <div class="alert alert-info">
-        Ya hay un archivo subido:  
-        <a href="{{ evento.eve_informacion_tecnica.url }}" target="_blank">Ver archivo actual</a>
-      </div>
-    {% endif %}
-  </div>
-  <div class="modal-footer">
-    <button type="submit" class="btn btn-primary">
-      <i class="fa-solid fa-upload"></i> Subir Archivo
-    </button>
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-  </div>
-</form>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalSubirInfoTecnicaLabel">
+                            <i class="fa-solid fa-file-arrow-up"></i> Subir Información Técnica del Evento
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" enctype="multipart/form-data"
+                            action="{% url 'app_evaluador:subir_info_tecnica' evento_obj.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="cedula" value="{{ evaluador.id }}">
+                            <div class="form-group">
+                                <label for="eve_informacion_tecnica">Subir Información Técnica:</label>
+                                <input type="file" class="form-control" name="eve_informacion_tecnica"
+                                    id="eve_informacion_tecnica" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">Subir Archivo</button>
+                        </form>
 
-    </div>
-  </div>
-</div>
+                        {% if evento.eve_informacion_tecnica %}
+                        <div class="alert alert-info">
+                            Ya hay un archivo subido:
+                            <a href="{{ evento.eve_informacion_tecnica.url }}" target="_blank">Ver archivo actual</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
 
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
 
-
-
-
-<!-- Modal -->
-<div class="modal fade" id="modalEditarEvaluador" tabindex="-1" aria-labelledby="modalEditarEvaluadorLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-
-      <form method="POST" action="{% url 'app_evaluador:modificar_evaluador' evaluador.id %}"  onsubmit="habilitarTodosLosInputs()">
-        {% csrf_token %}
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalEditarEvaluadorLabel">Editar Información del Evaluador</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-
-        <div class="modal-body">
-            <input type="hidden" name="evento_id" value="{{ evento.eve_id }}">
-          <!-- Nombre -->
-          <div class="mb-3 d-flex align-items-center">
-            <input type="text" name="eva_nombre" class="form-control me-2" id="inputNombre" value="{{ evaluador.eva_nombre }}" disabled>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="habilitarInput('inputNombre')">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-          </div>
-
-          <!-- Correo -->
-          <div class="mb-3 d-flex align-items-center">
-            <input type="email" name="eva_correo" class="form-control me-2" id="inputCorreo" value="{{ evaluador.eva_correo }}" disabled>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="habilitarInput('inputCorreo')">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-          </div>
-
-          <!-- Teléfono -->
-          <div class="mb-3 d-flex align-items-center">
-            <input type="text" name="eva_telefono" class="form-control me-2" id="inputTelefono" value="{{ evaluador.eva_telefono }}" disabled>
-            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="habilitarInput('inputTelefono')">
-              <i class="fa-solid fa-pen"></i>
-            </button>
-          </div>
-
-        </div>
-
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
-
-      </form>
-
-    </div>
-  </div>
-</div>
-
-
-<!-- Modal personalizado -->
-<div class="modal fade" id="modalParticipantes" tabindex="-1" aria-labelledby="modalParticipantesLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-scrollable modal-90">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title" id="modalParticipantesLabel">
-                    <i class="fa-solid fa-users me-2"></i> Participantes del evento "{{ evento.eve_nombre }}"
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <div class="modal-body">
-                {% if participantes_evento %}
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover table-participantes">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>#</th>
-                                <th>Cédula</th>
-                                <th>Nombre</th>
-                                <th>Correo</th>
-                                <th>Teléfono</th>
-                                <th>Proyecto</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for participante_evento in participantes_evento %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ participante_evento.par_eve_participante_fk.par_cedula }}</td>
-                                <td>{{ participante_evento.par_eve_participante_fk.par_nombre }}</td>
-                                <td>{{ participante_evento.par_eve_participante_fk.par_correo }}</td>
-                                <td>{{ participante_evento.par_eve_participante_fk.par_telefono|default:"No disponible" }}</td>
-                                <td><a href="{{ participante_evento.par_eve_documentos.url }}" class="btn btn-primary" target="_blank">Ver Proyecto</a></td>
-                                <td>
-                                    <span class="badge 
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Modal -->
+
+
+    <!-- Modal personalizado -->
+    <div class="modal fade" id="modalParticipantes" tabindex="-1" aria-labelledby="modalParticipantesLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-90">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalParticipantesLabel">
+                        <i class="fa-solid fa-users me-2"></i> Participantes del evento "{{ evento.eve_nombre }}"
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    {% if participantes_evento %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover table-participantes">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Cédula</th>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>Proyecto</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participante_evento in participantes_evento %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ participante_evento.par_eve_participante_fk.usuario.documento_identidad }}
+                                    </td>
+                                    <td>{{ participante_evento.par_eve_participante_fk.usuario.first_name }}</td>
+                                    <td>{{ participante_evento.par_eve_participante_fk.usuario.email }}</td>
+                                    <td>{{ participante_evento.par_eve_participante_fk.usuario.telefono|default:"No
+                                        disponible" }}</td>
+                                    <td><a href="{{ participante_evento.par_eve_documentos.url }}"
+                                            class="btn btn-primary" target="_blank">Ver Proyecto</a></td>
+                                    <td>
+                                        <span class="badge 
                                         {% if participante_evento.par_eve_estado == 'Inscrito' %}bg-success
                                         {% elif participante_evento.par_eve_estado == 'Pendiente' %}bg-warning text-dark
                                         {% else %}bg-secondary{% endif %}">
-                                        {{ participante_evento.par_eve_estado }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                            {{ participante_evento.par_eve_estado }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fa-solid fa-circle-info me-2"></i> No hay participantes registrados.
+                    </div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div class="alert alert-info text-center">
-                    <i class="fa-solid fa-circle-info me-2"></i> No hay participantes registrados.
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-times me-1"></i> Cerrar
+                    </button>
                 </div>
-                {% endif %}
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fa-solid fa-times me-1"></i> Cerrar
-                </button>
             </div>
         </div>
     </div>
-</div>
 
 
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const formSubida = document.getElementById("form-subir-info"); // asegurate de que tu form tenga este ID
-    const mensaje = document.getElementById("mensaje-subida");
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const formSubida = document.getElementById("form-subir-info"); // asegurate de que tu form tenga este ID
+            const mensaje = document.getElementById("mensaje-subida");
 
-    if (formSubida) {
-      formSubida.addEventListener("submit", function (e) {
-        e.preventDefault();
+            if (formSubida) {
+                formSubida.addEventListener("submit", function (e) {
+                    e.preventDefault();
 
-        const formData = new FormData(formSubida);
+                    const formData = new FormData(formSubida);
 
-        fetch(formSubida.action, {
-          method: "POST",
-          headers: {
-            'X-CSRFToken': formSubida.querySelector("[name=csrfmiddlewaretoken]").value,
-          },
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          mensaje.classList.remove("d-none", "alert-success", "alert-danger");
-          mensaje.classList.add("alert", data.success ? "alert-success" : "alert-danger");
-          mensaje.innerHTML = `<i class="fa-solid ${data.success ? 'fa-check-circle' : 'fa-triangle-exclamation'} me-2"></i> ${data.message}`;
+                    fetch(formSubida.action, {
+                        method: "POST",
+                        headers: {
+                            'X-CSRFToken': formSubida.querySelector("[name=csrfmiddlewaretoken]").value,
+                        },
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            mensaje.classList.remove("d-none", "alert-success", "alert-danger");
+                            mensaje.classList.add("alert", data.success ? "alert-success" : "alert-danger");
+                            mensaje.innerHTML = `<i class="fa-solid ${data.success ? 'fa-check-circle' : 'fa-triangle-exclamation'} me-2"></i> ${data.message}`;
 
-          if (data.success) {
-            setTimeout(() => {
-              mensaje.classList.add("d-none");
-              // Opcional: recargar o cerrar el modal
-              // window.location.reload();
-            }, 3000);
-          }
-        })
-        .catch(error => {
-          console.error(error);
-          mensaje.classList.remove("d-none");
-          mensaje.classList.add("alert", "alert-danger");
-          mensaje.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2"></i> Error inesperado.';
+                            if (data.success) {
+                                setTimeout(() => {
+                                    mensaje.classList.add("d-none");
+                                    // Opcional: recargar o cerrar el modal
+                                    // window.location.reload();
+                                }, 3000);
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            mensaje.classList.remove("d-none");
+                            mensaje.classList.add("alert", "alert-danger");
+                            mensaje.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2"></i> Error inesperado.';
+                        });
+                });
+            }
         });
-      });
-    }
-  });
-</script>
+    </script>
 
-{% endblock %}
+    {% endblock %}

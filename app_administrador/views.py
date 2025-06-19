@@ -159,7 +159,8 @@ def obtener_evento(request, evento_id):
 
     return JsonResponse(datos_evento)
 
-@csrf_exempt 
+@csrf_exempt
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def eliminar_evento(request, evento_id):
     try:
         evento = Eventos.objects.get(id=evento_id)
@@ -185,7 +186,7 @@ def eliminar_evento(request, evento_id):
     except Exception as e:
         return JsonResponse({'mensaje': f'Error al eliminar el evento: {str(e)}'}, status=500)
 
-
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 @require_http_methods(["GET", "POST"])
 def editar_evento(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
@@ -259,6 +260,7 @@ def editar_evento(request, evento_id):
         return render(request, 'app_administrador/modificarInformacion.html', contexto)
     
 @require_http_methods(["GET", "POST"])
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_participantes(request: HttpRequest ,evento_id):
     estado = request.GET.get('estado')
 
@@ -274,10 +276,10 @@ def ver_participantes(request: HttpRequest ,evento_id):
         p = pe.par_eve_participante_fk
         participantes.append({
             'par_id': p.id,
-            'par_cedula': p.par_cedula,
-            'par_nombre': p.par_nombre,
-            'par_correo': p.par_correo,
-            'par_telefono': p.par_telefono,
+            'par_cedula': p.usuario.documento_identidad,
+            'par_nombre': p.usuario.first_name + ' ' + p.usuario.last_name,
+            'par_correo': p.usuario.email,
+            'par_telefono': p.usuario.telefono,
             'documentos': pe.par_eve_documentos,
             'estado': pe.par_eve_estado,
             'hora_inscripcion': pe.par_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if pe.par_eve_fecha_hora else None,
@@ -290,7 +292,8 @@ def ver_participantes(request: HttpRequest ,evento_id):
         'evento_nombre': evento.eve_nombre,
     })
 
-@csrf_exempt 
+@csrf_exempt
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def actualizar_estado(request, participante_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')
@@ -324,6 +327,7 @@ def actualizar_estado(request, participante_id, nuevo_estado):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_asistentes(request: HttpRequest, evento_id):
     estado = request.GET.get('estado')
 
@@ -340,9 +344,9 @@ def ver_asistentes(request: HttpRequest, evento_id):
         a = ae.asi_eve_asistente_fk
         asistentes_data.append({
             'asi_id': a.id,
-            'asi_nombre': a.asi_nombre,
-            'asi_correo': a.asi_correo,
-            'asi_telefono': a.asi_telefono,
+            'asi_nombre': a.usuario.first_name + ' ' + a.usuario.last_name,
+            'asi_correo': a.usuario.email,
+            'asi_telefono': a.usuario.telefono,
             'documentos': ae.asi_eve_soporte.url if ae.asi_eve_soporte else None,
             'estado': ae.asi_eve_estado,
             'hora_inscripcion': ae.asi_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ae.asi_eve_fecha_hora else None,
@@ -355,6 +359,7 @@ def ver_asistentes(request: HttpRequest, evento_id):
     })
     
 @csrf_exempt
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')
@@ -591,6 +596,7 @@ def detalle_calificacion(request, participante_id, evaluador_id, evento_id):
         'evento': get_object_or_404(Eventos, id=evento_id)
     })
 
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_evaluadores(request: HttpRequest, evento_id):
     estado = request.GET.get('estado')
 
@@ -607,9 +613,9 @@ def ver_evaluadores(request: HttpRequest, evento_id):
         e = ee.eva_eve_evaluador_fk
         evaluadores_data.append({
             'asi_id': e.id,
-            'asi_nombre': e.eva_nombre,
-            'asi_correo': e.eva_correo,
-            'asi_telefono': e.eva_telefono,
+            'asi_nombre': e.usuario.first_name + ' ' + e.usuario.last_name,
+            'asi_correo': e.usuario.email,
+            'asi_telefono': e.usuario.telefono if e.usuario.telefono else None,
             'estado': ee.eva_estado,
             'documento': ee.eva_eve_documentos,
             'hora_inscripcion': ee.eva_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ee.eva_eve_fecha_hora else None,
@@ -622,6 +628,7 @@ def ver_evaluadores(request: HttpRequest, evento_id):
     })
 
 @csrf_exempt
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')

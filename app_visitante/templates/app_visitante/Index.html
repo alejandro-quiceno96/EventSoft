@@ -42,10 +42,12 @@
     <header class="header">
         <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
         <div class="header-logo-nombre">
-            <button class="abrir-menu" onclick="openMenu()">
-                <i class="fa-solid fa-bars"></i>
-                <span class="tooltiptext">Menú</span>
-            </button>
+            {% if request.user.is_authenticated %}
+                <button class="abrir-menu" onclick="openMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                    <span class="tooltiptext">Menú</span>
+                </button>
+            {% endif %}
             <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo">
             <h2>EventSoft</h2>
         </div>
@@ -86,15 +88,30 @@
     <div id="sidebarMenu" class="sidebar-menu">
         <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
         <div class="menu-content">
-            <a class="btn-menu" href="{% url 'app_participante:buscar_participantes' %}">
+            <a class="btn-menu" href="{% url 'app_participante:ver_info_participante' %}">
                 <i class="fa-solid fa-user"></i> Mis inscripciones como participante
             </a>
-            <a class="btn-menu" href="{% url 'app_asistente:buscar_asistentes' %}">
+            <a class="btn-menu" href="{% url 'app_asistente:inicio_asistente' %}">
                 <i class="fa-solid fa-user"></i> Mis inscripciones como asistente
             </a>
-            <a class="btn-menu" href="{% url 'app_evaluador:inicio_sesion_evaluador' %}">
+            <a class="btn-menu" href="{% url 'app_evaluador:principal_evaluador' %}">
                 <i class="fas fa-chalkboard-user"></i> Evaluador
             </a>
+
+            {% if 'Administrador de Eventos' in roles %}
+                <a class="btn-menu" href="{% url 'administrador:index_administrador' %}">
+                    <i class="fa-solid fa-cog"></i> Panel de Administrador Eventos
+                </a>
+            {% endif %}
+
+            {% if 'Super Administrador' in roles %}
+                <a class="btn-menu" href="{% url 'super_admin:index_super_admin' %}">
+                    <i class="fa-solid fa-cog"></i> Panel de Super Administrador
+                </a>
+            {% endif %}
+
+            
+
         </div>
     </div>
     <div class="offcanvas offcanvas-end" tabindex="-1" id="perfilSidebar" aria-labelledby="perfilSidebarLabel">

@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
 <h2 class="text-center ">Eventos</h2>
-
+  
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
     /* SOLO TEXTO */
@@ -106,7 +106,7 @@
             {% endwith %}
         {% endfor %}
     {% else %}
-        <div class="alert alert-warning text-center w-100">
+        <div class="alert alert-warning text-center">
             <i class="fa-solid fa-triangle-exclamation"></i> No hay eventos disponibles.
         </div>
     {% endif %}
@@ -123,21 +123,6 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-
-          <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input type="text" name="nombre" id="input-nombre" class="form-control" required>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Correo</label>
-            <input type="email" name="correo" id="input-correo" class="form-control" required>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Teléfono</label>
-            <input type="text" name="telefono" id="input-telefono" class="form-control" required>
-          </div>
 
           <div class="mb-4">
     <label class="form-label fw-semibold">Documento actual</label>

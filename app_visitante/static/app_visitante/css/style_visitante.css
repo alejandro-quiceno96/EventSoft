@@ -799,7 +799,6 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
 .contenedor-principal-de-eventos{
     display: flex;
     flex-wrap: wrap;
-    width: 100vw;
     justify-content: center;
     margin-top: 5px;
 }

@@ -36,8 +36,7 @@ def login_view(request):
             else:
                 user = Usuario.objects.get(username=identificador)
         except Usuario.DoesNotExist:
-            messages.error(request, "Usuario no encontrado.")
-            return render(request, 'login.html')
+            return render(request, 'app_visitante/login.html')
 
         usuario = authenticate(request, username=user.username, password=password)
 
@@ -106,7 +105,6 @@ def inicio_visitante(request):
     area = request.GET.get('area')
     fecha_inicio = request.GET.get('fecha_inicio')
 
-    print("GET data:", request.GET)
 
     # Filtrar por categoría (a través del modelo intermedio)
     if categoria:
@@ -126,11 +124,18 @@ def inicio_visitante(request):
 
     categorias = Categorias.objects.all()
     areas = Areas.objects.all()
-
+    if request.user.is_authenticated:
+        roles = []
+        if SuperAdministradores.objects.filter(usuario=request.user).exists():
+            roles.append('Super Administrador')
+        if Administradores.objects.filter(usuario=request.user).exists():
+            roles.append('Administrador de Eventos')
+    
     contexto = {
         'eventos': eventos,
         'categorias': categorias,
         'areas': areas,
+        'roles': roles if request.user.is_authenticated else [],
     }
 
     return render(request, 'app_visitante/index.html', contexto)
@@ -146,11 +151,74 @@ def inicio_evaluador(request):
     return render(request, 'app_visitante/inicio_sesion_evaluador.html')
 
 def detalle_evento(request, evento_id):
+    """
+    Vista para mostrar el detalle de un evento con información adicional
+    """
     evento = get_object_or_404(Eventos, pk=evento_id)
-    return render(request, 'app_visitante/detalle_evento.html', {'evento': evento})
+    
+    # Obtener información adicional del evento
+    participantes = ParticipantesEventos.objects.filter(
+        par_eve_evento_fk=evento_id
+    ).select_related('par_eve_participante_fk')
+    
+    evaluadores = EvaluadoresEventos.objects.filter(
+        eva_eve_evento_fk=evento_id
+    ).select_related('eva_eve_evaluador_fk')
+    
+    # Determinar roles del usuario actual
+    roles = []
+    usuario_inscrito = False
+    
+    if request.user.is_authenticated:
+        usuario = request.user
+        
+        # Verificar roles
+        if Participantes.objects.filter(usuario=usuario).exists():
+            roles.append('Participante')
+        if Asistentes.objects.filter(usuario=usuario).exists():
+            roles.append('Asistente')
+        if Evaluadores.objects.filter(usuario=usuario).exists():
+            roles.append('Evaluador')
+        
+        # Verificar inscripciones específicas por rol
+        usuario_inscrito_participante = ParticipantesEventos.objects.filter(
+            par_eve_evento_fk=evento_id,
+            par_eve_participante_fk__usuario=usuario
+        ).exists()
+        
+        usuario_inscrito_evaluador = EvaluadoresEventos.objects.filter(
+            eva_eve_evento_fk=evento_id,
+            eva_eve_evaluador_fk__usuario=usuario
+        ).exists()
+        
+        # Asumiendo que tienes un modelo AsistentesEventos
+        usuario_inscrito_asistente = AsistentesEventos.objects.filter(
+            asi_eve_evento_fk=evento_id,
+            asi_eve_asistente_fk__usuario=usuario
+        ).exists()
+        
+        # Usuario inscrito en cualquier rol
+        usuario_inscrito = (
+            usuario_inscrito_participante or 
+            usuario_inscrito_evaluador or 
+            usuario_inscrito_asistente
+        )
+    
+    context = {
+        'evento': evento,
+        'participantes': participantes,
+        'evaluadores': evaluadores,
+        'roles': roles,
+        'usuario_inscrito': usuario_inscrito,
+        'usuario_inscrito_participante': usuario_inscrito_participante,
+        'usuario_inscrito_evaluador': usuario_inscrito_evaluador,
+        'usuario_inscrito_asistente': usuario_inscrito_asistente,
+    }
+    
+    return render(request, 'app_visitante/detalle_evento.html', context)
 
 
-
+@login_required(login_url='login')
 def preinscripcion_participante(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     return render(request, 'app_visitante/Pre_inscripcion_participante.html', {'evento': evento})
@@ -167,7 +235,7 @@ def preinscripcion_asistente(request, evento_id):
     else:
         return render(request, 'app_visitante/registro_asistente.html', {'evento': evento})
 
-
+@login_required(login_url='login')
 def preinscripcion_evaluador(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     return render(request, 'app_visitante/preinscripcion_evaluador.html', {'evento': evento})
@@ -178,26 +246,18 @@ def modificar_participante(request):
 
 
 
-
+@login_required(login_url='login')
 def submit_preinscripcion_participante(request):
     if request.method == 'POST':
-        par_nombre = request.POST.get('par_nombre')
-        par_cedula = request.POST.get('par_cedula')
-        par_correo = request.POST.get('par_correo')
-        par_telefono = request.POST.get('par_telefono')
-        documento = request.FILES.get('par_eve_documentos')
         evento_id = request.POST.get('evento_id')
-
+        documento = request.FILES.get('par_eve_documentos')
         # Verificar si el participante ya existe
         try:
-            participante = Participantes.objects.get(par_cedula=par_cedula)
+            participante = Participantes.objects.get(usuario = request.user)
         except Participantes.DoesNotExist:
             # Si no existe, crear un nuevo participante
             participante = Participantes.objects.create(
-                par_nombre=par_nombre,
-                par_cedula=par_cedula,
-                par_correo=par_correo,
-                par_telefono=par_telefono,
+                usuario = request.user,
             )
 
         # Obtener el evento
@@ -226,7 +286,7 @@ def submit_preinscripcion_participante(request):
 
 
 
-
+@login_required(login_url='login')
 def registrar_asistente(request, evento_id):
     evento = get_object_or_404(Eventos, pk=evento_id)
 
@@ -266,41 +326,59 @@ def registrar_asistente(request, evento_id):
                 
     return redirect(reverse('inicio_visitante') + '?registro=exito_asistente')
 
+@login_required(login_url='login')
 def registrar_evaluador(request, evento_id):
+    """
+    Vista para registrar un evaluador en un evento
+    Valida que no esté ya inscrito para evitar duplicados
+    """
     if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        cedula = request.POST.get('cedula')
-        correo = request.POST.get('correo')
-        telefono = request.POST.get('telefono')
         documento = request.FILES.get('documento')
-
+        
         try:
-            evaluador = Evaluadores.objects.get(eva_cedula=cedula)
-        except Evaluadores.DoesNotExist:
-            evaluador = Evaluadores.objects.create(
-                eva_nombre=nombre,
-                eva_cedula=cedula,
-                eva_correo=correo,
-                eva_telefono=telefono,
+            # Obtener o crear el evaluador
+            evaluador, created = Evaluadores.objects.get_or_create(
+                usuario=request.user
             )
-
+        except Exception as e:
+            print(f"Error al obtener/crear evaluador: {e}")
+            return redirect(reverse('inicio_visitante') + '?error=evaluador')
+        
         try:
+            # Verificar que el evento existe
             evento = Eventos.objects.get(id=evento_id)
         except Eventos.DoesNotExist:
-            return redirect('inicio_visitante')
-
-        EvaluadoresEventos.objects.create(
+            return redirect(reverse('inicio_visitante') + '?error=evento_no_existe')
+        
+        # VALIDACIÓN: Verificar si ya está inscrito como evaluador
+        evaluador_ya_inscrito = EvaluadoresEventos.objects.filter(
             eva_eve_evaluador_fk=evaluador,
-            eva_eve_evento_fk=evento,
-            eva_eve_fecha_hora=timezone.now(),
-            eva_eve_documentos=documento,
-            eva_estado='Pendiente',
-            eva_eve_qr='',
-        )
-
-        # Redirige agregando un parámetro ?registro=exito
-        return redirect(reverse('inicio_visitante') + '?registro=exito_evaluador')
-
+            eva_eve_evento_fk=evento
+        ).exists()
+        
+        if evaluador_ya_inscrito:
+            # Ya está inscrito, redirigir con mensaje de error
+            return redirect(reverse('inicio_visitante') + '?error=ya_inscrito_evaluador')
+        
+        try:
+            # Crear la inscripción del evaluador al evento
+            EvaluadoresEventos.objects.create(
+                eva_eve_evaluador_fk=evaluador,
+                eva_eve_evento_fk=evento,
+                eva_eve_fecha_hora=timezone.now(),
+                eva_eve_documentos=documento,
+                eva_estado='Pendiente',
+                eva_eve_qr='',
+            )
+            
+            # Redirige con mensaje de éxito
+            return redirect(reverse('inicio_visitante') + '?registro=exito_evaluador')
+            
+        except Exception as e:
+            print(f"Error al crear inscripción de evaluador: {e}")
+            return redirect(reverse('inicio_visitante') + '?error=inscripcion_fallida')
+    
+    # Si no es POST, redirigir
     return redirect('inicio_visitante')
 
 

@@ -1,8 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
   const botonPreinscripcion = document.getElementById('btn-preinscripcion');
-  const nombreInput = document.getElementById('input-nombre');
-  const correoInput = document.getElementById('input-correo');
-  const telefonoInput = document.getElementById('input-telefono');
   const linkDocumento = document.getElementById('link-documento');
   const sinDocumento = document.getElementById('sin-documento');
   const form = document.getElementById('formPreinscripcion');
@@ -17,10 +14,6 @@ document.addEventListener('DOMContentLoaded', function () {
     fetch(url)
       .then(response => response.json())
       .then(data => {
-        nombreInput.value = data.nombre || "";
-        correoInput.value = data.correo || "";
-        telefonoInput.value = data.telefono || "";
-
         if (data.documento) {
           linkDocumento.href = data.documento;
           linkDocumento.style.display = 'inline-block';
@@ -32,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const urlModificar = urlModificarPreinscripcion.replace("123", eventoId).replace("456", evaluadorId);
         form.action = urlModificar;
-        console.log("Formulario de preinscripción configurado con la URL:", urlModificar);
       })
       .catch(error => {
         console.error("Error cargando datos:", error);

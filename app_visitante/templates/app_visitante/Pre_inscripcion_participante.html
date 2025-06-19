@@ -49,30 +49,8 @@
   <form id="preinscripcion-form" action="{% url 'submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <h1>Formulario de Preinscripción</h1>
+    <Por class="text-info">Por favor, suba el proyecto que desea presentar.</p>
 
-    <label for="nombre">Nombre completo:</label>
-    <div class="input-group">
-      <i class="fas fa-user"></i>
-      <input type="text" id="nombre" name="par_nombre" placeholder="Ingrese su nombre completo" required />
-    </div>
-
-    <label for="cedula">Cédula:</label>
-    <div class="input-group">
-      <i class="fas fa-id-card"></i>
-      <input type="text" id="cedula" name="par_cedula" placeholder="Ingrese su cédula" required />
-    </div>
-
-    <label for="email">Correo electrónico:</label>
-    <div class="input-group">
-      <i class="fas fa-envelope"></i>
-      <input type="email" id="email" name="par_correo" placeholder="Ingrese su correo electrónico" required />
-    </div>
-
-    <label for="telefono">Teléfono:</label>
-    <div class="input-group">
-      <i class="fas fa-phone"></i>
-      <input type="tel" id="telefono" name="par_telefono" placeholder="Ingrese su teléfono" required />
-    </div>
 
     <input type="hidden" id="evento_id" name="evento_id" value="{{ evento_id|default:evento.id }}" />
 
