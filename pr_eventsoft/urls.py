@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from emails.views import enviar_correo
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,7 +14,11 @@ urlpatterns = [
     path('participante/', include('app_participante.urls', namespace='app_participante')),
     path('super_admin/', include(('app_super_admin.urls', 'super_administrador'), namespace='super_administrador')),
     path('evaluador/', include('app_evaluador.urls', namespace='app_evaluador')),
+    path('enviar_correo/', enviar_correo, name='enviar_correo'),
+    
 ]
+
+
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

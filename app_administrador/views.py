@@ -15,7 +15,10 @@ from django.urls import reverse
 from decimal import Decimal
 import json
 from weasyprint import HTML
-
+from django.core.mail import EmailMessage
+from django.conf import settings
+from app_asistente.models import Asistentes
+from django.core.mail import EmailMultiAlternatives
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
@@ -363,6 +366,7 @@ def ver_asistentes(request: HttpRequest, evento_id):
 def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')
+        
 
         if not evento_id:
             return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
@@ -389,6 +393,42 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
         asistente_evento.asi_eve_qr = qr_participante
         asistente_evento.asi_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
         asistente_evento.save()
+        
+
+        url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+
+
+        
+        if nuevo_estado == 'Admitido':
+            asistente = get_object_or_404(Asistentes, id=asistente_id)
+
+            asistente = asistente_evento.asi_eve_asistente_fk  # debe ser ForeignKey
+            evento = asistente_evento.asi_eve_evento_fk
+
+            asunto = f"Confirmación de inscripción al evento: {evento.eve_nombre}"
+            
+            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+                "nombre": asistente.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "clave": clave_acceso,
+            })
+
+            email = EmailMultiAlternatives(
+                asunto,
+                "",  # cuerpo de texto plano (opcional)
+                settings.DEFAULT_FROM_EMAIL,
+                [asistente.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
+
+            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))  # ruta absoluta
+
+            if os.path.exists(ruta_pdf):
+                with open(ruta_pdf, 'rb') as f:
+                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+
+            email.send(fail_silently=True)
+
 
         url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
         return redirect(f'{url}?estado={nuevo_estado}')
@@ -424,13 +464,14 @@ def criterios_evaluacion(request, evento_id):
 
         messages.success(request, "Criterio(s) agregado(s) correctamente.")
         return redirect('administrador:criterios_evaluacion', evento_id=evento_id)
-
+        
 
     context = {
         'evento': evento,
         'administrador': request.session.get('admin_nombre'),
         'criterios': Criterios.objects.filter(cri_evento_fk=evento_id),
     }
+
     
     return render(request, 'app_administrador/criterios_evaluacion.html', context)
 

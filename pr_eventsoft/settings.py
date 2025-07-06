@@ -68,7 +68,8 @@ TEMPLATES = [
         'DIRS': [BASE_DIR / 'templates', 'app_administrador/templates', 
                  'app_participante/templates', 'app_asistente/templates',
                  'app_super_admin/templates', 'app_evaluador/templates',
-                 'app_visitante/templates', 'app_usuarios/templates'],
+                 'app_visitante/templates', 'app_usuarios/templates',
+                 'emails/templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -91,12 +92,13 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'eventsoft',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': 'Sebas123.',
         'HOST': 'localhost',  # o la IP/host del servidor MySQL
         'PORT': '3306',       # puerto por defecto de MySQL
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",}
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -152,3 +154,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'eventsoft3@gmail.com'
+EMAIL_HOST_PASSWORD = 'mewk xcfy bbbw paey'
+DEFAULT_FROM_EMAIL = 'eventsoft3@gmail.com'
