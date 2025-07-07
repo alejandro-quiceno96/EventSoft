@@ -99,6 +99,33 @@
         <a href="?estado=Admitido" class="btn btn-success"><i class="fa-solid fa-check"></i> Admitidos</a>
         <a href="?estado=Rechazado" class="btn btn-danger"><i class="fa-solid fa-x"></i> Rechazados</a>
     </div>
+    <form method="post" action="{% url 'administrador:enviar_certificados' evento_id %}">
+    {% csrf_token %}
+    <div class="card my-4 p-3 shadow rounded-4">
+        <h5 class="text-center text-success fw-bold mb-3">Enviar Certificados de Asistencia</h5>
+        <p class="text-muted text-center">Selecciona a los asistentes admitidos a quienes deseas enviar el certificado:</p>
+        <div class="row">
+            {% for asistente in asistentes %}
+                {% if asistente.estado == "Admitido" %}
+                    <div class="col-md-4 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="asistentes" value="{{ asistente.asi_id }}" id="check-{{ asistente.asi_id }}">
+                            <label class="form-check-label" for="check-{{ asistente.asi_id }}">
+                                {{ asistente.asi_nombre }} ({{ asistente.asi_correo }})
+                            </label>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-paper-plane me-2"></i>Enviar Certificados
+            </button>
+        </div>
+    </div>
+</form>
+    
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     {% for asistente in asistentes %}
