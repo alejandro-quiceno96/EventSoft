@@ -33,9 +33,10 @@ urlpatterns=[
     path('tabla_calificaciones/<int:evento_id>', views.tabla_calificaciones, name='tabla_calificaciones'),
     path('descargar_raking/<int:evento_id>', views.descargar_ranking_pdf, name = "descargar_ranking_pdf" ),
     path('evento/<int:evento_id>/participante/<int:participante_id>/detalles/', views.detalles_calificaciones, name='detalle_calificaciones'),
-    path('detalle_calificacion/evaluador/<int:evaluador_id>/partcipante/<int:participante_id>/evento/<int:evento_id>/', views.detalle_calificacion, name= "detalle_calificacion")
+    path('detalle_calificacion/evaluador/<int:evaluador_id>/partcipante/<int:participante_id>/evento/<int:evento_id>/', views.detalle_calificacion, name= "detalle_calificacion"),
 
-    
+    path('evento/<int:evento_id>/enviar_certificados/', views.enviar_certificados, name='enviar_certificados'),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
