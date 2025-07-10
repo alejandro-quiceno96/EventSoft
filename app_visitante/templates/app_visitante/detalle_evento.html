@@ -17,6 +17,34 @@
       display: none;
       margin-top: 10px;
     }
+
+    .modal-compartir {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-contenido {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .cerrar {
+      float: right;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -52,7 +80,6 @@
         </a>
 
         <div class="action-buttons">
-          <!-- Botón Asistente -->
           {% if usuario_inscrito_asistente %}
           <button class="action-btn disabled" disabled>
             <i class="fas fa-check"></i> Ya estás inscrito como asistente
@@ -63,15 +90,12 @@
           </a>
           {% endif %}
 
-          <!-- Botón Más Opciones -->
           <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
 
-          <!-- Botones ocultos inicialmente -->
           <div id="opciones-ocultas" class="extra-buttons">
-            <!-- Botón Participante -->
             {% if usuario_inscrito_participante %}
             <button class="action-btn disabled" disabled>
-              <i class="fas fa-check"></i> Ya estásinscrito como participante
+              <i class="fas fa-check"></i> Ya estás inscrito como participante
             </button>
             {% else %}
             <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
@@ -79,7 +103,6 @@
             </a>
             {% endif %}
 
-            <!-- Botón Evaluador -->
             {% if usuario_inscrito_evaluador %}
             <button class="action-btn disabled" disabled>
               <i class="fas fa-check"></i> Ya estás inscrito como evaluador
@@ -92,7 +115,34 @@
           </div>
         </div>
 
+        <!-- Botón Compartir -->
+        <button class="action-btn-outline" onclick="abrirCompartir()">
+          <i class="fas fa-share-alt"></i> 
+        </button>
+
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL COMPARTIR -->
+  <div id="modal-compartir" class="modal-compartir">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarCompartir()">&times;</span>
+      <h3>Compartir este evento</h3>
+
+      <a href="https://wa.me/?text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}" target="_blank">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </a><br>
+
+      <a href="mailto:?subject=Te invito a este evento&body=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
+        <i class="fas fa-envelope"></i> Correo
+      </a><br>
+
+      <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}" target="_blank">
+        <i class="fab fa-telegram"></i> Telegram
+      </a><br>
+
+      <button onclick="copiarTexto()">📋 Copiar mensaje</button>
     </div>
   </div>
 
@@ -109,7 +159,27 @@
         btn.textContent = 'Más opciones';
       }
     }
+
+    function abrirCompartir() {
+      document.getElementById('modal-compartir').style.display = 'flex';
+    }
+
+    function cerrarCompartir() {
+      document.getElementById('modal-compartir').style.display = 'none';
+    }
+
+    function copiarTexto() {
+      const texto = `Mira este evento en el que estoy participando:
+📌 {{ evento.eve_nombre }}
+📅 Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }}
+📍 Lugar: {{ evento.eve_lugar }}
+📝 Descripción: {{ evento.eve_descripcion }}
+👉 Ver más: {{ request.build_absolute_uri }}`;
+
+      navigator.clipboard.writeText(texto).then(() => {
+        alert('¡Mensaje copiado! Puedes pegarlo donde quieras.');
+      });
+    }
   </script>
 </body>
-
 </html>

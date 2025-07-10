@@ -1,5 +1,5 @@
 :root {
-    --color-naranja: #007832;
+    --color-verde: #007832;
     --color-texto: #ffffff;
 }
 
@@ -14,55 +14,55 @@
     background-color: var(--color-naranja);
 }
 
-.modal-header{
+.modal-header {
     background-color: var(--color-naranja);
 }
 
-.btn-guardar-usuario{
+.btn-guardar-usuario {
     background-color: var(--color-naranja);
     color: var(--color-texto);
 }
 
-.btn-guardar-usuario:hover{
+.btn-guardar-usuario:hover {
     background-color: #007832;
     color: var(--color-texto);
 }
 
-.btn-ver-documento{
+.btn-ver-documento {
     background-color: var(--color-naranja);
     color: var(--color-texto);
 }
 
-.btn-ver-documento:hover{
+.btn-ver-documento:hover {
     background-color: #007832;
     color: var(--color-texto);
 }
 
 /* estilos_personalizados.css */
 .custom-file-upload {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .custom-file-upload .btn-file {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .custom-file-upload .file-name {
-  font-size: 0.9rem;
+    font-size: 0.9rem;
 }
 
-.card-img-top{
+.card-img-top {
     height: 200px;
     object-fit: contain;
 }
 
 * {
-    font-family: 'Work Sans';
+    font-family: 'Work Sans', sans-serif;
 }
 
 .header {
-    background-color:  var(--color-naranja);
+    background-color: var(--color-naranja);
     color: var(--color-texto);
     display: flex;
     align-items: center;
@@ -74,14 +74,15 @@
 .header-logo-nombre img {
     height: 50px;
 }
-.header-logo-nombre{
+
+.header-logo-nombre {
     display: flex;
     align-items: center;
     width: 35%;
     padding-left: 20px;
-
 }
-.header-logo-nombre h2{
+
+.header-logo-nombre h2 {
     font-size: 2.5rem;
     text-decoration: none;
     color: white;
@@ -119,10 +120,10 @@
     cursor: pointer;
     background-color: transparent;
     color: #fff;
-    position: relative; /* Asegura que el z-index tenga efecto */
+    position: relative;
+    /* Asegura que el z-index tenga efecto */
     border: none;
 }
-
 
 .abrir-menu:hover {
     background-color: #ffffff28;
@@ -132,12 +133,16 @@
 .sidebar-menu {
     position: fixed;
     top: 0;
-    left: -100%; /* más seguro que -300px */
+    left: -100%;
+    /* más seguro que -300px */
     width: 350px;
     height: 100%;
-    background: rgba(255, 255, 255, 0.411); /* fondo semitransparente */
-    backdrop-filter: blur(10px); /* efecto blur */
-    -webkit-backdrop-filter: blur(10px); /* soporte Safari */
+    background: rgba(255, 255, 255, 0.411);
+    /* fondo semitransparente */
+    backdrop-filter: blur(10px);
+    /* efecto blur */
+    -webkit-backdrop-filter: blur(10px);
+    /* soporte Safari */
     color: #fff;
     transition: left 0.3s ease;
     z-index: 1000;
@@ -148,7 +153,6 @@
 .sidebar-menu.active {
     left: 0;
 }
-
 
 .sidebar-menu .close-btn {
     background: none;
@@ -163,21 +167,13 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    text-align: center;
 }
-
-
 
 .btn-menu:hover {
     background-color: #007832;
     color: #fff;
     border-radius: 5px;
-}
-
-.menu-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    text-align: center;
 }
 
 /* Estilos de los botones dentro del menú */
@@ -200,12 +196,131 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.5); /* Oscurece el fondo */
-    z-index: 900; /* Menor que el sidebar, mayor que el resto */
-    display: none; /* Oculto por defecto */
+    background: rgba(0, 0, 0, 0.5);
+    /* Oscurece el fondo */
+    z-index: 900;
+    /* Menor que el sidebar, mayor que el resto */
+    display: none;
+    /* Oculto por defecto */
     transition: opacity 0.3s ease;
 }
 
 .overlay.active {
     display: block;
+}
+
+/* Botón de acción deshabilitado */
+.action-btn.disabled {
+    background-color: #6c757d;
+    color: #fff;
+    cursor: not-allowed;
+    opacity: 0.7;
+    text-decoration: none;
+}
+
+.action-btn.disabled:hover {
+    background-color: #6c757d;
+    transform: none;
+    box-shadow: none;
+}
+
+.action-btn.disabled i {
+    color: #61da7d;
+}
+
+/* === MODAL COMPARTIR ESTILOS PROFESIONALES === */
+.modal-compartir {
+    display: none;
+    /* Oculto por defecto */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* Fondo oscuro */
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+}
+
+.modal-contenido {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    font-family: 'Work Sans', sans-serif;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-contenido h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #222;
+}
+
+.modal-contenido a {
+    display: block;
+    margin: 10px 0;
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.modal-contenido a:hover {
+    color: #007bff;
+    transform: scale(1.02);
+}
+
+.modal-contenido i {
+    margin-right: 8px;
+}
+
+.modal-contenido button {
+    background-color: #007bff;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s;
+}
+
+.modal-contenido button:hover {
+    background-color: #0056b3;
+}
+
+.cerrar {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.cerrar:hover {
+    color: #000;
+}
+
+
+@keyframes fadeIn {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
