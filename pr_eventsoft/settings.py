@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'app_visitante',
     'app_super_admin',
     'app_usuarios',
+    'app_certificados',
 ]
 
 MIDDLEWARE = [
@@ -92,7 +93,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'eventsoft',
         'USER': 'root',
-        'PASSWORD': 'Sebas123.',
+        'PASSWORD': '',
         'HOST': 'localhost',  # o la IP/host del servidor MySQL
         'PORT': '3306',       # puerto por defecto de MySQL
         'OPTIONS': {
