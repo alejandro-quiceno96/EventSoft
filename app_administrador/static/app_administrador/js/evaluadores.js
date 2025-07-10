@@ -1,72 +1,69 @@
-document.addEventListener("DOMContentLoaded", function () {
-    let asistenteIdSeleccionado = null;
-    let eventoIdSeleccionado = null;
+document.addEventListener('DOMContentLoaded', function() {
+            // Botones de admitir
+            document.querySelectorAll('.btn-admitir').forEach(button => {
+                button.addEventListener('click', function() {
+                    const evaluadorId = this.dataset.id;
+                    const eventoId = this.dataset.evento;
+                    const nombre = this.dataset.nombre;
+                    
+                    document.getElementById('mensaje-admitir').textContent = 
+                        `¿Está seguro que desea admitir al evaluador ${nombre}?`;
+                    document.getElementById('evaluadorIdAdmitir').value = evaluadorId;
+                    document.getElementById('eventoIdAdmitir').value = eventoId;
+                });
+            });
 
-    // 🟢 Evento para abrir el modal de admisión
-    document.body.addEventListener("click", function (event) {
-        if (event.target.classList.contains("btn-admitir")) {
-            asistenteIdSeleccionado = event.target.getAttribute("data-id");
-            eventoIdSeleccionado = event.target.getAttribute("data-evento");
-            const asistenteNombre = event.target.getAttribute("data-nombre");
+            // Botones de rechazar
+            document.querySelectorAll('.btn-rechazar').forEach(button => {
+                button.addEventListener('click', function() {
+                    const evaluadorId = this.dataset.id;
+                    const eventoId = this.dataset.evento;
+                    const nombre = this.dataset.nombre;
+                    
+                    document.getElementById('mensaje-rechazo').textContent = 
+                        `¿Está seguro que desea rechazar al evaluador ${nombre}?`;
+                    document.getElementById('evaluadorIdRechazo').value = evaluadorId;
+                    document.getElementById('eventoIdRechazo').value = eventoId;
+                });
+            });
 
-            document.getElementById("mensaje-admitir").innerText = 
-                `¿Estás seguro de admitir a ${asistenteNombre}?`;
-        }
-    });
+            // Confirmar admisión
+            document.getElementById('confirmarAdmitir').addEventListener('click', function() {
+                const evaluadorId = document.getElementById('evaluadorIdAdmitir').value;
+                const eventoId = document.getElementById('eventoIdAdmitir').value;
+                
+                // Crear formulario para enviar datos
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Admitido/`;
+                
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                form.innerHTML = `
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    <input type="hidden" name="evento_id" value="${eventoId}">
+                `;
+                
+                document.body.appendChild(form);
+                form.submit();
+            });
 
-    // 🔴 Evento para abrir el modal de rechazo
-    document.body.addEventListener("click", function (event) {
-        if (event.target.classList.contains("btn-rechazar")) {
-            asistenteIdSeleccionado = event.target.getAttribute("data-id");
-            eventoIdSeleccionado = event.target.getAttribute("data-evento");
-            const asistenteNombre = event.target.getAttribute("data-nombre");
-            document.getElementById("mensaje-rechazo").innerText = 
-                `¿Estás seguro de rechazar a ${asistenteNombre}?`;
-        }
-    });
-
-    // 🟢 Evento para confirmar admisió
-    document.body.addEventListener("click", function (event) {
-        if (event.target.classList.contains("btn-confirmar-admitir")) {
-            const urlAdmitir = event.target.getAttribute("data-url");
-            console.log(urlAdmitir)
-            if (asistenteIdSeleccionado && eventoIdSeleccionado) {
-                actualizarEstado(asistenteIdSeleccionado, eventoIdSeleccionado, "Admitido", urlAdmitir);
-            }
-        }
-    });
-
-    // 🔴 Evento para confirmar rechazo
-    document.body.addEventListener("click", function (event) {
-        if (event.target.classList.contains("btn-confirmar-rechazar")) {
-            const urlRechazar = event.target.getAttribute("data-url");
-            if (asistenteIdSeleccionado && eventoIdSeleccionado) {
-                actualizarEstado(asistenteIdSeleccionado, eventoIdSeleccionado, "Rechazado", urlRechazar);
-            }
-        }
-    });
-
-     function actualizarEstado(asistenteId, eventoId, nuevoEstado, urlTemplate) {
-        const formData = new FormData();
-        formData.append("evento_id", eventoId);
-        console.log(`Actualizando estado de participante ${asistenteId} a ${nuevoEstado}`);
-        const finalUrl = urlTemplate
-            .replace("/0/", `/${asistenteId}/`)
-            .replace("estado-placeholder", nuevoEstado);
-
-        fetch(finalUrl, {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => {
-            if (res.ok) {
-                location.reload();
-            } else {
-                throw new Error("Error en la solicitud");
-            }
-        })
-        .catch(err => {
-            console.error(err);
+            // Confirmar rechazo
+            document.getElementById('confirmarRechazo').addEventListener('click', function() {
+                const evaluadorId = document.getElementById('evaluadorIdRechazo').value;
+                const eventoId = document.getElementById('eventoIdRechazo').value;
+                
+                // Crear formulario para enviar datos
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Rechazado/`;
+                
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                form.innerHTML = `
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    <input type="hidden" name="evento_id" value="${eventoId}">
+                `;
+                
+                document.body.appendChild(form);
+                form.submit();
+            });
         });
-    }
-});

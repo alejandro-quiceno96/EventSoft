@@ -15,7 +15,11 @@ from django.urls import reverse
 from decimal import Decimal
 import json
 from weasyprint import HTML
-
+from django.core.mail import EmailMessage
+from django.conf import settings
+from app_asistente.models import Asistentes
+from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
@@ -25,6 +29,11 @@ from app_criterios.models import Criterios
 from app_evaluador.models import Calificaciones
 from app_participante.models import Participantes
 from app_evaluador.models import Evaluadores
+
+from app_super_admin.models import SuperAdministradores
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from twilio.rest import Client
 
 # Obtener áreas disponibles
 def obtener_areas_eventos():
@@ -41,6 +50,7 @@ def get_categorias(request, area_id):
         return JsonResponse({'error': f'Error al obtener categorías: {str(e)}'}, status=500)
 
 # Crear un nuevo evento
+
 @csrf_exempt
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 @require_http_methods(["GET", "POST"])
@@ -58,16 +68,11 @@ def crear_evento(request):
             inscripcion = request.POST.get('inscripcion')
             permitir_participantes = request.POST.get('permitir_participantes')
 
-            # Aforo
             aforo = request.POST.get('cantidad_personas') if permitir_participantes == '1' else None
-
-            # Archivos
             archivo_imagen = request.FILES.get('imagen_evento')
             archivo_programacion = request.FILES.get('documento_evento')
 
-            # Obtener ID de administrador (puede estar vacío si no hay login aún)
             administrador = Administradores.objects.get(usuario=request.user)
-
 
             # Crear evento
             evento = Eventos.objects.create(
@@ -82,29 +87,51 @@ def crear_evento(request):
                 eve_capacidad=int(aforo) if aforo else 0,
                 eve_tienecosto=True if inscripcion == 'Si' else False,
                 eve_programacion=archivo_programacion,
-                eve_administrador_fk_id= administrador.id,  # Asignar el ID del administrador
+                eve_administrador_fk_id=administrador.id,
             )
 
-            # Relación con categoría
             EventosCategorias.objects.create(
                 eve_cat_evento_fk=evento,
                 eve_cat_categoria_fk_id=categoria
             )
+
+            # 🟩 ENVIAR CORREO A SUPERADMINISTRADORES
+            superadmins =   SuperAdministradores.objects.select_related('usuario').all()
+            print("SuperAdmins encontrados:", [sa.usuario.email for sa in superadmins])
+
+            for superadmin in superadmins:
+                user = superadmin.usuario
+
+                mensaje_html = render_to_string('app_administrador/correos/notificacion_evento_creado.html', {
+                "nombre": evento.eve_nombre,
+                "descripcion": evento.eve_descripcion,
+                "ciudad": evento.eve_ciudad,
+                "lugar": evento.eve_lugar,
+                "fecha_inicio": evento.eve_fecha_inicio,
+                "fecha_fin": evento.eve_fecha_fin,
+            })
+
+
+                email = EmailMultiAlternatives(
+                    f"Nuevo evento creado: {evento.eve_nombre}",
+                    "",  # texto plano opcional
+                    settings.DEFAULT_FROM_EMAIL,
+                    [superadmin.usuario.email]
+                )
+                email.attach_alternative(mensaje_html, "text/html")
+                email.send(fail_silently=False)
 
             messages.success(request, 'Evento creado exitosamente')
             return redirect('administrador:index_administrador')
 
         except Exception as e:
             print(f"Error al crear evento: {e}")
-           
 
-    # GET: mostrar formulario
     context = {
         'areas': obtener_areas_eventos(),
         'administrador': request.session.get('admin_nombre'),
     }
     return render(request, 'app_administrador/crearevento.html', context)
-
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def inicio(request):
     administrador = Administradores.objects.get(usuario_id=request.user.id)
@@ -263,7 +290,8 @@ def editar_evento(request, evento_id):
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_participantes(request: HttpRequest ,evento_id):
     estado = request.GET.get('estado')
-
+    
+    evento = get_object_or_404(Eventos, pk=evento_id)
     # Filtrar participantes_eventos según evento y estado
     participantes_eventos = ParticipantesEventos.objects.select_related('par_eve_participante_fk').filter(
        par_eve_evento_fk=evento_id,
@@ -288,9 +316,10 @@ def ver_participantes(request: HttpRequest ,evento_id):
 
     return render(request, 'app_administrador/ver_participantes.html', {
         'participantes': participantes,
-        'evento_id': evento_id,
+        'evento': evento,
         'evento_nombre': evento.eve_nombre,
     })
+
 
 @csrf_exempt
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
@@ -308,6 +337,7 @@ def actualizar_estado(request, participante_id, nuevo_estado):
         else:
             qr_participante = None
             clave_acceso = None
+
         # Buscar el participante_evento
         try:
             participante_evento = ParticipantesEventos.objects.get(
@@ -322,6 +352,36 @@ def actualizar_estado(request, participante_id, nuevo_estado):
         participante_evento.par_eve_qr = qr_participante
         participante_evento.par_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
         participante_evento.save()
+
+        if nuevo_estado == 'Admitido':
+            participante = get_object_or_404(Participantes, id=participante_id)
+            evento = participante_evento.par_eve_evento_fk
+
+            asunto = f"Confirmación de inscripción como participante al evento: {evento.eve_nombre}"
+
+            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+                "nombre": participante.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "clave": clave_acceso,
+            })
+
+            email = EmailMultiAlternatives(
+                asunto,
+                "",  # cuerpo de texto plano opcional
+                settings.DEFAULT_FROM_EMAIL,
+                [participante.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
+
+            # Adjuntar PDF (si existe)
+            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))
+            if os.path.exists(ruta_pdf):
+                with open(ruta_pdf, 'rb') as f:
+                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+
+            email.send(fail_silently=True)
+
+        # Redirigir correctamente a la vista de participantes
         url = reverse('administrador:ver_participantes', kwargs={'evento_id': evento_id})
         return redirect(f'{url}?estado={nuevo_estado}')
 
@@ -354,7 +414,7 @@ def ver_asistentes(request: HttpRequest, evento_id):
 
     return render(request, 'app_administrador/ver_asistentes.html', {
         'asistentes': asistentes_data,
-        'evento_id': evento_id,
+        'evento': evento,
         'evento_nombre': evento.eve_nombre,
     })
     
@@ -363,6 +423,7 @@ def ver_asistentes(request: HttpRequest, evento_id):
 def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')
+        
 
         if not evento_id:
             return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
@@ -389,6 +450,42 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
         asistente_evento.asi_eve_qr = qr_participante
         asistente_evento.asi_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
         asistente_evento.save()
+        
+
+        url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+
+
+        
+        if nuevo_estado == 'Admitido':
+            asistente = get_object_or_404(Asistentes, id=asistente_id)
+
+            asistente = asistente_evento.asi_eve_asistente_fk  # debe ser ForeignKey
+            evento = asistente_evento.asi_eve_evento_fk
+
+            asunto = f"Confirmación de inscripción como asistente al evento: {evento.eve_nombre}"
+            
+            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+                "nombre": asistente.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "clave": clave_acceso,
+            })
+
+            email = EmailMultiAlternatives(
+                asunto,
+                "",  # cuerpo de texto plano (opcional)
+                settings.DEFAULT_FROM_EMAIL,
+                [asistente.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
+
+            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))  # ruta absoluta
+
+            if os.path.exists(ruta_pdf):
+                with open(ruta_pdf, 'rb') as f:
+                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+
+            email.send(fail_silently=True)
+
 
         url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
         return redirect(f'{url}?estado={nuevo_estado}')
@@ -424,13 +521,14 @@ def criterios_evaluacion(request, evento_id):
 
         messages.success(request, "Criterio(s) agregado(s) correctamente.")
         return redirect('administrador:criterios_evaluacion', evento_id=evento_id)
-
+        
 
     context = {
         'evento': evento,
         'administrador': request.session.get('admin_nombre'),
         'criterios': Criterios.objects.filter(cri_evento_fk=evento_id),
     }
+
     
     return render(request, 'app_administrador/criterios_evaluacion.html', context)
 
@@ -595,40 +693,41 @@ def detalle_calificacion(request, participante_id, evaluador_id, evento_id):
         'administrador': request.session.get('admin_nombre'),
         'evento': get_object_or_404(Eventos, id=evento_id)
     })
-
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def ver_evaluadores(request: HttpRequest, evento_id):
     estado = request.GET.get('estado')
 
-    # Obtener los asistentes del evento utilizando el ORM de Django
+    # Obtener los evaluadores del evento
     evaluadores_evento = EvaluadoresEventos.objects.select_related('eva_eve_evaluador_fk').filter(
         eva_eve_evento_fk=evento_id,
-        eva_estado=estado)
+        eva_estado=estado
+    )
     
     evento = get_object_or_404(Eventos, id=evento_id)
 
-    # Preparar los datos
+    # Preparar los datos con nombres consistentes
     evaluadores_data = []
     for ee in evaluadores_evento:
         e = ee.eva_eve_evaluador_fk
         evaluadores_data.append({
-            'asi_id': e.id,
-            'asi_nombre': e.usuario.first_name + ' ' + e.usuario.last_name,
-            'asi_correo': e.usuario.email,
-            'asi_telefono': e.usuario.telefono if e.usuario.telefono else None,
+            'eva_id': e.id,  # Cambiado de asi_id a eva_id
+            'eva_nombre': e.usuario.first_name + ' ' + e.usuario.last_name,  # Cambiado de asi_nombre a eva_nombre
+            'eva_correo': e.usuario.email,  # Cambiado de asi_correo a eva_correo
+            'eva_telefono': e.usuario.telefono if e.usuario.telefono else 'No registrado',  # Cambiado de asi_telefono a eva_telefono
             'estado': ee.eva_estado,
             'documento': ee.eva_eve_documentos,
-            'hora_inscripcion': ee.eva_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ee.eva_eve_fecha_hora else None,
+            'hora_inscripcion': ee.eva_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ee.eva_eve_fecha_hora else 'No registrada',
         })
 
     return render(request, 'app_administrador/ver_evaluadores.html', {
         'evaluadores': evaluadores_data,
-        'evento_id': evento_id,
+        'evento': evento,
+        'evento_id': evento_id,  # Agregado para usar en el template
         'evento_nombre': evento.eve_nombre,
     })
 
 @csrf_exempt
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')
@@ -636,28 +735,59 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
         if not evento_id:
             return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
 
-        # Generar PDF y clave de acceso
+        # Generar PDF y clave de acceso si es admitido
         if nuevo_estado == 'Admitido':
             qr_evaluador = generar_pdf(evaluador_id, "Evaluador", evento_id, tipo="evaluador")
             clave_acceso = generar_clave_acceso()
         else:
             qr_evaluador = None
             clave_acceso = 0
-        # Buscar el participante_evento
+
+        # Buscar relación Evaluador-Evento
         try:
             evaluador_evento = EvaluadoresEventos.objects.get(
                 eva_eve_evaluador_fk=evaluador_id,
                 eva_eve_evento_fk=evento_id
             )
         except EvaluadoresEventos.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Asistente no encontrado en el evento'}, status=404)
+            return JsonResponse({'status': 'error', 'message': 'Evaluador no encontrado en el evento'}, status=404)
 
-        # Actualizar los valores
+        # Actualizar datos
         evaluador_evento.eva_estado = nuevo_estado
         evaluador_evento.eva_eve_qr = qr_evaluador
         evaluador_evento.eva_clave_acceso = clave_acceso
         evaluador_evento.save()
-        print("Evaluador actualizado con estado:", nuevo_estado)
+
+        # Si fue admitido, enviar correo con clave y QR
+        if nuevo_estado == 'Admitido':
+            evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+            evento = evaluador_evento.eva_eve_evento_fk
+
+            asunto = f"Confirmación de participación como evaluador en el evento: {evento.eve_nombre}"
+
+            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+                "nombre": evaluador.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "clave": clave_acceso,
+            })
+
+            email = EmailMultiAlternatives(
+                asunto,
+                "",  # opcional: cuerpo de texto plano
+                settings.DEFAULT_FROM_EMAIL,
+                [evaluador.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
+
+            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_evaluador))
+
+            if os.path.exists(ruta_pdf):
+                with open(ruta_pdf, 'rb') as f:
+                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+
+            email.send(fail_silently=True)
+
+        # Redirigir con estado
         url = reverse('administrador:ver_evaluadores', kwargs={'evento_id': evento_id})
         return redirect(f'{url}?estado={nuevo_estado}')
 
@@ -706,9 +836,214 @@ def editar_perfil(request):
 
 
 
+@require_http_methods(["POST"])
+@login_required(login_url='login')
+def enviar_certificados(request, evento_id):
+    if request.method == 'POST':
+        ids_asistentes = request.POST.getlist('asistentes')
+        evento = get_object_or_404(Eventos, pk=evento_id)
+
+        if not ids_asistentes:
+            messages.error(request, 'No se seleccionaron asistentes.')
+            return redirect('administrador:ver_asistentes', evento_id=evento_id)
+
+        for asistente_id in ids_asistentes:
+            try:
+                asistente = Asistentes.objects.get(id=asistente_id)
+                user = asistente.usuario
+
+                # 🧾 Crear PDF en memoria
+                buffer = BytesIO()
+                p = canvas.Canvas(buffer)
+                p.drawString(100, 750, f"Certificado de asistencia")
+                p.drawString(100, 700, f"Se certifica que {user.first_name} {user.last_name}")
+                p.drawString(100, 675, f"asistió al evento '{evento.eve_nombre}'")
+                p.drawString(100, 650, f"Fecha del evento: {evento.eve_fecha_inicio.strftime('%d/%m/%Y')}")
+                p.drawString(100, 600, "Firma del organizador _______________________")
+                p.save()
+                buffer.seek(0)
+
+                # 📧 Enviar correo con PDF adjunto
+                email = EmailMessage(
+                    subject=f'Certificado de asistencia al evento "{evento.eve_nombre}"',
+                    body=f'Estimado/a {user.first_name},\n\nAdjunto encontrará su certificado de asistencia al evento "{evento.eve_nombre}".',
+                    from_email='certificados@tuapp.com',
+                    to=[user.email],
+                )
+                email.attach(f"certificado_{evento.eve_nombre}.pdf", buffer.read(), 'application/pdf')
+                email.send(fail_silently=False)
+
+            except Asistentes.DoesNotExist:
+                messages.warning(request, f"Asistente con ID {asistente_id} no encontrado. Se omitió.")
+                continue
+
+        messages.success(request, 'Certificados enviados correctamente.')
+        return redirect('administrador:ver_asistentes', evento_id=evento_id)
+
+
+
+@require_http_methods(["POST"])
+@login_required(login_url='login')
+def enviar_certificados_participantes(request, evento_id):
+    if request.method == 'POST':
+        ids_participantes = request.POST.getlist('participantes')
+        evento = get_object_or_404(Eventos, pk=evento_id)
+
+        if not ids_participantes:
+            messages.error(request, 'No se seleccionaron participantes.')
+            return redirect('administrador:ver_participantes', evento_id=evento_id)
+
+        for participante_id in ids_participantes:
+            try:
+                participante = Participantes.objects.get(id=participante_id)
+                user = participante.usuario
+
+                # Generar el certificado PDF
+                buffer = BytesIO()
+                p = canvas.Canvas(buffer)
+                p.drawString(100, 750, f"Certificado de participación")
+                p.drawString(100, 700, f"Se certifica que {user.first_name} {user.last_name}")
+                p.drawString(100, 675, f"participó activamente en el evento '{evento.eve_nombre}'")
+                p.drawString(100, 650, f"Fecha del evento: {evento.eve_fecha_inicio.strftime('%d/%m/%Y')}")
+                p.drawString(100, 600, "Firma del organizador _______________________")
+                p.save()
+                buffer.seek(0)
+
+                # Enviar el certificado por correo
+                email = EmailMessage(
+                    subject=f'Certificado de participación en el evento "{evento.eve_nombre}"',
+                    body=f'Estimado/a {user.first_name},\n\nAdjunto encontrará su certificado de participación en el evento "{evento.eve_nombre}".',
+                    from_email='certificados@tuapp.com',
+                    to=[user.email],
+                )
+                email.attach(f"certificado_{evento.eve_nombre}.pdf", buffer.read(), 'application/pdf')
+                email.send(fail_silently=False)
+
+            except Participantes.DoesNotExist:
+                messages.warning(request, f"Participante con ID {participante_id} no encontrado. Se omitió.")
+                continue
+
+        messages.success(request, 'Certificados enviados correctamente a los participantes.')
+        return redirect('administrador:ver_participantes', evento_id=evento)
+
+
+@require_http_methods(["POST"])
+@login_required(login_url='login')
+def enviar_certificados_evaluadores(request, evento_id):
+    ids_evaluadores = request.POST.getlist('evaluadores')
+    evento = get_object_or_404(Eventos, pk=evento_id)
+
+    if not ids_evaluadores:
+        messages.error(request, 'No se seleccionaron evaluadores.')
+        return redirect('administrador:ver_evaluadores_evento', evento_id=evento_id)
+
+    for evaluador_id in ids_evaluadores:
+        try:
+            evaluador = Evaluadores.objects.get(id=evaluador_id)
+            user = evaluador.usuario
+
+            # Generar el certificado PDF
+            buffer = BytesIO()
+            p = canvas.Canvas(buffer)
+            p.drawString(100, 750, "Certificado de Evaluador")
+            p.drawString(100, 700, f"Se certifica que {user.first_name} {user.last_name}")
+            p.drawString(100, 675, f"participó como evaluador en el evento '{evento.eve_nombre}'")
+            p.drawString(100, 650, f"Fecha del evento: {evento.eve_fecha_inicio.strftime('%d/%m/%Y')}")
+            p.drawString(100, 600, "Firma del organizador _______________________")
+            p.save()
+            buffer.seek(0)
+
+            # Enviar el certificado por correo
+            email = EmailMessage(
+                subject=f'Certificado de Evaluador - {evento.eve_nombre}',
+                body=f'Estimado/a {user.first_name},\n\nAdjunto encontrará su certificado de participación como evaluador en el evento "{evento.eve_nombre}".',
+                from_email='certificados@tuapp.com',
+                to=[user.email],
+            )
+            email.attach(f"certificado_evaluador_{evento.eve_nombre}.pdf", buffer.read(), 'application/pdf')
+            email.send(fail_silently=False)
+
+        except Evaluadores.DoesNotExist:
+            messages.warning(request, f"Evaluador con ID {evaluador_id} no encontrado. Se omitió.")
+            continue
+
+    messages.success(request, 'Certificados enviados correctamente a los evaluadores.')
+    return redirect('administrador:ver_evaluadores', evento_id=evento_id)
 
 
 
 
+def enviar_notificacion_asistentes(request, evento_id):
+    if request.method == "POST":
+        numeros = request.POST.getlist("numeros")
+        mensaje = request.POST.get("mensaje")
+
+        twilio_client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+        evento = get_object_or_404(Eventos, id=evento_id)
+        for numero in numeros:
+            try:
+                twilio_client.messages.create(
+                    body=mensaje,
+                    from_=settings.TWILIO_PHONE_NUMBER,
+                    to=numero
+                )
+            except Exception as e:
+                print(f"Error enviando a {numero}: {e}")
+
+        messages.success(request, "Notificaciones enviadas exitosamente.")
+        return redirect("administrador:asistentes_evento", evento_id=evento)
 
 
+# Vista corregida para enviar notificaciones a asistentes
+
+def notificacion_personal(request, evento_id):
+    if request.method == 'POST':
+        mensaje = request.POST.get('mensaje')
+        asistentes_ids = request.POST.getlist('asistentes')  # Usar getlist para múltiples IDs
+
+        if not mensaje or not asistentes_ids:
+            messages.error(request, "Debes escribir un mensaje y seleccionar al menos un asistente.")
+            return redirect('administrador:ver_asistentes', evento_id=evento_id)
+
+        evento = get_object_or_404(Eventos, id=evento_id)
+        asistentes = Asistentes.objects.filter(id__in=asistentes_ids)
+
+        for asistente in asistentes:
+            send_mail(
+                subject=f"Notificación sobre el evento: {evento.eve_nombre}",
+                message=f"Hola {asistente.usuario.first_name},\n\n{mensaje}",
+                from_email='tu_correo@tudominio.com',  # O usa settings.DEFAULT_FROM_EMAIL
+                recipient_list=[asistente.usuario.email],
+                fail_silently=False
+            )
+
+        messages.success(request, "Notificaciones enviadas exitosamente.")
+        return redirect('administrador:ver_asistentes', evento_id=evento_id)
+
+    return redirect('administrador:ver_asistentes', evento_id=evento_id)
+
+
+def enviar_notificacion_participante(request, evento_id):
+    if request.method == "POST":
+        mensaje = request.POST.get("mensaje")
+        participante_id = request.POST.get("participante")
+
+        if not mensaje or not participante_id:
+            messages.error(request, "Faltan datos.")
+            return redirect('administrador:ver_participantes', evento_id=evento_id)
+        
+        evento = get_object_or_404(Eventos, id=evento_id)
+        participante = get_object_or_404(Participantes, id=participante_id)
+
+        send_mail(
+            subject=f"Notificación sobre el evento: {evento.eve_nombre}",
+            message=f"Hola {participante.usuario.first_name},\n\n{mensaje}",
+            from_email='tu_correo@tudominio.com',
+            recipient_list=[participante.usuario.email],
+            fail_silently=False
+        )
+
+        messages.success(request, f"Notificación enviada a {participante.par_nombre}.")
+        return redirect('administrador:ver_participantes', evento_id=evento_id)
+
+    return redirect('administrador:ver_participantes', evento_id=evento_id)

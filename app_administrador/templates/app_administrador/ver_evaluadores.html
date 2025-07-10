@@ -100,111 +100,281 @@
         <a href="?estado=Rechazado" class="btn btn-danger"><i class="fa-solid fa-x"></i> Rechazados</a>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    {% for asistente in evaluadores %}
-        <div class="col">
-            <div class="card h-100 border-0 shadow-lg rounded-4 hover-card">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title  fw-bold mb-2">{{ asistente.asi_nombre }}</h5>
-                    
-                    <ul class="list-unstyled mb-3 text-muted small">
-                        <li><i class="fa-solid fa-envelope me-2 text-secondary"></i> <strong>Correo:</strong> {{ asistente.asi_correo }}</li>
-                        <li><i class="fa-solid fa-phone me-2 text-secondary"></i> <strong>Teléfono:</strong> {{ asistente.asi_telefono }}</li>
-                        <li><i class="fa-solid fa-clock me-2 text-secondary"></i> <strong>Inscripción:</strong> {{ asistente.hora_inscripcion }}</li>
-                        <li>
-                            <i class="fa-solid fa-flag me-2 text-secondary"></i> 
-                            <strong>Estado:</strong>
-                            {% if asistente.estado == "Admitido" %}
-                                <span class="badge rounded-pill bg-success px-3">{{ asistente.estado }}</span>
-                            {% elif asistente.estado == "Pendiente" %}
-                                <span class="badge rounded-pill bg-warning text-dark px-3">{{ asistente.estado }}</span>
-                            {% else %}
-                                <span class="badge rounded-pill bg-danger px-3">{{ asistente.estado }}</span>
-                            {% endif %}
-                        </li>
-                    </ul>
-
-                     {% if asistente.documento %}
-                        <a href="{{ asistente.documento.url }}" class="btn btn-outline-primary mb-2" target="_blank">
-                            <i class="fa-solid fa-file-pdf me-1"></i> Ver Documento
-                        </a>
-                    {% else %}
-                        <span class="text-muted mb-2">
-                            <i class="fa-solid fa-file-circle-xmark me-1 text-danger"></i> Sin documento
-                        </span>
+    <!-- Formulario para enviar certificados solo a evaluadores admitidos -->
+    <form method="post" action="{% url 'administrador:enviar_certificados_evaluadores' evento.id %}">
+        {% csrf_token %}
+        <div class="card my-4 p-3 shadow rounded-4">
+            <h5 class="text-center text-warning fw-bold mb-3">Enviar Certificados a Evaluadores</h5>
+            <p class="text-muted text-center">Selecciona los evaluadores admitidos que deseas certificar:</p>
+            <div class="row">
+                {% for evaluador in evaluadores %}
+                    {% if evaluador.estado == "Admitido" %}
+                        <div class="col-md-4 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="evaluadores" value="{{ evaluador.eva_id }}" id="check-eva-{{ evaluador.eva_id }}">
+                                <label class="form-check-label" for="check-eva-{{ evaluador.eva_id }}">
+                                    {{ evaluador.eva_nombre }} ({{ evaluador.eva_correo }})
+                                </label>
+                            </div>
+                        </div>
                     {% endif %}
-                    <div class="d-flex justify-content-between mt-auto">
-                        {% if asistente.estado == "Pendiente" or asistente.estado == "Rechazado" %}
-                            <button class="btn btn-success  btn-admitir"
-                                    data-evento="{{ evento_id }}"
-                                    data-id="{{ asistente.asi_id }}"
-                                    data-nombre="{{ asistente.asi_nombre }}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalAdmitir"
-                                    data-url = "{% url 'administrador:actualizar_evaluador' 0 'estado-placeholder' %}">
-                                <i class="fa-solid fa-check me-1"></i> Admitir
-                            </button>
-                        {% endif %}
-                        
-                        {% if asistente.estado == "Pendiente" or asistente.estado == "Admitido" %}
-                            <button class="btn btn-danger btn-sm btn-rechazar"
-                                    data-evento="{{ evento_id }}"
-                                    data-id="{{ asistente.asi_id }}"
-                                    data-nombre="{{ asistente.asi_nombre }}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalRechazo"
-                                    data-url = "{% url 'administrador:actualizar_evaluador' 0 'estado-placeholder' %}">
-                                <i class="fa-solid fa-xmark me-1"></i> Rechazar
-                            </button>
-                        {% endif %}
+                {% endfor %}
+            </div>
+            <div class="text-center mt-3">
+                <button type="submit" class="btn btn-warning text-white">
+                    <i class="fa-solid fa-paper-plane me-2"></i>Enviar Certificados
+                </button>
+            </div>
+        </div>
+    </form>
+    <form method="POST" action="{% url 'administrador:enviar' evento.id %}" class="notification-form">
+   {% csrf_token %}
+    
+    <div class="card my-4 p-4 shadow rounded-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h5 class="text-center mb-4">
+            <i class="fa-solid fa-paper-plane me-2"></i>
+            Enviar Notificación a Asistentes
+        </h5>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="mensaje" class="form-label">
+                        <i class="fa-solid fa-message me-2"></i>Mensaje:
+                    </label>
+                    <textarea name="mensaje" id="mensaje" class="form-control" rows="4" 
+                              placeholder="Escribe tu mensaje aquí..." required maxlength="500"></textarea>
+                    
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="asistentes" class="form-label">
+                        <i class="fa-solid fa-users me-2"></i>Seleccionar Asistentes:
+                    </label>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="toggleSelectAll()">
+                            <i class="fa-solid fa-check-double me-1"></i>Seleccionar Todos
+                        </button>
+                        <span class="small">
+                            <span id="selectedCount">0</span> de {{ asistentes|length }} seleccionados
+                        </span>
+                    </div>
+                    
+                    
+                    <select name="asistentes" id="asistentes" class="form-select" multiple size="6" required>
+                        {% for asistente in asistentes %}
+                            <option value="{{ asistente.asi_id }}">
+                                {{ asistente.asi_nombre }} ({{ asistente.asi_correo }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    
+                    <div class="form-text text-light mt-2">
+                        <i class="fa-solid fa-info-circle me-1"></i>
+                        Mantén Ctrl presionado para seleccionar múltiples asistentes
                     </div>
                 </div>
             </div>
         </div>
-    {% endfor %}
-</div>
+        
+        <div class="text-center">
+            <button type="submit" class="btn btn-light btn-lg">
+                <i class="fa-solid fa-paper-plane me-2"></i>
+                Enviar Notificación
+            </button>
+        </div>
+    </div>
+</form>
+</div> 
+    
 
-   <!-- Modal de Confirmación para Admitir -->
-<div class="modal fade" id="modalAdmitir" tabindex="-1" aria-labelledby="modalAdmitirLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalAdmitirLabel">Confirmar Admisión</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+    <!-- Tarjetas de evaluadores -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for evaluador in evaluadores %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-lg rounded-4 hover-card">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-bold mb-2">{{ evaluador.eva_nombre }}</h5>
+                        
+                        <ul class="list-unstyled mb-3 text-muted small">
+                            <li><i class="fa-solid fa-envelope me-2 text-secondary"></i> <strong>Correo:</strong> {{ evaluador.eva_correo }}</li>
+                            <li><i class="fa-solid fa-phone me-2 text-secondary"></i> <strong>Teléfono:</strong> {{ evaluador.eva_telefono }}</li>
+                            <li><i class="fa-solid fa-clock me-2 text-secondary"></i> <strong>Inscripción:</strong> {{ evaluador.hora_inscripcion }}</li>
+                            <li>
+                                <i class="fa-solid fa-flag me-2 text-secondary"></i> 
+                                <strong>Estado:</strong>
+                                {% if evaluador.estado == "Admitido" %}
+                                    <span class="badge rounded-pill bg-success px-3">{{ evaluador.estado }}</span>
+                                {% elif evaluador.estado == "Pendiente" %}
+                                    <span class="badge rounded-pill bg-warning text-dark px-3">{{ evaluador.estado }}</span>
+                                {% else %}
+                                    <span class="badge rounded-pill bg-danger px-3">{{ evaluador.estado }}</span>
+                                {% endif %}
+                            </li>
+                        </ul>
+
+                        {% if evaluador.documento %}
+                            <a href="{{ evaluador.documento.url }}" class="btn btn-outline-primary mb-2" target="_blank">
+                                <i class="fa-solid fa-file-pdf me-1"></i> Ver Documento
+                            </a>
+                        {% else %}
+                            <span class="text-muted mb-2">
+                                <i class="fa-solid fa-file-circle-xmark me-1 text-danger"></i> Sin documento
+                            </span>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between mt-auto">
+                            {% if evaluador.estado == "Pendiente" or evaluador.estado == "Rechazado" %}
+                                <button class="btn btn-success btn-admitir"
+                                        data-evento="{{ evento_id }}"
+                                        data-id="{{ evaluador.eva_id }}"
+                                        data-nombre="{{ evaluador.eva_nombre }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalAdmitir">
+                                    <i class="fa-solid fa-check me-1"></i> Admitir
+                                </button>
+                            {% endif %}
+                            
+                            {% if evaluador.estado == "Pendiente" or evaluador.estado == "Admitido" %}
+                                <button class="btn btn-danger btn-sm btn-rechazar"
+                                        data-evento="{{ evento_id }}"
+                                        data-id="{{ evaluador.eva_id }}"
+                                        data-nombre="{{ evaluador.eva_nombre }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalRechazo">
+                                    <i class="fa-solid fa-xmark me-1"></i> Rechazar
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="modal-body">
-                <p id="mensaje-admitir"></p>
-                <input type="hidden" id="asistenteIdAdmitir">
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fa-solid fa-info-circle me-2"></i>
+                    No hay evaluadores con el estado seleccionado.
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success  btn-confirmar-admitir" id="confirmarAdmitir" data-url="{% url 'administrador:actualizar_evaluador' 0 'estado-placeholder' %}">Confirmar</button>
+        {% endfor %}
+    </div>
+
+    <!-- Modal de Confirmación para Admitir -->
+    <div class="modal fade" id="modalAdmitir" tabindex="-1" aria-labelledby="modalAdmitirLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalAdmitirLabel">Confirmar Admisión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensaje-admitir"></p>
+                    <input type="hidden" id="evaluadorIdAdmitir">
+                    <input type="hidden" id="eventoIdAdmitir">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success btn-confirmar-admitir" id="confirmarAdmitir">Confirmar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal de Confirmación para Rechazar -->
-<div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalRechazoLabel">Confirmar Rechazo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-                <p id="mensaje-rechazo"></p>
-                <input type="hidden" id="asistenteIdRechazo">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-danger btn-confirmar-rechazar" id="confirmarRechazo" data-url="{% url 'administrador:actualizar_evaluador' 0 'estado-placeholder' %}">Confirmar</button>
+    <!-- Modal de Confirmación para Rechazar -->
+    <div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalRechazoLabel">Confirmar Rechazo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="mensaje-rechazo"></p>
+                    <input type="hidden" id="evaluadorIdRechazo">
+                    <input type="hidden" id="eventoIdRechazo">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger btn-confirmar-rechazar" id="confirmarRechazo">Confirmar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'app_administrador/js/evaluadores.js' %}"></script>
+    <script>
+        // JavaScript para manejar los modales
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botones de admitir
+            document.querySelectorAll('.btn-admitir').forEach(button => {
+                button.addEventListener('click', function() {
+                    const evaluadorId = this.dataset.id;
+                    const eventoId = this.dataset.evento;
+                    const nombre = this.dataset.nombre;
+                    
+                    document.getElementById('mensaje-admitir').textContent = 
+                        `¿Está seguro que desea admitir al evaluador ${nombre}?`;
+                    document.getElementById('evaluadorIdAdmitir').value = evaluadorId;
+                    document.getElementById('eventoIdAdmitir').value = eventoId;
+                });
+            });
+
+            // Botones de rechazar
+            document.querySelectorAll('.btn-rechazar').forEach(button => {
+                button.addEventListener('click', function() {
+                    const evaluadorId = this.dataset.id;
+                    const eventoId = this.dataset.evento;
+                    const nombre = this.dataset.nombre;
+                    
+                    document.getElementById('mensaje-rechazo').textContent = 
+                        `¿Está seguro que desea rechazar al evaluador ${nombre}?`;
+                    document.getElementById('evaluadorIdRechazo').value = evaluadorId;
+                    document.getElementById('eventoIdRechazo').value = eventoId;
+                });
+            });
+
+            // Confirmar admisión
+            document.getElementById('confirmarAdmitir').addEventListener('click', function() {
+                const evaluadorId = document.getElementById('evaluadorIdAdmitir').value;
+                const eventoId = document.getElementById('eventoIdAdmitir').value;
+                
+                // Crear formulario para enviar datos
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Admitido/`;
+                
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                form.innerHTML = `
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    <input type="hidden" name="evento_id" value="${eventoId}">
+                `;
+                
+                document.body.appendChild(form);
+                form.submit();
+            });
+
+            // Confirmar rechazo
+            document.getElementById('confirmarRechazo').addEventListener('click', function() {
+                const evaluadorId = document.getElementById('evaluadorIdRechazo').value;
+                const eventoId = document.getElementById('eventoIdRechazo').value;
+                
+                // Crear formulario para enviar datos
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Rechazado/`;
+                
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                form.innerHTML = `
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    <input type="hidden" name="evento_id" value="${eventoId}">
+                `;
+                
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    </script>
 </body>
 </html>

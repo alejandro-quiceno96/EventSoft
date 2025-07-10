@@ -99,6 +99,98 @@
         <a href="?estado=Admitido" class="btn btn-success"><i class="fa-solid fa-check"></i> Admitidos</a>
         <a href="?estado=Rechazado" class="btn btn-danger"><i class="fa-solid fa-x"></i> Rechazados</a>
     </div>
+    <form method="post" action="{% url 'administrador:enviar_certificados' evento.id %}">
+    {% csrf_token %}
+    <div class="card my-4 p-3 shadow rounded-4">
+        <h5 class="text-center text-success fw-bold mb-3">Enviar Certificados de Asistencia</h5>
+        <p class="text-muted text-center">Selecciona a los asistentes admitidos a quienes deseas enviar el certificado:</p>
+        <div class="row">
+            {% for asistente in asistentes %}
+                {% if asistente.estado == "Admitido" %}
+                    <div class="col-md-4 mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="asistentes" value="{{ asistente.asi_id }}" id="check-{{ asistente.asi_id }}">
+                            <label class="form-check-label" for="check-{{ asistente.asi_id }}">
+                                {{ asistente.asi_nombre }} ({{ asistente.asi_correo }})
+                            </label>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <button type="submit" class="btn btn-success">
+                <i class="fa-solid fa-paper-plane me-2"></i>Enviar Certificados
+            </button>
+        </div>
+    </div>
+    <di>
+    </form>
+   
+   
+    <form method="POST" action="{% url 'administrador:enviar' evento.id %}" class="notification-form">
+   {% csrf_token %}
+    
+    <div class="card my-4 p-4 shadow rounded-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h5 class="text-center mb-4">
+            <i class="fa-solid fa-paper-plane me-2"></i>
+            Enviar Notificación a Asistentes
+        </h5>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="mensaje" class="form-label">
+                        <i class="fa-solid fa-message me-2"></i>Mensaje:
+                    </label>
+                    <textarea name="mensaje" id="mensaje" class="form-control" rows="4" 
+                              placeholder="Escribe tu mensaje aquí..." required maxlength="500"></textarea>
+                    
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="asistentes" class="form-label">
+                        <i class="fa-solid fa-users me-2"></i>Seleccionar Asistentes:
+                    </label>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <button type="button" class="btn btn-outline-light btn-sm" onclick="toggleSelectAll()">
+                            <i class="fa-solid fa-check-double me-1"></i>Seleccionar Todos
+                        </button>
+                        <span class="small">
+                            <span id="selectedCount">0</span> de {{ asistentes|length }} seleccionados
+                        </span>
+                    </div>
+                    
+                    
+                    <select name="asistentes" id="asistentes" class="form-select" multiple size="6" required>
+                        {% for asistente in asistentes %}
+                            <option value="{{ asistente.asi_id }}">
+                                {{ asistente.asi_nombre }} ({{ asistente.asi_correo }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    
+                    <div class="form-text text-light mt-2">
+                        <i class="fa-solid fa-info-circle me-1"></i>
+                        Mantén Ctrl presionado para seleccionar múltiples asistentes
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <button type="submit" class="btn btn-light btn-lg">
+                <i class="fa-solid fa-paper-plane me-2"></i>
+                Enviar Notificación
+            </button>
+        </div>
+    </div>
+</form>
+</div> 
+    
+
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
     {% for asistente in asistentes %}
@@ -205,5 +297,94 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'app_administrador/js/asistentes.js' %}"></script>
-</body>
+    <script>
+const selectElement = document.getElementById('asistentes');
+        const selectedCount = document.getElementById('selectedCount');
+        const totalCount = document.getElementById('totalCount');
+        
+        // Inicializar contador
+        totalCount.textContent = selectElement.options.length;
+        
+        // Actualizar contador cuando cambie la selección
+        selectElement.addEventListener('change', function() {
+            selectedCount.textContent = this.selectedOptions.length;
+        });
+
+        // Función para seleccionar/deseleccionar todos
+        function toggleSelectAll() {
+            const select = document.getElementById('asistentes');
+            const button = document.querySelector('.select-all-btn');
+            
+            if (select.selectedOptions.length === select.options.length) {
+                // Deseleccionar todos
+                for (let option of select.options) {
+                    option.selected = false;
+                }
+                button.innerHTML = '<i class="fa-solid fa-check-double me-1"></i>Seleccionar Todos';
+            } else {
+                // Seleccionar todos
+                for (let option of select.options) {
+                    option.selected = true;
+                }
+                button.innerHTML = '<i class="fa-solid fa-times me-1"></i>Deseleccionar Todos';
+            }
+            
+            // Actualizar contador
+            selectedCount.textContent = select.selectedOptions.length;
+        }
+
+        // Validación del formulario
+        document.getElementById('notificationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const mensaje = document.getElementById('mensaje').value.trim();
+            const asistentes = document.getElementById('asistentes').selectedOptions;
+            
+            if (!mensaje) {
+                alert('Por favor, escribe un mensaje.');
+                return;
+            }
+            
+            if (asistentes.length === 0) {
+                alert('Por favor, selecciona al menos un asistente.');
+                return;
+            }
+            
+            if (mensaje.length > 500) {
+                alert('El mensaje no puede exceder los 500 caracteres.');
+                return;
+            }
+            
+            // Mostrar confirmación
+            const nombres = Array.from(asistentes).map(option => option.textContent).join(', ');
+            if (confirm(`¿Enviar mensaje a ${asistentes.length} asistente(s)?\n\n${nombres}`)) {
+                // Simular envío exitoso
+                showToast();
+                this.reset();
+                selectedCount.textContent = '0';
+                document.querySelector('.select-all-btn').innerHTML = '<i class="fa-solid fa-check-double me-1"></i>Seleccionar Todos';
+            }
+        });
+
+        // Función para mostrar toast
+        function showToast() {
+            const toast = new bootstrap.Toast(document.getElementById('notificationToast'));
+            toast.show();
+        }
+
+        // Contador de caracteres para el mensaje
+        document.getElementById('mensaje').addEventListener('input', function() {
+            const maxLength = 500;
+            const currentLength = this.value.length;
+            const remaining = maxLength - currentLength;
+            
+            // Cambiar color si se acerca al límite
+            if (remaining < 50) {
+                this.style.borderColor = remaining < 0 ? '#dc3545' : '#ffc107';
+            } else {
+                this.style.borderColor = '';
+            }
+        });
+        </script>
+    </body>
 </html>
