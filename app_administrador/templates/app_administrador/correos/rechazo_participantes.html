@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Notificación de Rechazo</title>
+    <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            border: 2px solid #007832;
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        h2 {
+            color: #007832;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+        }
+
+        .razon {
+            background-color: #f0f0f0;
+            border-left: 4px solid #ff0000;
+            padding: 15px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Notificación sobre tu inscripción al evento</h2>
+        <p>Hola <strong>{{ nombre }}</strong>,</p>
+        <p>Lamentamos informarte que tu inscripción al evento <strong>{{ evento }}</strong> ha sido rechazada.</p>
+
+        <div class="razon">
+            <strong>Motivo:</strong><br>
+            {{ razon }}
+        </div>
+
+        <p>Agradecemos tu interés en participar.
+        </p>
+
+        <div class="footer">
+            <p>&copy; 2023 EventSoft. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

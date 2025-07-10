@@ -322,70 +322,93 @@ def ver_participantes(request: HttpRequest ,evento_id):
 
 
 @csrf_exempt
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def actualizar_estado(request, participante_id, nuevo_estado):
-    if request.method == 'POST':
-        evento_id = request.POST.get('evento_id')
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
-        if not evento_id:
-            return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
+    evento_id = request.POST.get('evento_id')
+    razon_rechazo = request.POST.get('razon', '').strip()
 
-        # Generar PDF y clave de acceso
-        if nuevo_estado == 'Admitido':
-            qr_participante = generar_pdf(participante_id, "Participante", evento_id, tipo="participante")
-            clave_acceso = generar_clave_acceso()
-        else:
-            qr_participante = None
-            clave_acceso = None
+    if not evento_id:
+        return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
 
-        # Buscar el participante_evento
-        try:
-            participante_evento = ParticipantesEventos.objects.get(
-                par_eve_participante_fk=participante_id,
-                par_eve_evento_fk=evento_id
-            )
-        except ParticipantesEventos.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Participante no encontrado en el evento'}, status=404)
+    try:
+        participante_evento = ParticipantesEventos.objects.get(
+            par_eve_participante_fk=participante_id,
+            par_eve_evento_fk=evento_id
+        )
+    except ParticipantesEventos.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Participante no encontrado en el evento'}, status=404)
 
-        # Actualizar los valores
-        participante_evento.par_eve_estado = nuevo_estado
-        participante_evento.par_eve_qr = qr_participante
-        participante_evento.par_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
-        participante_evento.save()
+    # Preparar campos comunes
+    qr_participante = None
+    clave_acceso = None
 
-        if nuevo_estado == 'Admitido':
-            participante = get_object_or_404(Participantes, id=participante_id)
-            evento = participante_evento.par_eve_evento_fk
+    if nuevo_estado == 'Admitido':
+        qr_participante = generar_pdf(participante_id, "Participante", evento_id, tipo="participante")
+        clave_acceso = generar_clave_acceso()
+    elif nuevo_estado == 'Rechazado':
+        clave_acceso = 0  # en caso de rechazo, sin clave
 
-            asunto = f"Confirmación de inscripción como participante al evento: {evento.eve_nombre}"
+    # Actualizar la base de datos
+    participante_evento.par_eve_estado = nuevo_estado
+    participante_evento.par_eve_qr = qr_participante
+    participante_evento.par_eve_clave = clave_acceso
+    participante_evento.save()
 
-            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
-                "nombre": participante.usuario.first_name,
-                "evento": evento.eve_nombre,
-                "clave": clave_acceso,
-            })
+    participante = get_object_or_404(Participantes, id=participante_id)
+    evento = participante_evento.par_eve_evento_fk
 
-            email = EmailMultiAlternatives(
-                asunto,
-                "",  # cuerpo de texto plano opcional
-                settings.DEFAULT_FROM_EMAIL,
-                [participante.usuario.email]
-            )
-            email.attach_alternative(mensaje_html, "text/html")
+    # Envío de correo si es admitido
+    if nuevo_estado == 'Admitido':
+        asunto = f"Confirmación de inscripción como participante al evento: {evento.eve_nombre}"
+        mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+            "nombre": participante.usuario.first_name,
+            "evento": evento.eve_nombre,
+            "clave": clave_acceso,
+        })
 
-            # Adjuntar PDF (si existe)
-            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))
-            if os.path.exists(ruta_pdf):
-                with open(ruta_pdf, 'rb') as f:
-                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+        email = EmailMultiAlternatives(
+            asunto,
+            "",  # cuerpo de texto plano opcional
+            settings.DEFAULT_FROM_EMAIL,
+            [participante.usuario.email]
+        )
+        email.attach_alternative(mensaje_html, "text/html")
 
-            email.send(fail_silently=True)
+        # Adjuntar PDF
+        ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))
+        if os.path.exists(ruta_pdf):
+            with open(ruta_pdf, 'rb') as f:
+                email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
 
-        # Redirigir correctamente a la vista de participantes
-        url = reverse('administrador:ver_participantes', kwargs={'evento_id': evento_id})
-        return redirect(f'{url}?estado={nuevo_estado}')
+        email.send(fail_silently=True)
 
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+    # Envío de correo si es rechazado
+    elif nuevo_estado == 'Rechazado':
+        if not razon_rechazo:
+            razon_rechazo = "No se especificó el motivo del rechazo."
+
+        asunto = f"Notificación de rechazo - {evento.eve_nombre}"
+        mensaje_html = render_to_string("app_administrador/correos/rechazo_participantes.html", {
+            "nombre": participante.usuario.first_name,
+            "evento": evento.eve_nombre,
+            "razon": razon_rechazo
+        })
+
+        email = EmailMultiAlternatives(
+            asunto,
+            "",  # cuerpo de texto plano opcional
+            settings.DEFAULT_FROM_EMAIL,
+            [participante.usuario.email]
+        )
+        email.attach_alternative(mensaje_html, "text/html")
+        email.send(fail_silently=True)
+
+    # Redirigir correctamente
+    url = reverse('administrador:ver_participantes', kwargs={'evento_id': evento_id})
+    return redirect(f'{url}?estado={nuevo_estado}')
 
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_asistentes(request: HttpRequest, evento_id):
