@@ -38,7 +38,24 @@
                                 <a href="{% url 'app_participante:descargar_comentarios' evento.eve_id %}" class="btn-ver-mas">
                                   Descargar Calificación
                                 </a>
-
+                                <button class="action-btn-outline" onclick="abrirCompartir(
+                                '{{ evento.eve_nombre|escapejs }}',
+                                '{{ evento.eve_fecha_inicio }}',
+                                '{{ evento.eve_fecha_fin }}',
+                                '{{ evento.eve_lugar|escapejs }}',
+                                '{{ evento.eve_descripcion|escapejs }}',
+                                '{{ request.build_absolute_uri }}'
+                              )">
+                                <i class="fas fa-share-alt"></i>
+                              </button>
+                                                      
+                               </div>
+                               </div>
+                                </div>
+                        
+                          
+                        
+              
                                 <ul>
                                   {% for comentario in participante.comentarios %}
                                       <li><strong>{{ comentario.cal_evaluador_fk.eva_nombre }}:</strong> {{ comentario.cal_comentario }}</li>
@@ -80,13 +97,7 @@
                     <p class="text-secondary">Explora los eventos disponibles y regístrate para participar.</p>
                 </div>
             {% endif %}
-              
-    
-    
-            
-            
-
-            
+        
         </div>
     </main>
     
@@ -220,47 +231,57 @@
     </div>
   </div>
 </div>
+<div id="modal-compartir" class="modal-compartir" style="display: none;">
+  <div class="modal-contenido">
+    <span class="cerrar" onclick="cerrarCompartir()">&times;</span>
+    <h3>Compartir este evento</h3>
+
+    <a href="#" id="whatsapp-link" target="_blank">
+      <i class="fab fa-whatsapp"></i> WhatsApp
+    </a><br>
+
+    <a href="#" id="correo-link">
+      <i class="fas fa-envelope"></i> Correo
+    </a><br>
+
+    <a href="#" id="telegram-link" target="_blank">
+      <i class="fab fa-telegram"></i> Telegram
+    </a><br>
+
+    <button onclick="copiarTexto()">📋 Copiar mensaje</button>
+  </div>
+</div>
 
 
-  <script>
-    const urlTemplate = "{% url 'app_participante:detalle_evento' 123 456 %}";
-    const urlPdfCriterios = "{% url 'app_participante:generar_pdf_criterios' 0 %}".replace('0', '');
-    const urlObtenerParticipante = "{%url 'app_participante:obtener_datos_participante' 123 456 %}"
-    const urlModificarParticipante = "{%url 'app_participante:modificar_inscripcion' 123 456 %}"
-    const urlEliminarInscripcion = "{%url 'app_participante:cancelar_inscripcion' 123 456%}"
+<script>
+  let mensajeCompartir = "";
 
-    document.getElementById('inputDocumento').addEventListener('change', function(event) {
-      const fileName = document.querySelector('.file-name');
-      if (event.target.files.length > 0) {
-        fileName.textContent = event.target.files[0].name;
-      } else {
-        fileName.textContent = 'No se ha seleccionado ningún archivo';
-      }
+  // Función para abrir el modal y actualizar enlaces con datos del evento
+  function abrirCompartir(nombre, fecha_inicio, fecha_fin, lugar, descripcion, url) {
+    mensajeCompartir = `Mira este evento en el que estoy participando:\n📌 ${nombre}\n📅 Fecha: ${fecha_inicio} al ${fecha_fin}\n📍 Lugar: ${lugar}\n📝 Descripción: ${descripcion}\n👉 Ver más: ${url}`;
+
+    document.getElementById('whatsapp-link').href = `https://wa.me/?text=${encodeURIComponent(mensajeCompartir)}`;
+    document.getElementById('correo-link').href = `mailto:?subject=Te invito a este evento&body=${encodeURIComponent(mensajeCompartir)}`;
+    document.getElementById('telegram-link').href = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(mensajeCompartir)}`;
+
+    document.getElementById('modal-compartir').style.display = 'flex';
+  }
+
+  // Función para cerrar el modal
+  function cerrarCompartir() {
+    document.getElementById('modal-compartir').style.display = 'none';
+  }
+
+  // Función para copiar el mensaje al portapapeles
+  function copiarTexto() {
+    navigator.clipboard.writeText(mensajeCompartir).then(() => {
+      alert('¡Mensaje copiado! Puedes pegarlo donde quieras.');
     });
-    function mostrarModalParticipante(data) {
-  // Llenar los datos del participante
-  document.getElementById('modalNombre').textContent = data.nombre;
-  document.getElementById('modalCorreo').textContent = data.correo;
-  document.getElementById('modalCedula').textContent = data.cedula;
-  document.getElementById('modalTelefono').textContent = data.telefono;
-  document.getElementById('modalDireccion').textContent = data.direccion;
-  document.getElementById('modalInstitucion').textContent = data.institucion;
-  document.getElementById('modalEstado').textContent = data.estado;
-
-  // Enlace al PDF de comentarios
-  document.getElementById('modalComentariosPDF').href = `/comentarios/pdf/${data.id}`;
-
-
-  // Mostrar el modal
-  const modal = new bootstrap.Modal(document.getElementById('modalParticipante'));
-  modal.show();
-}
-
-  </script>
-
+  }
+</script>
   
   
 {% endblock %}
 
 
-
+  

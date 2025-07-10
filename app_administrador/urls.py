@@ -21,9 +21,9 @@ urlpatterns=[
     path('actualizar_estado_asistente/<int:asistente_id>/<str:nuevo_estado>/', views.actualizar_estado_asistente, name='actualizar_estado_asistente'),
     
     path('evento/<int:evento_id>/evaluadores/', views.ver_evaluadores, name='ver_evaluadores'),
-    path('actualizar_estado_evaluador/<int:evaluador_id>/<str:nuevo_estado>/', views.actualizar_estado_evaluador, name='actualizar_evaluador'),
+    path('evaluador/<int:evaluador_id>/estado/<str:nuevo_estado>/', views.actualizar_estado_evaluador, name='actualizar_estado_evaluador'),
     
-    
+
     #criterios de evaluacion
     path('criterios_evaluacion/<int:evento_id>', views.criterios_evaluacion, name='criterios_evaluacion'),
     path('modificar_criterio/<int:criterio_id>', views.modificar_criterio, name='modificar_criterio'),
@@ -36,6 +36,16 @@ urlpatterns=[
     path('detalle_calificacion/evaluador/<int:evaluador_id>/partcipante/<int:participante_id>/evento/<int:evento_id>/', views.detalle_calificacion, name= "detalle_calificacion"),
 
     path('evento/<int:evento_id>/enviar_certificados/', views.enviar_certificados, name='enviar_certificados'),
+    path('evento/<int:evento_id>/participantes/enviar_certificados/', views.enviar_certificados_participantes, name='enviar_certificados_participantes'),
+    path('evento/<int:evento_id>/evaluadores/enviar_certificados/', views.enviar_certificados_evaluadores, name='enviar_certificados_evaluadores'),
+ 
+    path('evento/<int:evento_id>/notificar/', views.enviar_notificacion_asistentes, name='enviar_notificacion'),
+
+
+    path('evento/<int:evento_id>/enviar_notificacion/', views.notificacion_personal, name='enviar'),
+    
+    path('evento/<int:evento_id>/notificar-participante/', views.enviar_notificacion_participante, name='enviar_participantes'),
+
 
 ]
 if settings.DEBUG:
