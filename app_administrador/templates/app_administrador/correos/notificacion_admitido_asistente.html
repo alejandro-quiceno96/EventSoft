@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Inscripción</title>
+    <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border-top: 8px solid #007832;
+        }
+
+        .header {
+            background-color: #007832;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .content h2 {
+            color: #007832;
+            font-size: 22px;
+        }
+
+        .content p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .access-code {
+            background-color: #e8f5e9;
+            border-left: 6px solid #007832;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #999;
+            padding: 20px;
+        }
+
+        .footer strong {
+            color: #007832;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .content {
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .content h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Confirmación de Inscripción</h1>
+        </div>
+        <div class="content">
+            <h2>¡Hola {{ nombre }}!</h2>
+            <p>
+                Nos complace informarte que has sido <strong>admitido como asistente</strong> al evento
+                <strong>{{ evento }}</strong>.
+            </p>
+
+            <p>
+                A continuación, te compartimos tu <strong>clave de acceso al sistema</strong> para futuras gestiones:
+            </p>
+
+            <div class="access-code">
+                {{ clave }}
+            </div>
+
+            <p>
+                Recuerda revisar tu correo con frecuencia para estar al tanto de nuevas instrucciones o cambios relacionados con el evento.
+            </p>
+
+            <p>
+                ¡Gracias por confiar en nosotros!
+            </p>
+        </div>
+        <div class="footer">
+            Este correo fue enviado automáticamente por <strong>EventSoft</strong>. Por favor, no respondas a este mensaje.
+        </div>
+    </div>
+</body>
+</html>

@@ -20,6 +20,7 @@ from django.conf import settings
 from app_asistente.models import Asistentes
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
+from django.utils import timezone
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
@@ -446,7 +447,7 @@ def ver_asistentes(request: HttpRequest, evento_id):
 def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
     if request.method == 'POST':
         evento_id = request.POST.get('evento_id')
-        
+        motivo = request.POST.get('motivo', '').strip()
 
         if not evento_id:
             return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
@@ -487,7 +488,7 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
 
             asunto = f"Confirmación de inscripción como asistente al evento: {evento.eve_nombre}"
             
-            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+            mensaje_html = render_to_string("app_administrador/correos/notificacion_admitido_asistente.html", {
                 "nombre": asistente.usuario.first_name,
                 "evento": evento.eve_nombre,
                 "clave": clave_acceso,
@@ -507,6 +508,28 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
                 with open(ruta_pdf, 'rb') as f:
                     email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
 
+            email.send(fail_silently=True)
+            
+        elif nuevo_estado == 'Rechazado':
+            asistente = get_object_or_404(Asistentes, id=asistente_id)
+            evento = asistente_evento.asi_eve_evento_fk
+
+            asunto = f"Inscripción rechazada al evento: {evento.eve_nombre}"
+            
+            mensaje_html = render_to_string("app_administrador/correos/correo_rechazo_asistente.html", {
+                "nombre": asistente.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "motivo": motivo,
+                "anio": timezone.now().year,
+            })
+
+            email = EmailMultiAlternatives(
+                asunto,
+                "",  # cuerpo de texto plano
+                settings.DEFAULT_FROM_EMAIL,
+                [asistente.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
             email.send(fail_silently=True)
 
 
@@ -610,7 +633,7 @@ def tabla_calificaciones(request, evento_id):
         participante = Participantes.objects.get(id=participante_id)
         ranking.append({
             'id': participante.id,
-            'nombre': participante.par_nombre,
+            'nombre': participante.usuario.first_name + ' ' + participante.usuario.last_name,
             'promedio': round(promedio, 2)
         })
 
@@ -788,10 +811,11 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
 
             asunto = f"Confirmación de participación como evaluador en el evento: {evento.eve_nombre}"
 
-            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+            mensaje_html = render_to_string("app_administrador/correos/admision_evaluador.html", {
                 "nombre": evaluador.usuario.first_name,
                 "evento": evento.eve_nombre,
                 "clave": clave_acceso,
+                "anio": timezone.now().year,
             })
 
             email = EmailMultiAlternatives(
@@ -809,7 +833,36 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
                     email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
 
             email.send(fail_silently=True)
+            
+        elif nuevo_estado == 'Rechazado':
+            evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+            evento = evaluador_evento.eva_eve_evento_fk
 
+            asunto = f"Inscripción rechazada como evaluador para el evento: {evento.eve_nombre}"
+
+            mensaje_html = render_to_string("app_administrador/correos/rechazo_evaluador.html", {
+                "nombre": evaluador.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "clave": clave_acceso,
+                "motivo": request.POST.get('motivo', 'No especificado'),
+                "anio": timezone.now().year,
+            })
+
+            email = EmailMultiAlternatives(
+                asunto,
+                "",  # opcional: cuerpo de texto plano
+                settings.DEFAULT_FROM_EMAIL,
+                [evaluador.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
+
+            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_evaluador))
+
+            if os.path.exists(ruta_pdf):
+                with open(ruta_pdf, 'rb') as f:
+                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+
+            email.send(fail_silently=True)
         # Redirigir con estado
         url = reverse('administrador:ver_evaluadores', kwargs={'evento_id': evento_id})
         return redirect(f'{url}?estado={nuevo_estado}')

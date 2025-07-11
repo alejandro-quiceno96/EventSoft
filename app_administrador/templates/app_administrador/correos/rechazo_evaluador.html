@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Notificación de Rechazo</title>
+    <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f4f4f4;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+
+        .header {
+            background-color: #007832;
+            color: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 25px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .content p {
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 13px;
+            text-align: center;
+            color: #888;
+        }
+
+        .motivo-box {
+            background-color: #f0f9f4;
+            border-left: 4px solid #007832;
+            padding: 15px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #2f4f2f;
+        }
+
+        .firma {
+            margin-top: 30px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Notificación de Rechazo</h1>
+        </div>
+        <div class="content">
+            <p>Hola <strong>{{ nombre }}</strong>,</p>
+
+            <p>Lamentamos informarte que tu postulación como <strong>evaluador</strong> para el evento <strong>{{ evento }}</strong> ha sido rechazada.</p>
+
+            <p>A continuación te compartimos el motivo:</p>
+
+            <div class="motivo-box">
+                {{ motivo }}
+            </div>
+
+            <p>Agradecemos tu interés y participación. Te invitamos a estar atento a futuras convocatorias en las que puedas volver a participar.</p>
+
+            <div class="firma">
+                <p>Atentamente,</p>
+                <p><strong>Equipo Eventosoft</strong></p>
+            </div>
+        </div>
+        <div class="footer">
+            © {{ anio }} Eventosoft. Todos los derechos reservados.
+        </div>
+    </div>
+</body>
+</html>

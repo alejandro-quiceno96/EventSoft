@@ -1,6 +1,13 @@
+function showLoader() {
+  const bg = document.getElementById("loader-bg") || document.getElementById("loader");
+  if (bg) bg.classList.remove("d-none");
+}
+function hideLoader() {
+  const bg = document.getElementById("loader-bg") || document.getElementById("loader");
+  if (bg) bg.classList.add("d-none");
+}
+
 document.addEventListener('DOMContentLoaded', function () {
-    const modalAdmitir = document.getElementById('modalAdmitir');
-    const modalRechazo = document.getElementById('modalRechazo');
 
     let asistenteId = null;
     let eventoId = null;
@@ -13,7 +20,8 @@ document.addEventListener('DOMContentLoaded', function () {
             eventoId = this.dataset.evento;
             urlBase = this.dataset.url;
 
-            document.getElementById('mensaje-admitir').innerText = `¿Estás seguro que deseas admitir a ${this.dataset.nombre}?`;
+            document.getElementById('mensaje-admitir').innerText =
+                `¿Estás seguro que deseas admitir a ${this.dataset.nombre}?`;
         });
     });
 
@@ -23,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const formData = new FormData();
         formData.append('evento_id', eventoId);
-
+        showLoader();
         fetch(url, {
             method: 'POST',
             body: formData,
@@ -39,9 +47,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then(data => {
             if (data?.status === 'error') {
                 alert(data.message);
+                hideLoader();
             }
         }).catch(error => {
             console.error('Error:', error);
+            hideLoader();
         });
     });
 
@@ -52,17 +62,30 @@ document.addEventListener('DOMContentLoaded', function () {
             eventoId = this.dataset.evento;
             urlBase = this.dataset.url;
 
-            document.getElementById('mensaje-rechazo').innerText = `¿Estás seguro que deseas rechazar a ${this.dataset.nombre}?`;
+            document.getElementById('mensaje-rechazo').innerText =
+                `¿Estás seguro que deseas rechazar a ${this.dataset.nombre}?`;
+            
+            // Limpiar el textarea del motivo
+            document.getElementById('motivoRechazo').value = '';
         });
     });
 
-    // Confirmar rechazo
+    // Confirmar rechazo con validación del motivo
     document.getElementById('confirmarRechazo').addEventListener('click', function () {
+        const motivo = document.getElementById('motivoRechazo').value.trim();
+
+        if (!motivo) {
+            alert('Por favor, escribe el motivo del rechazo.');
+            document.getElementById('motivoRechazo').focus();
+            return;
+        }
+
         const url = urlBase.replace('0', asistenteId).replace('estado-placeholder', 'Rechazado');
 
         const formData = new FormData();
         formData.append('evento_id', eventoId);
-
+        formData.append('motivo', motivo);  // Enviamos el motivo al backend
+        showLoader();
         fetch(url, {
             method: 'POST',
             body: formData,
@@ -72,15 +95,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then(response => {
             if (response.redirected) {
                 window.location.href = response.url;
+
             } else {
                 return response.json();
             }
         }).then(data => {
             if (data?.status === 'error') {
                 alert(data.message);
+                hideLoader();
             }
         }).catch(error => {
             console.error('Error:', error);
+            hideLoader();
         });
     });
 });

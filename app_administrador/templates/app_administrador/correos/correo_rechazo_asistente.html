@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscripción Rechazada - Eventosoft</title>
+    <style>
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 10px;
+            border-top: 10px solid #007832;
+            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+        }
+        .header {
+            text-align: center;
+            color: #007832;
+        }
+        .motivo {
+            background-color: #e9f7ec;
+            border-left: 4px solid #007832;
+            padding: 15px;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            max-height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="{% static 'app_administrador/image/Logo Sena 1.png'%}" alt="Eventosoft Logo">
+        </div>
+        <div class="header">
+            <h2>¡Hola {{ nombre }}!</h2>
+        </div>
+        <p>Lamentamos informarte que tu inscripción al evento <strong>{{ evento }}</strong> ha sido rechazada.</p>
+        
+        <div class="motivo">
+            <strong>Motivo:</strong><br>
+            {{ motivo }}
+        </div>
+
+        <p>Si tienes preguntas o deseas más información, puedes contactarnos directamente.</p>
+
+        <div class="footer">
+            &copy; {{ anio }} Eventosoft. Todos los derechos reservados.
+        </div>
+    </div>
+</body>
+</html>

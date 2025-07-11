@@ -1,69 +1,128 @@
-document.addEventListener('DOMContentLoaded', function() {
-            // Botones de admitir
-            document.querySelectorAll('.btn-admitir').forEach(button => {
-                button.addEventListener('click', function() {
-                    const evaluadorId = this.dataset.id;
-                    const eventoId = this.dataset.evento;
-                    const nombre = this.dataset.nombre;
-                    
-                    document.getElementById('mensaje-admitir').textContent = 
-                        `¿Está seguro que desea admitir al evaluador ${nombre}?`;
-                    document.getElementById('evaluadorIdAdmitir').value = evaluadorId;
-                    document.getElementById('eventoIdAdmitir').value = eventoId;
-                });
-            });
+function showLoader() {
+  const bg = document.getElementById("loader-bg") || document.getElementById("loader");
+  if (bg) bg.classList.remove("d-none");
+}
+function hideLoader() {
+  const bg = document.getElementById("loader-bg") || document.getElementById("loader");
+  if (bg) bg.classList.add("d-none");
+}
 
-            // Botones de rechazar
-            document.querySelectorAll('.btn-rechazar').forEach(button => {
-                button.addEventListener('click', function() {
-                    const evaluadorId = this.dataset.id;
-                    const eventoId = this.dataset.evento;
-                    const nombre = this.dataset.nombre;
-                    
-                    document.getElementById('mensaje-rechazo').textContent = 
-                        `¿Está seguro que desea rechazar al evaluador ${nombre}?`;
-                    document.getElementById('evaluadorIdRechazo').value = evaluadorId;
-                    document.getElementById('eventoIdRechazo').value = eventoId;
-                });
-            });
+document.addEventListener('DOMContentLoaded', function () {
 
-            // Confirmar admisión
-            document.getElementById('confirmarAdmitir').addEventListener('click', function() {
-                const evaluadorId = document.getElementById('evaluadorIdAdmitir').value;
-                const eventoId = document.getElementById('eventoIdAdmitir').value;
-                
-                // Crear formulario para enviar datos
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Admitido/`;
-                
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-                    <input type="hidden" name="evento_id" value="${eventoId}">
-                `;
-                
-                document.body.appendChild(form);
-                form.submit();
-            });
+    let evaluadorId = null;
+    let eventoId = null;
+    let urlBase = null;
 
-            // Confirmar rechazo
-            document.getElementById('confirmarRechazo').addEventListener('click', function() {
-                const evaluadorId = document.getElementById('evaluadorIdRechazo').value;
-                const eventoId = document.getElementById('eventoIdRechazo').value;
-                
-                // Crear formulario para enviar datos
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Rechazado/`;
-                
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-                    <input type="hidden" name="evento_id" value="${eventoId}">
-                `;
-                
-                document.body.appendChild(form);
-                form.submit();
-            });
+    // Abrir modal admitir
+    document.querySelectorAll('.btn-admitir').forEach(button => {
+        button.addEventListener('click', function () {
+            evaluadorId = this.dataset.id;
+            eventoId = this.dataset.evento;
+            urlBase = this.dataset.url;
+
+            document.getElementById('mensaje-admitir').innerText =
+                `¿Estás seguro que deseas admitir a ${this.dataset.nombre}?`;
         });
+    });
+
+    // Confirmar admitir
+    document.getElementById('confirmarAdmitir').addEventListener('click', function () {
+        const url = urlBase.replace('0', evaluadorId).replace('estado-placeholder', 'Admitido');
+
+        const formData = new FormData();
+        formData.append('evento_id', eventoId);
+        showLoader();
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        }).then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                return response.json();
+            }
+        }).then(data => {
+            if (data?.status === 'error') {
+                alert(data.message);
+                hideLoader();
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            hideLoader();
+        });
+    });
+
+    // Abrir modal rechazo
+    document.querySelectorAll('.btn-rechazar').forEach(button => {
+        button.addEventListener('click', function () {
+            evaluadorId = this.dataset.id;
+            eventoId = this.dataset.evento;
+            urlBase = this.dataset.url;
+
+            document.getElementById('mensaje-rechazo').innerText =
+                `¿Estás seguro que deseas rechazar a ${this.dataset.nombre}?`;
+            
+            // Limpiar el textarea del motivo
+            document.getElementById('motivoRechazo').value = '';
+        });
+    });
+
+    // Confirmar rechazo con validación del motivo
+    document.getElementById('confirmarRechazo').addEventListener('click', function () {
+        const motivo = document.getElementById('motivoRechazo').value.trim();
+
+        if (!motivo) {
+            alert('Por favor, escribe el motivo del rechazo.');
+            document.getElementById('motivoRechazo').focus();
+            return;
+        }
+
+        const url = urlBase.replace('0', evaluadorId).replace('estado-placeholder', 'Rechazado');
+
+        const formData = new FormData();
+        formData.append('evento_id', eventoId);
+        formData.append('motivo', motivo);  // Enviamos el motivo al backend
+        showLoader();
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        }).then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+
+            } else {
+                return response.json();
+            }
+        }).then(data => {
+            if (data?.status === 'error') {
+                alert(data.message);
+                hideLoader();
+            }
+        }).catch(error => {
+            console.error('Error:', error);
+            hideLoader();
+        });
+    });
+});
+
+// Función para obtener CSRF desde las cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}

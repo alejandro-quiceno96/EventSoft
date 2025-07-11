@@ -228,22 +228,25 @@
                         <div class="d-flex justify-content-between mt-auto">
                             {% if evaluador.estado == "Pendiente" or evaluador.estado == "Rechazado" %}
                                 <button class="btn btn-success btn-admitir"
-                                        data-evento="{{ evento_id }}"
+                                        data-evento="{{ evento.id }}"
                                         data-id="{{ evaluador.eva_id }}"
                                         data-nombre="{{ evaluador.eva_nombre }}"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#modalAdmitir">
+                                        data-bs-target="#modalAdmitir"
+                                        data-url="{% url 'administrador:actualizar_estado_evaluador' 0 'estado-placeholder' %}">
+                                        
                                     <i class="fa-solid fa-check me-1"></i> Admitir
                                 </button>
                             {% endif %}
                             
                             {% if evaluador.estado == "Pendiente" or evaluador.estado == "Admitido" %}
                                 <button class="btn btn-danger btn-sm btn-rechazar"
-                                        data-evento="{{ evento_id }}"
+                                        data-evento="{{ evento.id }}"
                                         data-id="{{ evaluador.eva_id }}"
                                         data-nombre="{{ evaluador.eva_nombre }}"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#modalRechazo">
+                                        data-bs-target="#modalRechazo"
+                                        data-url="{% url 'administrador:actualizar_estado_evaluador' 0 'estado-placeholder' %}">
                                     <i class="fa-solid fa-xmark me-1"></i> Rechazar
                                 </button>
                             {% endif %}
@@ -283,98 +286,51 @@
     </div>
 
     <!-- Modal de Confirmación para Rechazar -->
-    <div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalRechazoLabel">Confirmar Rechazo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+<div class="modal fade" id="modalRechazo" tabindex="-1" aria-labelledby="modalRechazoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="modalRechazoLabel">Confirmar Rechazo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p id="mensaje-rechazo" class="mb-3"></p>
+
+                <div class="mb-3">
+                    <label for="motivoRechazo" class="form-label fw-bold">Motivo del rechazo <span class="text-danger">*</span>:</label>
+                    <textarea id="motivoRechazo" class="form-control" rows="4" placeholder="Escribe aquí el motivo..." required></textarea>
+                    <div class="invalid-feedback" id="motivoRechazoFeedback">Por favor, indica el motivo del rechazo.</div>
                 </div>
-                <div class="modal-body">
-                    <p id="mensaje-rechazo"></p>
-                    <input type="hidden" id="evaluadorIdRechazo">
-                    <input type="hidden" id="eventoIdRechazo">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger btn-confirmar-rechazar" id="confirmarRechazo">Confirmar</button>
-                </div>
+
+                <input type="hidden" id="evaluadorIdRechazo">
+                <input type="hidden" id="eventoIdRechazo">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger btn-confirmar-rechazar" id="confirmarRechazo">Confirmar</button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Loader personalizado -->
+        <style>
+            
+            #loader-bg.d-none {
+                display: none !important;
+            }
+        </style>
+
+        <div id="loader-bg" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-white bg-opacity-75"
+            style="z-index:9999;">
+            <div id="loader" class="d-flex flex-column justify-content-center align-items-center h-100">
+                <div class="spinner-border" style="width:3rem; height:3rem; color:#007832;" role="status"></div>
+                <p class="mt-3 fw-bold" style="color:#007832; font-size:1.2rem;">Procesando solicitud...</p>
+            </div>
+        </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // JavaScript para manejar los modales
-        document.addEventListener('DOMContentLoaded', function() {
-            // Botones de admitir
-            document.querySelectorAll('.btn-admitir').forEach(button => {
-                button.addEventListener('click', function() {
-                    const evaluadorId = this.dataset.id;
-                    const eventoId = this.dataset.evento;
-                    const nombre = this.dataset.nombre;
-                    
-                    document.getElementById('mensaje-admitir').textContent = 
-                        `¿Está seguro que desea admitir al evaluador ${nombre}?`;
-                    document.getElementById('evaluadorIdAdmitir').value = evaluadorId;
-                    document.getElementById('eventoIdAdmitir').value = eventoId;
-                });
-            });
-
-            // Botones de rechazar
-            document.querySelectorAll('.btn-rechazar').forEach(button => {
-                button.addEventListener('click', function() {
-                    const evaluadorId = this.dataset.id;
-                    const eventoId = this.dataset.evento;
-                    const nombre = this.dataset.nombre;
-                    
-                    document.getElementById('mensaje-rechazo').textContent = 
-                        `¿Está seguro que desea rechazar al evaluador ${nombre}?`;
-                    document.getElementById('evaluadorIdRechazo').value = evaluadorId;
-                    document.getElementById('eventoIdRechazo').value = eventoId;
-                });
-            });
-
-            // Confirmar admisión
-            document.getElementById('confirmarAdmitir').addEventListener('click', function() {
-                const evaluadorId = document.getElementById('evaluadorIdAdmitir').value;
-                const eventoId = document.getElementById('eventoIdAdmitir').value;
-                
-                // Crear formulario para enviar datos
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Admitido/`;
-                
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-                    <input type="hidden" name="evento_id" value="${eventoId}">
-                `;
-                
-                document.body.appendChild(form);
-                form.submit();
-            });
-
-            // Confirmar rechazo
-            document.getElementById('confirmarRechazo').addEventListener('click', function() {
-                const evaluadorId = document.getElementById('evaluadorIdRechazo').value;
-                const eventoId = document.getElementById('eventoIdRechazo').value;
-                
-                // Crear formulario para enviar datos
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/administrador/actualizar_evaluador/${evaluadorId}/Rechazado/`;
-                
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                form.innerHTML = `
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-                    <input type="hidden" name="evento_id" value="${eventoId}">
-                `;
-                
-                document.body.appendChild(form);
-                form.submit();
-            });
-        });
-    </script>
+    <script src="{% static 'app_administrador/js/evaluadores.js' %}"></script>
 </body>
 </html>

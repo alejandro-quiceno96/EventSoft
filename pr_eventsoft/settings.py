@@ -127,7 +127,8 @@ LOGIN_URL = 'login'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota' 
+USE_TZ = True
 
 USE_I18N = True
 
