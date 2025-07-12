@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Enviar Correo | Eventsoft</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'app_administrador/css/enviar_correo.css' %}">
+    <script src="https://cdn.tiny.cloud/1/9bs9mgiynx7n6ujp92wpzj5tyom8uv9ae32querg58v0fy6e/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+      tinymce.init({
+        selector: '#contenido',
+        height: 300,
+        menubar: false,
+        plugins: 'link',
+        toolbar: 'bold italic | fontsize | link',
+        toolbar_mode: 'sliding',
+        branding: false,
+        content_style: "body { font-family: 'Work Sans', sans-serif; font-size: 14px; }"
+      });
+    </script>
+</head>
+<body>
+
+<div class="container fade-in">
+    <div class="grupo centrado">
+        <a href="{% url 'administrador:index_administrador' %}" class="boton-animado"> <i class="fa-solid fa-house"></i> Volver</a>
+    </div>
+    <h1 class="titulo-animado"><i class="fa-regular fa-envelope"></i> Enviar correo masivo</h1>
+
+    <form method="post" enctype="multipart/form-data" id="form-correo" class="formulario-animado" action="{% url 'administrador:enviar_correo' %}">
+        {% csrf_token %}
+        <div class="grupo">
+            <label>Enviar a:</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="destinatarios" value="todos" id="check-todos"> Todos</label>
+                <label><input type="checkbox" name="destinatarios" value="asistentes" class="check-parcial"> Asistentes</label>
+                <label><input type="checkbox" name="destinatarios" value="participantes" class="check-parcial"> Participantes</label>
+                <label><input type="checkbox" name="destinatarios" value="evaluadores" class="check-parcial"> Evaluadores</label>
+            </div>
+        </div>
+
+        <div class="grupo">
+            <label for="asunto">Asunto:</label>
+            <input type="text" name="asunto" id="asunto" placeholder="Ej: Recordatorio del evento" required>
+        </div>
+
+        <div class="grupo">
+            <label for="contenido">Mensaje:</label>
+            <textarea name="contenido" id="contenido" rows="8" placeholder="Escribe aquí el contenido del correo..."></textarea>
+        </div>
+
+        <div class="grupo">
+            <label for="archivos">Adjuntar archivos (opcional):</label>
+            <input type="file" name="archivos" id="archivos" multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls,.zip,.rar">
+            <small>Puedes seleccionar varios archivos con Ctrl o Shift</small>
+        </div>
+
+        <div class="grupo centrado">
+            <button type="submit" class="boton-animado"> <i class="fa-regular fa-paper-plane"></i> Enviar correo</button>
+        </div>
+    </form>
+</div>
+
+<!-- Loader -->
+<div id="loader" class="loader-overlay hidden">
+    <div class="spinner"></div>
+    <p>Enviando correos...</p>
+</div>
+
+<!-- Modal de error -->
+<div id="modalErrorCorreo" class="modal hidden">
+    <div class="modal-content animacion-modal">
+        <h2><i class="fas fa-times-circle"></i> ¡Ups! Algo salió mal</h2>
+        <p id="mensajeErrorCorreo">No se pudo enviar el correo.</p>
+        <button onclick="cerrarModalErrorCorreo()" class="cancelar">Cerrar</button>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div id="modalConfirmacionCorreo" class="modal hidden">
+    <div class="modal-content animacion-modal">
+        <h2><i class="fas fa-paper-plane"></i> Confirmar envío</h2>
+        <p>¿Estás seguro de que deseas enviar este correo a los destinatarios seleccionados?</p>
+        <div class="botones-modal">
+            <button id="btnConfirmarEnvioCorreo" class="confirmar">
+                <i class="fas fa-check-circle"></i> Sí, enviar
+            </button>
+            <button onclick="cerrarModalConfirmacionCorreo()" class="cancelar">
+                <i class="fas fa-times-circle"></i> Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Éxito de Envío -->
+<div id="modalExitoCorreo" class="modal hidden">
+  <div class="modal-content animacion-modal">
+    <h2><i class="fas fa-check-circle"></i> ¡Correo enviado exitosamente!</h2>
+    <p>Todos los destinatarios han recibido el mensaje.</p>
+  </div>
+</div>
+
+
+
+<!-- JS personalizado -->
+<script src="{% static 'app_administrador/js/enviar_correo.js' %}"></script>
+
+<!-- Mostrar modales desde backend -->
+{% if error_envio %}
+<script>mostrarErrorCorreo("{{ error_envio|escapejs }}");</script>
+{% endif %}
+{% if envio_exitoso %}
+<script>mostrarModalExito();</script>
+{% endif %}
+
+</body>
+</html>
