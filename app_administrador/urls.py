@@ -35,16 +35,8 @@ urlpatterns=[
     path('evento/<int:evento_id>/participante/<int:participante_id>/detalles/', views.detalles_calificaciones, name='detalle_calificaciones'),
     path('detalle_calificacion/evaluador/<int:evaluador_id>/partcipante/<int:participante_id>/evento/<int:evento_id>/', views.detalle_calificacion, name= "detalle_calificacion"),
 
-    path('evento/<int:evento_id>/enviar_certificados/', views.enviar_certificados, name='enviar_certificados'),
-    path('evento/<int:evento_id>/participantes/enviar_certificados/', views.enviar_certificados_participantes, name='enviar_certificados_participantes'),
-    path('evento/<int:evento_id>/evaluadores/enviar_certificados/', views.enviar_certificados_evaluadores, name='enviar_certificados_evaluadores'),
- 
-    path('evento/<int:evento_id>/notificar/', views.enviar_notificacion_asistentes, name='enviar_notificacion'),
-
-
-    path('evento/<int:evento_id>/enviar_notificacion/', views.notificacion_personal, name='enviar'),
-    
-    path('evento/<int:evento_id>/notificar-participante/', views.enviar_notificacion_participante, name='enviar_participantes'),
+    #correos
+    path('enviar_correo/', views.enviar_correo, name='enviar_correo'),
 
 
 ]
