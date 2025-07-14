@@ -3,10 +3,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Enviar Correo | Eventsoft</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <title>Enviar Correo | Eventosoft</title>
+    
+    <!-- Fuentes y Estilos -->
     <link rel="stylesheet" href="{% static 'app_administrador/css/enviar_correo.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- Editor TinyMCE -->
     <script src="https://cdn.tiny.cloud/1/9bs9mgiynx7n6ujp92wpzj5tyom8uv9ae32querg58v0fy6e/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
       tinymce.init({
@@ -22,75 +26,92 @@
     </script>
 </head>
 <body>
-
 <div class="container fade-in">
+
+    <!-- Botón de Volver -->
     <div class="grupo centrado">
-        <a href="{% url 'administrador:index_administrador' %}" class="boton-animado"> <i class="fa-solid fa-house"></i> Volver</a>
+        <a href="{% url 'administrador:index_administrador' %}" class="boton-animado">
+            <i class="fa-solid fa-house"></i> Volver
+        </a>
     </div>
+
+    <!-- Título -->
     <h1 class="titulo-animado"><i class="fa-regular fa-envelope"></i> Enviar correo masivo</h1>
 
+    <!-- Formulario -->
     <form method="post" enctype="multipart/form-data" id="form-correo" class="formulario-animado" action="{% url 'administrador:enviar_correo' evento.id %}">
         {% csrf_token %}
+
+        <!-- Selección de destinatarios -->
         <div class="grupo">
             <label>Enviar a:</label>
             <div class="checkbox-group">
                 <label><input type="checkbox" name="destinatarios" value="todos" id="check-todos"> Todos</label>
-                
-                <label><input type="checkbox" name="destinatarios" value="asistentes" class="check-parcial"> Asistentes</label>
-                <div id="lista-asistentes" class="sublista oculto">
-                    {% for asistente in asistentes %}
-                        <label>
-                            <input type="checkbox" name="asistentes_seleccionados" value="{{ asistente.id }}">
-                            {{ asistente.usuario.first_name }} ({{ asistente.usuario.email }})
-                        </label><br>
-                    {% empty %}
-                        <p>No hay asistentes disponibles.</p>
-                    {% endfor %}
-                </div>
+                {% for rol in roles %}
+                    <label>
+                        <input type="checkbox" class="check-parcial" name="destinatarios" value="{{ rol.key }}" onclick="toggleTabla('tabla-{{ rol.key }}', this)">
+                        {{ rol.nombre }}
+                    </label>
 
-                <label><input type="checkbox" name="destinatarios" value="participantes" class="check-parcial"> Participantes</label>
-                <div id="lista-participantes" class="sublista oculto">
-        {% for participante in participantes %}
-            <label>
-                <input type="checkbox" name="participantes_seleccionados" value="{{ participante.id }}">
-                {{ participante.usuario.first_name }} ({{ participante.usuario.email }})
-            </label><br>
-        {% empty %}
-            <p>No hay participantes disponibles.</p>
-        {% endfor %}
-                </div>
-
-                <label><input type="checkbox" name="destinatarios" value="evaluadores" class="check-parcial"> Evaluadores</label>
-                    <div id="lista-evaluadores" class="sublista oculto">
-        {% for evaluador in evaluadores %}
-            <label>
-                <input type="checkbox" name="evaluadores_seleccionados" value="{{ evaluador.id }}">
-                {{ evaluador.usuario.first_name }} ({{ evaluador.usuario.email }})
-            </label><br>
-        {% empty %}
-            <p>No hay evaluadores disponibles.</p>
-        {% endfor %}
+                    <!-- Tabla de usuarios por rol -->
+                    <div id="tabla-{{ rol.key }}" class="tabla-seleccion oculto">
+                        {% if rol.usuarios %}
+                            <label class="seleccionar-todos">
+                                <input type="checkbox" onchange="seleccionarTodos(this, '{{ rol.key }}_seleccionados')"> Seleccionar todos los {{ rol.key }}
+                            </label>
+                            <div class="tabla-contenedor">
+                                <table id="tabla-{{ rol.key }}-lista">
+                                    <thead>
+                                        <tr>
+                                            <th>Seleccionar</th>
+                                            <th>Nombre</th>
+                                            <th>Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for usuario in rol.usuarios %}
+                                        <tr>
+                                            <td><input type="checkbox" name="{{ rol.key }}_seleccionados" value="{{ usuario.id }}"></td>
+                                            <td>{{ usuario.usuario.first_name }}</td>
+                                            <td>{{ usuario.usuario.email }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="paginacion" id="paginacion-{{ rol.key }}"></div>
+                        {% else %}
+                            <p>No hay {{ rol.nombre|lower }} disponibles.</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
             </div>
         </div>
 
+        <!-- Asunto -->
         <div class="grupo">
             <label for="asunto">Asunto:</label>
-            <input type="text" name="asunto" id="asunto" placeholder="Ej: Recordatorio del evento" required>
+            <input type="text" name="asunto" id="asunto" required placeholder="Ej: Recordatorio del evento">
         </div>
 
+        <!-- Contenido -->
         <div class="grupo">
             <label for="contenido">Mensaje:</label>
             <textarea name="contenido" id="contenido" rows="8" placeholder="Escribe aquí el contenido del correo..."></textarea>
         </div>
 
+        <!-- Archivos -->
         <div class="grupo">
             <label for="archivos">Adjuntar archivos (opcional):</label>
             <input type="file" name="archivos" id="archivos" multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls,.zip,.rar">
             <small>Puedes seleccionar varios archivos con Ctrl o Shift</small>
         </div>
 
+        <!-- Botón enviar -->
         <div class="grupo centrado">
-            <button type="submit" class="boton-animado"> <i class="fa-regular fa-paper-plane"></i> Enviar correo</button>
+            <button type="submit" class="boton-animado">
+                <i class="fa-regular fa-paper-plane"></i> Enviar correo
+            </button>
         </div>
     </form>
 </div>
@@ -146,6 +167,5 @@
 {% if envio_exitoso %}
 <script>mostrarModalExito();</script>
 {% endif %}
-
 </body>
 </html>

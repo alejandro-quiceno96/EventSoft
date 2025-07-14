@@ -936,8 +936,8 @@ def obtener_emails_por_destinatarios(destinatarios, ids_por_tipo=None):
 
     return list(set(correos))
 
-def enviar_correo(request, evento_id):  # ✅ Agregar evento_id como parámetro
-    # 🔹 1) Obtener el evento
+def enviar_correo(request, evento_id):
+    # 🔹 1. Obtener el evento
     try:
         evento = Eventos.objects.get(id=evento_id)
     except Eventos.DoesNotExist:
@@ -945,77 +945,78 @@ def enviar_correo(request, evento_id):  # ✅ Agregar evento_id como parámetro
             'error_envio': 'El evento no existe.',
         })
 
-    # 🔹 2) Filtrar solo asistentes y evaluadores del evento admitidos
+    # 🔹 2. Obtener asistentes admitidos
     asistentes = Asistentes.objects.filter(
         id__in=AsistentesEventos.objects.filter(
-            asi_eve_evento_fk_id=evento_id,  # ✅ Filtrar por evento específico
+            asi_eve_evento_fk_id=evento_id,
             asi_eve_estado__iexact='Admitido'
         ).values_list('asi_eve_asistente_fk_id', flat=True)
     )
-    
-    # 🔹 3) Filtrar evaluadores del evento admitidos
+
+    # 🔹 3. Obtener evaluadores admitidos
     evaluadores = Evaluadores.objects.filter(
-            id__in=EvaluadoresEventos.objects.filter(
-                eva_eve_evento_fk_id=evento_id,       # ← por evento
-                eva_estado__iexact='Admitido'         # ←  usa eva_estado (¡no eva_eve_estado!)
-            ).values_list('eva_eve_evaluador_fk_id', flat=True)
-        )
-
-
-    # 🔹 4) Participantes del evento admitidos (si los necesitas)
-    participantes = ParticipantesEventos.objects.filter(
-        
-            par_eve_evento_fk=evento_id,  # ✅ Filtrar por evento específico
-            par_eve_estado='Admitido'
-        ).values_list('par_eve_participante_fk', flat=True
+        id__in=EvaluadoresEventos.objects.filter(
+            eva_eve_evento_fk_id=evento_id,
+            eva_estado__iexact='Admitido'
+        ).values_list('eva_eve_evaluador_fk_id', flat=True)
     )
 
-    # 🔹 5) Si es POST procesamos el formulario
+    # 🔹 4. Obtener participantes admitidos
+    participantes = Participantes.objects.filter(
+        id__in=ParticipantesEventos.objects.filter(
+            par_eve_evento_fk_id=evento_id,
+            par_eve_estado__iexact='Admitido'
+        ).values_list('par_eve_participante_fk_id', flat=True)
+    )
+
+    # 🔹 5. Armar lista de roles para el template
+    roles = [
+        {'key': 'asistentes', 'nombre': 'Asistentes', 'usuarios': asistentes},
+        {'key': 'participantes', 'nombre': 'Participantes', 'usuarios': participantes},
+        {'key': 'evaluadores', 'nombre': 'Evaluadores', 'usuarios': evaluadores},
+    ]
+
+    # 🔹 6. Procesar formulario POST
     if request.method == 'POST':
         try:
-            asunto      = request.POST.get('asunto', '').strip()
-            contenido   = request.POST.get('contenido', '').strip()
-            archivos    = request.FILES.getlist('archivos')
+            asunto = request.POST.get('asunto', '').strip()
+            contenido = request.POST.get('contenido', '').strip()
+            archivos = request.FILES.getlist('archivos')
             destinatarios = request.POST.getlist('destinatarios')
-            
-            # ✅ VALIDACIONES
+
+            # 🔸 Validaciones
             if not destinatarios:
                 return render(request, 'app_administrador/correos/enviar_correo.html', {
-                    'error_envio': 'Debes seleccionar al menos un destinatario.',
-                    'asistentes': asistentes, 
-                    'participantes': participantes, 
-                    'evaluadores': evaluadores,
+                    'roles': roles,
                     'evento': evento,
+                    'error_envio': 'Debes seleccionar al menos un destinatario.',
                 })
+
             if not contenido:
                 return render(request, 'app_administrador/correos/enviar_correo.html', {
-                    'error_envio': 'El mensaje del correo no puede estar vacío.',
-                    'asistentes': asistentes, 
-                    'participantes': participantes, 
-                    'evaluadores': evaluadores,
+                    'roles': roles,
                     'evento': evento,
+                    'error_envio': 'El mensaje del correo no puede estar vacío.',
                 })
 
-            # 🔹 6) Capturamos los IDs marcados en cada sub‑lista
+            # 🔹 7. Capturar IDs seleccionados
             ids_por_tipo = {
-                'asistentes':     request.POST.getlist('asistentes_seleccionados'),
-                'participantes':  request.POST.getlist('participantes_seleccionados'),
-                'evaluadores':    request.POST.getlist('evaluadores_seleccionados'),
+                'asistentes': request.POST.getlist('asistentes_seleccionados'),
+                'participantes': request.POST.getlist('participantes_seleccionados'),
+                'evaluadores': request.POST.getlist('evaluadores_seleccionados'),
             }
 
-            # 🔹 7) Obtenemos los correos reales
+            # 🔹 8. Obtener correos
             correos = obtener_emails_por_destinatarios(destinatarios, ids_por_tipo)
 
             if not correos:
                 return render(request, 'app_administrador/correos/enviar_correo.html', {
-                    'error_envio': 'No se encontraron correos para los destinatarios seleccionados.',
-                    'asistentes': asistentes, 
-                    'participantes': participantes, 
-                    'evaluadores': evaluadores,
+                    'roles': roles,
                     'evento': evento,
+                    'error_envio': 'No se encontraron correos para los destinatarios seleccionados.',
                 })
 
-            # 🔹 8) Enviamos el correo
+            # 🔹 9. Enviar correo
             email = EmailMessage(asunto, contenido, to=correos)
             email.content_subtype = 'html'
             for archivo in archivos:
@@ -1023,27 +1024,21 @@ def enviar_correo(request, evento_id):  # ✅ Agregar evento_id como parámetro
             email.send()
 
             return render(request, 'app_administrador/correos/enviar_correo.html', {
-                'envio_exitoso': True,
-                'asistentes': asistentes, 
-                'participantes': participantes, 
-                'evaluadores': evaluadores,
+                'roles': roles,
                 'evento': evento,
+                'envio_exitoso': True,
             })
 
         except Exception as e:
             print("Error al enviar correo:", e)
             return render(request, 'app_administrador/correos/enviar_correo.html', {
-                'error_envio': str(e),
-                'asistentes': asistentes, 
-                'participantes': participantes, 
-                'evaluadores': evaluadores,
+                'roles': roles,
                 'evento': evento,
+                'error_envio': str(e),
             })
 
-    # 🔹 9) Si es GET simplemente mostramos el formulario
+    # 🔹 10. GET → mostrar formulario
     return render(request, 'app_administrador/correos/enviar_correo.html', {
-        'asistentes': asistentes,
-        'participantes': participantes,
-        'evaluadores': evaluadores,
+        'roles': roles,
         'evento': evento,
     })

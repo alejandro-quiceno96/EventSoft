@@ -1,182 +1,75 @@
 document.addEventListener('DOMContentLoaded', () => {
     const checkTodos = document.getElementById('check-todos');
-    const parciales = document.querySelectorAll('.check-parcial');
+    const checkboxesRol = document.querySelectorAll('input[name="destinatarios"]:not(#check-todos)');
     const formCorreo = document.getElementById('form-correo');
     const loader = document.getElementById('loader');
-
     const modalConfirmacion = document.getElementById('modalConfirmacionCorreo');
     const btnConfirmarEnvio = document.getElementById('btnConfirmarEnvioCorreo');
 
-    // ✅ Manejo de sublistas (asistentes, participantes, evaluadores)
-    const checkAsistentes = document.querySelector('input[value="asistentes"]');
-    const sublistaAsistentes = document.getElementById('lista-asistentes');
-    
-    const checkParticipantes = document.querySelector('input[value="participantes"]');
-    const sublistaParticipantes = document.getElementById('lista-participantes');
-    
-    const checkEvaluadores = document.querySelector('input[value="evaluadores"]');
-    const sublistaEvaluadores = document.getElementById('lista-evaluadores');
+    // ✅ Mostrar u ocultar tablas por cada checkbox de rol
+    checkboxesRol.forEach(chk => {
+        chk.addEventListener('change', () => {
+            const tablaId = `tabla-${chk.value}`;
+            const tabla = document.getElementById(tablaId);
+            if (!tabla) return;
 
-    // 🔍 DEBUG: Verificar si los elementos existen
-    console.log('Elementos encontrados:');
-    console.log('checkAsistentes:', checkAsistentes);
-    console.log('sublistaAsistentes:', sublistaAsistentes);
-    console.log('checkParticipantes:', checkParticipantes);
-    console.log('sublistaParticipantes:', sublistaParticipantes);
-    console.log('checkEvaluadores:', checkEvaluadores);
-    console.log('sublistaEvaluadores:', sublistaEvaluadores);
+            if (chk.checked) {
+                tabla.classList.remove('oculto');
+            } else {
+                tabla.classList.add('oculto');
+                tabla.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            }
+        });
+    });
 
-    // ✅ Checkbox "Todos" vs parciales
+    // ✅ Control del checkbox "Todos"
     checkTodos.addEventListener('change', function () {
-        console.log('Checkbox "Todos" cambiado:', this.checked);
         if (this.checked) {
-            parciales.forEach(chk => {
+            checkboxesRol.forEach(chk => {
                 chk.checked = false;
                 chk.disabled = true;
+
+                // Ocultar sublistas y desmarcar
+                const tabla = document.getElementById(`tabla-${chk.value}`);
+                if (tabla) {
+                    tabla.classList.add('oculto');
+                    tabla.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                }
             });
-            // Ocultar todas las sublistas cuando "Todos" está seleccionado
-            ocultarTodasLasSublistas();
         } else {
-            parciales.forEach(chk => chk.disabled = false);
+            checkboxesRol.forEach(chk => {
+                chk.disabled = false;
+            });
         }
     });
 
-    // ✅ Función para ocultar todas las sublistas y deseleccionar checkboxes
-    function ocultarTodasLasSublistas() {
-        console.log('Ocultando todas las sublistas...');
-        if (sublistaAsistentes) {
-            sublistaAsistentes.classList.add('oculto');
-            sublistaAsistentes.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        }
-        if (sublistaParticipantes) {
-            sublistaParticipantes.classList.add('oculto');
-            sublistaParticipantes.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        }
-        if (sublistaEvaluadores) {
-            sublistaEvaluadores.classList.add('oculto');
-            sublistaEvaluadores.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-        }
-    }
-
-    // ✅ Máximo 2 parciales seleccionados (si quieres mantener esta restricción)
-    parciales.forEach(chk => {
-        chk.addEventListener('change', () => {
-            const seleccionados = [...parciales].filter(c => c.checked).length;
-            console.log('Parciales seleccionados:', seleccionados);
-            if (seleccionados >= 2) {
-                parciales.forEach(c => {
-                    if (!c.checked) c.disabled = true;
-                });
-            } else {
-                parciales.forEach(c => c.disabled = false);
-            }
-        });
-    });
-
-    // ✅ Mostrar/ocultar lista de asistentes
-    if (checkAsistentes && sublistaAsistentes) {
-        checkAsistentes.addEventListener('change', function () {
-            console.log('Checkbox asistentes cambiado:', this.checked);
-            if (this.checked) {
-                sublistaAsistentes.classList.remove('oculto');
-                console.log('Mostrando lista de asistentes');
-            } else {
-                sublistaAsistentes.classList.add('oculto');
-                console.log('Ocultando lista de asistentes');
-                // Deseleccionar todos los asistentes si se oculta
-                sublistaAsistentes.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            }
-        });
-    } else {
-        console.log('ERROR: No se encontraron elementos de asistentes');
-    }
-
-    // ✅ Mostrar/ocultar lista de participantes
-    if (checkParticipantes && sublistaParticipantes) {
-        checkParticipantes.addEventListener('change', function () {
-            console.log('Checkbox participantes cambiado:', this.checked);
-            if (this.checked) {
-                sublistaParticipantes.classList.remove('oculto');
-                console.log('Mostrando lista de participantes');
-            } else {
-                sublistaParticipantes.classList.add('oculto');
-                console.log('Ocultando lista de participantes');
-                // Deseleccionar todos los participantes si se oculta
-                sublistaParticipantes.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            }
-        });
-    } else {
-        console.log('ERROR: No se encontraron elementos de participantes');
-        console.log('checkParticipantes existe:', !!checkParticipantes);
-        console.log('sublistaParticipantes existe:', !!sublistaParticipantes);
-    }
-
-    // ✅ Mostrar/ocultar lista de evaluadores
-    if (checkEvaluadores && sublistaEvaluadores) {
-        checkEvaluadores.addEventListener('change', function () {
-            console.log('Checkbox evaluadores cambiado:', this.checked);
-            if (this.checked) {
-                sublistaEvaluadores.classList.remove('oculto');
-                console.log('Mostrando lista de evaluadores');
-            } else {
-                sublistaEvaluadores.classList.add('oculto');
-                console.log('Ocultando lista de evaluadores');
-                // Deseleccionar todos los evaluadores si se oculta
-                sublistaEvaluadores.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            }
-        });
-    } else {
-        console.log('ERROR: No se encontraron elementos de evaluadores');
-        console.log('checkEvaluadores existe:', !!checkEvaluadores);
-        console.log('sublistaEvaluadores existe:', !!sublistaEvaluadores);
-    }
-
-    // 🔍 DEBUG: Verificar HTML actual
-    console.log('HTML del formulario:');
-    console.log(document.querySelector('.checkbox-group')?.innerHTML);
-
-    // ✅ Validación y apertura de modal de confirmación
+    // ✅ Validación al enviar
     formCorreo.addEventListener('submit', function (e) {
-        tinymce.triggerSave(); // 🔄 Sincronizar contenido del editor
+        tinymce.triggerSave(); // Actualiza el contenido del editor TinyMCE
         e.preventDefault();
 
-        const contenido = document.getElementById('contenido');
-        const checkboxes = document.querySelectorAll('input[name="destinatarios"]');
-        const algunoMarcado = Array.from(checkboxes).some(cb => cb.checked);
+        const contenido = document.getElementById('contenido').value.trim();
+        const algunoMarcado = checkTodos.checked || Array.from(checkboxesRol).some(cb => cb.checked);
 
         if (!algunoMarcado) {
             mostrarErrorCorreo("Debes seleccionar al menos un destinatario.");
             return;
         }
 
-        // Validar que si se seleccionó "asistentes", al menos uno esté marcado
-        if (checkAsistentes && checkAsistentes.checked) {
-            const asistentesSeleccionados = sublistaAsistentes.querySelectorAll('input[name="asistentes_seleccionados"]:checked');
-            if (asistentesSeleccionados.length === 0) {
-                mostrarErrorCorreo("Debes seleccionar al menos un asistente.");
-                return;
+        // Si se seleccionan roles individuales, asegurarse de que tengan seleccionados
+        if (!checkTodos.checked) {
+            for (let chk of checkboxesRol) {
+                if (chk.checked) {
+                    const seleccionados = document.querySelectorAll(`#tabla-${chk.value} input[name="${chk.value}_seleccionados"]:checked`);
+                    if (seleccionados.length === 0) {
+                        mostrarErrorCorreo(`Debes seleccionar al menos un ${chk.value.slice(0, -1)}.`);
+                        return;
+                    }
+                }
             }
         }
 
-        // Validar que si se seleccionó "participantes", al menos uno esté marcado
-        if (checkParticipantes && checkParticipantes.checked) {
-            const participantesSeleccionados = sublistaParticipantes.querySelectorAll('input[name="participantes_seleccionados"]:checked');
-            if (participantesSeleccionados.length === 0) {
-                mostrarErrorCorreo("Debes seleccionar al menos un participante.");
-                return;
-            }
-        }
-
-        // Validar que si se seleccionó "evaluadores", al menos uno esté marcado
-        if (checkEvaluadores && checkEvaluadores.checked) {
-            const evaluadoresSeleccionados = sublistaEvaluadores.querySelectorAll('input[name="evaluadores_seleccionados"]:checked');
-            if (evaluadoresSeleccionados.length === 0) {
-                mostrarErrorCorreo("Debes seleccionar al menos un evaluador.");
-                return;
-            }
-        }
-
-        if (!contenido.value.trim()) {
+        if (!contenido) {
             mostrarErrorCorreo("El mensaje del correo no puede estar vacío.");
             return;
         }
@@ -184,47 +77,106 @@ document.addEventListener('DOMContentLoaded', () => {
         modalConfirmacion.classList.remove('hidden');
     });
 
-    // ✅ Confirmar envío desde modal
+    // ✅ Confirmación final
     btnConfirmarEnvio.addEventListener('click', () => {
         cerrarModalConfirmacionCorreo();
         loader.classList.remove('hidden');
         formCorreo.submit();
     });
+
+    // ✅ Inicializar paginación si existen las tablas
+    ['asistentes', 'participantes', 'evaluadores'].forEach(rol => {
+        const tablaId = `tabla-${rol}-lista`;
+        const paginacionId = `paginacion-${rol}`;
+        const nombreCheckbox = `${rol}_seleccionados`;
+
+        if (document.getElementById(tablaId)) {
+            paginarTabla(tablaId, paginacionId, nombreCheckbox);
+        }
+    });
 });
 
-// 🔴 Mostrar error
+// 🔴 Modal de error
 function mostrarErrorCorreo(mensaje) {
-    const modal = document.getElementById('modalErrorCorreo');
-    const mensajeError = document.getElementById('mensajeErrorCorreo');
-    mensajeError.textContent = mensaje;
-    modal.classList.remove('hidden');
+    document.getElementById('mensajeErrorCorreo').textContent = mensaje;
+    document.getElementById('modalErrorCorreo').classList.remove('hidden');
 }
-
-// 🔴 Cerrar error
 function cerrarModalErrorCorreo() {
     document.getElementById('modalErrorCorreo').classList.add('hidden');
 }
 
-// 🟡 Cerrar confirmación
+// 🟡 Modal de confirmación
 function cerrarModalConfirmacionCorreo() {
     document.getElementById('modalConfirmacionCorreo').classList.add('hidden');
 }
 
-// 🟢 Modal éxito
-function mostrarExitoCorreo() {
-    const modal = document.getElementById('modalExitoCorreo');
-    modal.classList.remove('hidden');
-}
-
-function cerrarModalExitoCorreo() {
-    document.getElementById('modalExitoCorreo').classList.add('hidden');
-}
-
+// 🟢 Modal de éxito
 function mostrarModalExito() {
     const modal = document.getElementById('modalExitoCorreo');
     modal.classList.remove('hidden');
+    setTimeout(() => modal.classList.add('hidden'), 1500);
+}
 
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 1500);
+// ✅ Seleccionar todos en tabla
+function seleccionarTodos(masterCheckbox, name) {
+    const checkboxes = document.querySelectorAll(`input[name="${name}"]`);
+    checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+}
+
+// ✅ Paginación
+function paginarTabla(tablaId, contenedorId, nombreCheckbox, filasPorPagina = 10) {
+    const tabla = document.getElementById(tablaId);
+    const cuerpo = tabla.querySelector('tbody');
+    const filas = Array.from(cuerpo.querySelectorAll('tr'));
+    const paginacion = document.getElementById(contenedorId);
+    let paginaActual = 1;
+    const totalPaginas = Math.ceil(filas.length / filasPorPagina);
+    const seleccionados = new Set();
+
+    cuerpo.querySelectorAll(`input[name="${nombreCheckbox}"]:checked`).forEach(cb => {
+        seleccionados.add(cb.value);
+    });
+
+    function renderizarPagina(pagina) {
+        cuerpo.innerHTML = '';
+        const inicio = (pagina - 1) * filasPorPagina;
+        const fin = inicio + filasPorPagina;
+        filas.slice(inicio, fin).forEach(fila => {
+            const input = fila.querySelector(`input[name="${nombreCheckbox}"]`);
+            input.checked = seleccionados.has(input.value);
+            input.addEventListener('change', () => {
+                if (input.checked) {
+                    seleccionados.add(input.value);
+                } else {
+                    seleccionados.delete(input.value);
+                }
+            });
+            cuerpo.appendChild(fila);
+        });
+        paginaActual = pagina;
+        renderizarControles();
+    }
+
+    function renderizarControles() {
+        paginacion.innerHTML = '';
+        if (totalPaginas <= 1) return;
+
+        const btnPrev = document.createElement('button');
+        btnPrev.textContent = '← Anterior';
+        btnPrev.disabled = paginaActual === 1;
+        btnPrev.onclick = () => renderizarPagina(paginaActual - 1);
+        paginacion.appendChild(btnPrev);
+
+        const texto = document.createElement('span');
+        texto.textContent = ` Página ${paginaActual} de ${totalPaginas} `;
+        paginacion.appendChild(texto);
+
+        const btnNext = document.createElement('button');
+        btnNext.textContent = 'Siguiente →';
+        btnNext.disabled = paginaActual === totalPaginas;
+        btnNext.onclick = () => renderizarPagina(paginaActual + 1);
+        paginacion.appendChild(btnNext);
+    }
+
+    renderizarPagina(1);
 }

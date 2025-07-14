@@ -315,3 +315,100 @@ button i {
     100% { opacity: 0; transform: scale(0.95); }
 }
 
+/* Estilo para contenedor de cada tabla */
+.tabla-seleccion {
+  overflow-x: auto;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+}
+
+/* Tabla principal */
+.tabla-seleccion table {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  background-color: white;
+  font-family: var(--fuente);
+  box-shadow: var(--sombra);
+  border-radius: 10px;
+}
+
+/* Cabecera de tabla */
+.tabla-seleccion th {
+  background-color: var(--color-primario);
+  color: white;
+  padding: 10px;
+  text-align: left;
+}
+
+/* Celdas de tabla */
+.tabla-seleccion td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Fila hover */
+.tabla-seleccion tr:hover {
+  background-color: #f4f4f4;
+}
+
+/* Checkbox "Seleccionar todos" */
+.seleccionar-todos {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Paginación */
+.paginacion {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--fuente);
+}
+
+/* Botones de paginación */
+.paginacion button {
+  background-color: var(--color-primario);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin: 0 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--fuente);
+  transition: background-color 0.3s ease;
+}
+
+/* Hover */
+.paginacion button:hover:not(:disabled) {
+  background-color: var(--color-secundario);
+}
+
+/* Botón deshabilitado */
+.paginacion button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Texto de paginación */
+.paginacion span {
+  font-weight: 600;
+  color: #444;
+}
+
+/* Ocultar elementos */
+.oculto {
+  display: none;
+}
+
+/* Responsive: scroll horizontal si es necesario */
+@media (max-width: 768px) {
+  .tabla-seleccion {
+    overflow-x: scroll;
+  }
+
+  .tabla-seleccion table {
+    min-width: 100%;
+  }
+}
