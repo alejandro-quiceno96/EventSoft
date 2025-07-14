@@ -93,7 +93,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'eventsoft',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': 'Sebas123.',
         'HOST': 'localhost',  # o la IP/host del servidor MySQL
         'PORT': '3306',       # puerto por defecto de MySQL
         'OPTIONS': {

@@ -29,15 +29,47 @@
     </div>
     <h1 class="titulo-animado"><i class="fa-regular fa-envelope"></i> Enviar correo masivo</h1>
 
-    <form method="post" enctype="multipart/form-data" id="form-correo" class="formulario-animado" action="{% url 'administrador:enviar_correo' %}">
+    <form method="post" enctype="multipart/form-data" id="form-correo" class="formulario-animado" action="{% url 'administrador:enviar_correo' evento.id %}">
         {% csrf_token %}
         <div class="grupo">
             <label>Enviar a:</label>
             <div class="checkbox-group">
                 <label><input type="checkbox" name="destinatarios" value="todos" id="check-todos"> Todos</label>
+                
                 <label><input type="checkbox" name="destinatarios" value="asistentes" class="check-parcial"> Asistentes</label>
+                <div id="lista-asistentes" class="sublista oculto">
+                    {% for asistente in asistentes %}
+                        <label>
+                            <input type="checkbox" name="asistentes_seleccionados" value="{{ asistente.id }}">
+                            {{ asistente.usuario.first_name }} ({{ asistente.usuario.email }})
+                        </label><br>
+                    {% empty %}
+                        <p>No hay asistentes disponibles.</p>
+                    {% endfor %}
+                </div>
+
                 <label><input type="checkbox" name="destinatarios" value="participantes" class="check-parcial"> Participantes</label>
+                <div id="lista-participantes" class="sublista oculto">
+        {% for participante in participantes %}
+            <label>
+                <input type="checkbox" name="participantes_seleccionados" value="{{ participante.id }}">
+                {{ participante.usuario.first_name }} ({{ participante.usuario.email }})
+            </label><br>
+        {% empty %}
+            <p>No hay participantes disponibles.</p>
+        {% endfor %}
+                </div>
+
                 <label><input type="checkbox" name="destinatarios" value="evaluadores" class="check-parcial"> Evaluadores</label>
+                    <div id="lista-evaluadores" class="sublista oculto">
+        {% for evaluador in evaluadores %}
+            <label>
+                <input type="checkbox" name="evaluadores_seleccionados" value="{{ evaluador.id }}">
+                {{ evaluador.usuario.first_name }} ({{ evaluador.usuario.email }})
+            </label><br>
+        {% empty %}
+            <p>No hay evaluadores disponibles.</p>
+        {% endfor %}
             </div>
         </div>
 
