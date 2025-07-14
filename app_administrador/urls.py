@@ -36,7 +36,7 @@ urlpatterns=[
     path('detalle_calificacion/evaluador/<int:evaluador_id>/partcipante/<int:participante_id>/evento/<int:evento_id>/', views.detalle_calificacion, name= "detalle_calificacion"),
 
     #correos
-    path('enviar_correo/', views.enviar_correo, name='enviar_correo'),
+    path('enviar_correo/<int:evento_id>', views.enviar_correo, name='enviar_correo'),
 
 
 ]

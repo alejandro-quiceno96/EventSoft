@@ -8,6 +8,14 @@
     --borde: 1px solid #ddd;
     --radio: 10px;
 }
+.oculto {
+    display: none;
+}
+
+.sublista {
+    margin-left: 20px;
+    margin-top: 10px;
+}
 
 body {
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.418), rgba(0, 88, 47, 0.712)), 
