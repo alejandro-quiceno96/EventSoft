@@ -183,6 +183,7 @@ def obtener_evento(request, evento_id):
         'eve_categoria': categoria_nombre,
         'cantidad_participantes': participantes,
         'cantidad_asistentes': asistentes,
+        'memorias': evento.eve_memorias if evento.eve_memorias else "No se ha subido memorias del evento",
     }
 
     return JsonResponse(datos_evento)
@@ -1042,3 +1043,18 @@ def enviar_correo(request, evento_id):
         'roles': roles,
         'evento': evento,
     })
+
+def guardar_memorias(request):
+    if request.method == 'POST':
+        url = request.POST.get('url_memorias')
+        evento_id = request.POST.get('evento_id')
+        
+        try:
+            evento = Eventos.objects.get(id=evento_id)
+            evento.eve_memorias = url
+            evento.save()
+            return redirect(f"{reverse('administrador:index_administrador')}?exito_memorias=1")
+        except Eventos.DoesNotExist:
+            messages.error(request, "No se encontró el evento.")
+
+    return redirect('administrador:index_administrador')

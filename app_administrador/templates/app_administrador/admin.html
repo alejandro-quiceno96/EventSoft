@@ -82,6 +82,7 @@
                 <p><strong>Inscripción:</strong> <span id="modalInscripcion"></span></p>
                 <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
                 <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
+                <p><strong>Memorias:</strong> <div id="modalMemorias"></div></p>
                 <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid" style="width: 100%;
                 height: 300px; object-fit: contain;" />
             </div>
@@ -93,6 +94,11 @@
                     Modificar información
                 </a>
                 <button type="button"  id="btnCriterios" class="btn-eliminar" data-bs-dismiss="modal" >Criterios de Evaluación</button>
+                <button type="button" class="btn-ver-mas" data-bs-toggle="modal" data-bs-target="#modalSubirMemorias">
+  <i class="fa-solid fa-upload"></i> Subir memorias del evento
+</button>
+
+
                 <button type="button" id="btnAccion" class="btn-eliminar" data-bs-dismiss="modal" >Eliminar Evento</button>
             </div>
         </div>
@@ -142,12 +148,116 @@
     </div>
     </div>
 
+  <!-- Modal para subir memorias -->
+<div class="modal fade" id="modalSubirMemorias" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="form-guardar-memorias" method="POST" action="{% url 'administrador:guardar_memorias' %}">
+      {% if evento.eve_memorias %}
+        <input type="hidden" name="memorias_id" value="{{ evento.eve_memorias.id }}">
+      {% else %}
+        <input type="hidden" name="memorias_id" value="">
+      {% endif %}
+      {% if evento.eve_memorias %}
+        <input type="hidden" name="memorias_id" value="{{ evento.eve_memorias.id }}">
+      {% endif %}
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Subir memorias del evento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+            
+          <label for="url_memorias" class="form-label">URL del enlace (Google Drive, OneDrive, etc.):</label>
+          <input type="url" name="url_memorias" id="url_memorias" class="form-control" required placeholder="https://drive.google.com/..." />
+          <input type="hidden" name="evento_id" id="modalIdMemorias" value="{{ evento.id }}">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Guardar</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+<!-- Modal de cargando -->
+<div class="modal fade" id="modalGuardandoMemorias" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+      <div class="spinner-border text-success mb-3" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="fw-bold">Guardando enlace de memorias...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de éxito -->
+<div class="modal fade" id="modalMemoriasGuardadas" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4 position-relative">
+      <!-- Botón X para cerrar -->
+      <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      
+      <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+      <p class="fw-bold">¡Memorias guardadas exitosamente!</p>
+    </div>
+  </div>
+</div>
+
+
+
+
     <script>
         const baseEventoDetalleUrl = "{% url 'administrador:evento_detalle' 0 %}".replace('0', '');
         const baseEliminarUrl = "{% url 'administrador:eliminar_evento' 0 %}".replace('0', '');
         const baseModificarUrl = "{% url 'administrador:editar_evento' 0 %}".replace('0', '');
         const baseCriteriosUrl = "{% url 'administrador:criterios_evaluacion' 0 %}".replace('0', '');
+        
     </script>
+    <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const formMemorias = document.getElementById('form-guardar-memorias');
+    if (formMemorias) {
+      formMemorias.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Mostrar modal de cargando
+        const modalCargando = new bootstrap.Modal(document.getElementById('modalGuardandoMemorias'));
+        modalCargando.show();
+
+        // Esperar a que el modal se muestre y enviar luego el formulario
+        setTimeout(() => {
+          this.submit();
+        }, 1000);
+      });
+    }
+
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("exito_memorias")) {
+    const modalEl = document.getElementById('modalMemoriasGuardadas');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    // Al cerrar el modal, quitar el parámetro de la URL
+    modalEl.addEventListener('hidden.bs.modal', function () {
+      const url = new URL(window.location);
+      url.searchParams.delete('exito_memorias');
+      window.history.replaceState({}, document.title, url.toString());
+    });
+  }
+});
+
+
+
+</script>
+
 
     <script src="{% static 'app_administrador/js/verEventos.js' %}"></script>
     <script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>
