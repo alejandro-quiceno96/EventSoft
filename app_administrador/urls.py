@@ -38,6 +38,9 @@ urlpatterns=[
     #correos
     path('enviar_correo/<int:evento_id>', views.enviar_correo, name='enviar_correo'),
 
+    #memorias
+    path('guardar-memorias/', views.guardar_memorias, name='guardar_memorias'),
+
 
 ]
 if settings.DEBUG:
