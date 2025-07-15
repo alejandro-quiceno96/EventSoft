@@ -26,8 +26,8 @@
     <div id="constar" class="constar">CERTIFICA:</div>
 
     <div id="preview-texto" class="preview-texto">
-          Que <strong>nombre_de_la_persona</strong> identificado(a) con el número de documento
-          <strong>1234567890</strong> participó como <strong>rol_de_la_persona</strong> en el marco del <strong>nombre_del_evento</strong> desarrollado el <strong>fecha_del_evento</strong>.
+          Que <strong>{{nombre_participante|default:'Nombre del participante'}}</strong> identificado(a) con el número de documento
+          <strong>{{documento_participante|default:'###########'}}</strong> estuvo como <strong>{{rol_participante|default:'rol_participante'}}</strong> en el marco del <strong>{{evento.eve_nombre|default:'nombre del evento'}}</strong> desarrollado el <strong>{{ fecha_inicio|default:'fecha del evento' }}</strong>.
         </div>
 
     <div id="preview-lugar-fecha" class="preview-lugar-fecha">

@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth import update_session_auth_hash
 from datetime import datetime
 import os
-from .utils import generar_pdf, generar_clave_acceso, obtener_ranking
+from .utils import generar_pdf, generar_clave_acceso, obtener_ranking, generar_certificados
 from django.urls import reverse
 from decimal import Decimal
 import json
@@ -22,6 +22,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.utils import timezone
 import locale
+from django.utils.timezone import now
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
@@ -322,6 +323,9 @@ def ver_participantes(request: HttpRequest ,evento_id):
         'participantes': participantes,
         'evento': evento,
         'evento_nombre': evento.eve_nombre,
+        'estado': estado,
+        'evento_fecha_fin': evento.eve_fecha_fin.isoformat(),
+        'fecha_actual': now().isoformat(),
     })
 
 
@@ -1168,3 +1172,45 @@ def descargar_certificado_pdf(request, evento_id):
     response['Content-Disposition'] = f'inline; filename="certificado_{evento.id}.pdf"'
 
     return response
+
+def enviar_certificado_participantes(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    
+
+    # Obtener participantes admitidos
+    participantes = Participantes.objects.filter(
+        id__in=ParticipantesEventos.objects.filter(
+            par_eve_evento_fk=evento_id,
+            par_eve_estado__iexact='Admitido'
+        ).values_list('par_eve_participante_fk_id', flat=True)
+    )
+
+    print(f"Participantes admitidos: {participantes.count()}")
+    
+    if request.method == 'POST':
+
+        correos_enviados = []
+        for participante in participantes:
+            contexto = {
+                'evento': evento,
+                'participante': participante
+            }
+
+            mensaje = render_to_string('app_administrador/correos/correo_certificado.html', contexto)
+
+            email = EmailMessage(
+                subject=f"Certificado de participación en el evento { evento.eve_nombre}",
+                body=mensaje,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[participante.usuario.email]
+            )
+            email.content_subtype = 'html'
+
+            # Adjuntar certificado PDF
+            pdf_content = generar_certificados(request,evento_id, "participante", participante.id )
+            email.attach(f'certificado_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
+
+            email.send(fail_silently=False)
+            correos_enviados.append(participante.usuario.email)
+
+        return redirect('administrador:index_administrador')

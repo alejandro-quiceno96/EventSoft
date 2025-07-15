@@ -37,6 +37,7 @@ urlpatterns=[
 
     #correos
     path('enviar_correo/<int:evento_id>', views.enviar_correo, name='enviar_correo'),
+    path('enviar_certificado_participantes/<int:evento_id>/', views.enviar_certificado_participantes, name='enviar_certificado_participantes'),
 
     #memorias
     path('guardar-memorias/', views.guardar_memorias, name='guardar_memorias'),
