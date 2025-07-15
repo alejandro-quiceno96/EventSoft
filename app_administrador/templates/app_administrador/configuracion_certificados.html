@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Configurar Certificado</title>
+  <link rel="stylesheet" href="{% static 'app_administrador/css/config_certificado.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<div class="contenedor-configuracion">
+  <div class="grupo centrado mb-3">
+        <a href="{% url 'administrador:index_administrador' %}" class="boton-animado">
+            <i class="fa-solid fa-house"></i> Volver al Inicio
+        </a>
+    </div>
+
+  <h2>Configuración del Certificado</h2>
+  
+  {% if certificado %}
+    <p>Configuración actual del certificado para el evento:</p>
+    <a href="{% url 'administrador:descargar_certificado_pdf' evento.id %}" class="boton-animado" target="_blank">
+  <i class="fa fa-download"></i> Ver Diseño
+</a>
+
+  {% else %}
+    <p>No se ha configurado un certificado para este evento.</p>
+  {% endif %}
+
+  <form id="formulario-certificado" class="formulario-configuracion" action="{% url 'administrador:configuracion_certificados' evento.id %}" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <div class="form-group">
+    <label for="id_nombre_certificador">Nombre de quien genera el certificado:</label>
+    <input type="text"
+           id="id_nombre_certificador"
+           name="nombre_certificador"
+           placeholder="Ej. EventSoft"
+           value="{{ certificado.certifica|default:'' }}"
+           required>
+  </div>
+
+  <div class="form-group">
+    <label for="con_diseno">¿Desea usar diseño de fondo?</label>
+    <select id="con_diseno" name="con_diseno">
+      <option value="no" {% if not certificado.diseño %}selected{% endif %}>No</option>
+      <option value="si" {% if certificado.diseño %}selected{% endif %}>Sí</option>
+    </select>
+  </div>
+
+  <div id="grupo-diseno" class="form-group" {% if certificado.diseño %}style="display: block"{% else %}none{% endif %};>
+    <label for="id_diseno">Subir diseño (imagen de fondo):</label>
+    <input type="file" id="id_diseno" name="diseno" accept="image/*">
+
+  </div>
+
+  <div class="form-group">
+    <label for="con_firma">¿Desea incluir firma?</label>
+    <select id="con_firma" name="con_firma">
+      <option value="no" {% if not certificado.firma %}selected{% endif %}>No</option>
+      <option value="si" {% if certificado.firma %}selected{% endif %}>Sí</option>
+    </select>
+  </div>
+
+  <div id="grupo-firma" style="display: {% if certificado.firma %}block{% else %}none{% endif %};">
+    <div class="form-group">
+      <label for="id_firma">Imagen de la firma:</label>
+      <input type="file" id="id_firma" name="firma" accept="image/*">
+    </div>
+    <div class="form-group">
+      <label for="id_firma_nombre">Nombre del firmante:</label>
+      <input type="text" id="id_firma_nombre" name="firma_nombre" value="{{ certificado.firma_nombre|default:'' }}">
+    </div>
+    <div class="form-group">
+      <label for="id_firma_cargo">Cargo del firmante:</label>
+      <input type="text" id="id_firma_cargo" name="firma_cargo" value="{{ certificado.firma_cargo|default:'' }}">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="tipografia">Tipografía del texto:</label>
+    <select id="tipografia" name="tipografia">
+      <option value="'Work Sans', sans-serif" {% if certificado.tipografia == "'Work Sans', sans-serif" %}selected{% endif %}>Work Sans</option>
+      <option value="Arial, sans-serif" {% if certificado.tipografia == "Arial, sans-serif" %}selected{% endif %}>Arial</option>
+      <option value="'Times New Roman', serif" {% if certificado.tipografia == "'Times New Roman', serif" %}selected{% endif %}>Times New Roman</option>
+      <option value="Georgia, serif" {% if certificado.tipografia == "Georgia, serif" %}selected{% endif %}>Georgia</option>
+      <option value="'Courier New', monospace" {% if certificado.tipografia == "'Courier New', monospace" %}selected{% endif %}>Courier New</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="orientacion">Orientación:</label>
+    <select id="orientacion" name="orientacion">
+      <option value="vertical" {% if certificado.orientacion == 'vertical' %}selected{% endif %}>Vertical</option>
+      <option value="horizontal" {% if certificado.orientacion == 'horizontal' %}selected{% endif %}>Horizontal</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="lugar_expedicion">Lugar de expedición:</label>
+    <input type="text" id="lugar_expedicion" name="lugar_expedicion" placeholder="Ej. Manizales" value="{{ certificado.lugar_expedicion|default:'' }}">
+  </div>
+
+  <div class="form-group text-center">
+    <button type="button" id="btn-previsualizar">Previsualizar Certificado</button>
+  </div>
+
+  <div class="form-group text-center">
+    <button type="submit" id="btn-guardar">Guardar configuración</button>
+  </div>
+</form>
+
+
+
+
+<!-- Modal de previsualización -->
+<div class="modal" id="modal-preview" style="display: none;">
+  <div class="modal-content">
+    <span class="cerrar-modal" onclick="document.getElementById('modal-preview').style.display='none'">&times;</span>
+    <div class="modal-body d-flex justify-content-center">
+      <div class="preview-certificado" id="preview-certificado">
+        <div id="nombre_genera_certificado"></div>
+        <div id="constar" class="constar">
+            CERTIFICA:
+        </div>
+        <div id="preview-texto" class="preview-texto">
+          Que <strong>nombre_de_la_persona</strong> identificado(a) con el número de documento
+          <strong>1234567890</strong> participó como <strong>rol_de_la_persona</strong> en el marco del <strong>nombre_del_evento</strong> desarrollado el <strong>fecha_del_evento</strong>.
+        </div>
+        <div id="preview-lugar-fecha" class="preview-lugar-fecha"></div>
+        <div class="preview-firma-container">
+            <img id="preview-firma" class="preview-firma" src="">
+            <div id="preview-nombre" class="preview-nombre"></div>
+            <div id="preview-cargo" class="preview-cargo"></div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de éxito -->
+<div class="modal-exitoso" id="modal-exito" style="display: none;">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4" style="border-radius: 12px; background-color: #f9f9f9;">
+      <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+      <p class="fw-bold">¡Configuración guardada con éxito!</p>
+      <button onclick="document.getElementById('modal-exito').style.display='none'" class="boton-animado">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('guardado') === '1') {
+      const modal = document.getElementById("modal-exito");
+      if (modal) {
+        modal.style.display = "flex"; // FLEX para que se centre
+      }
+
+      // Elimina el parámetro de la URL
+      const newURL = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, newURL);
+    }
+  });
+</script>
+
+
+
+
+
+
+<script src="{% static 'app_administrador/js/config_certificados.js' %}"></script>
+</body>
+</html>

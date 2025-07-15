@@ -8,10 +8,10 @@ class Certificado(models.Model):
     firma_nombre = models.CharField(max_length=100, blank=True, null=True)
     firma_cargo = models.CharField(max_length=100, blank=True, null=True)
     orientacion = models.CharField(max_length=10, choices=[('horizontal', 'Horizontal'), ('vertical', 'Vertical')], default='horizontal')
+    certifica = models.CharField(max_length=255, blank=True, null=True)
+    lugar_expedicion = models.CharField(max_length=100, blank=True, null=True)
+    tipografia = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Certificado'
         verbose_name_plural = 'Certificados'
-
-    def __str__(self):
-        return self.nome

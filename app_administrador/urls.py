@@ -40,7 +40,10 @@ urlpatterns=[
 
     #memorias
     path('guardar-memorias/', views.guardar_memorias, name='guardar_memorias'),
-
+    
+    #certificados
+    path('configuracion_certificados/<int:evento_id>/', views.configuracion_certificados, name='configuracion_certificados'),
+    path('certificados/<int:evento_id>/descargar/', views.descargar_certificado_pdf, name='descargar_certificado_pdf'),
 
 ]
 if settings.DEBUG:
