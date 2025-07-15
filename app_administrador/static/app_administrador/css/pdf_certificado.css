@@ -1,0 +1,92 @@
+/* Certificado tamaño carta */
+
+
+#nombre_genera_certificado {
+  position: absolute;
+  top: 16%;
+  left: 10%;
+  right: 10%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 30px;
+  font-weight: bold;
+  line-height: 1.6;
+  color: #000;
+  z-index: 2;
+}
+
+.constar {
+  position: absolute;
+  top: 25%;
+  left: 10%;
+  right: 10%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #000;
+  z-index: 2;
+}
+
+.preview-texto {
+  position: absolute;
+  top: 40%;
+  left: 10%;
+  right: 10%;
+  transform: translateY(-50%);
+  text-align: justify;
+  font-size: 20px;
+  line-height: 1.6;
+  color: #000;
+  z-index: 2;
+}
+
+.preview-lugar-fecha {
+  position: absolute;
+  bottom: 80px;
+  right: 60px;
+  font-size: 18px;
+  text-align: right;
+  color: #000;
+  z-index: 2;
+}
+
+.preview-firma-container {
+  position: absolute;
+  bottom: 150px;
+  left: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.preview-firma {
+  position: absolute;
+  bottom: 70px;
+  left: 60px;
+  width: 250px;
+  object-fit: contain;
+  z-index: 2;
+}
+
+.preview-nombre {
+  position: absolute;
+  bottom: 50px;
+  left: 60px;
+  width: 400px;
+  font-weight: bold;
+  font-size: 18px;
+  z-index: 2;
+  border-top: 1px solid #000;
+}
+
+.preview-cargo {
+  position: absolute;
+  width: 350px;
+  bottom: 30px;
+  left: 60px;
+  font-size: 16px;
+  color: gray;
+  z-index: 2;
+}

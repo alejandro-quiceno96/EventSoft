@@ -2,8 +2,9 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".btn-ver-mas").forEach((button) => {
         button.addEventListener("click", function () {
             let eventoId = this.getAttribute("data-id");
-            let url = baseEventoDetalleUrl + eventoId;
+            let url = baseEventoDetalleUrl + eventoId;;
             const contenedorMemorias = document.getElementById("modalMemorias");
+            const linkMemorias = document.getElementById("linkMemorias");
 
             fetch(url)
                 .then((response) => response.json())
@@ -31,12 +32,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log("Memorias URL:", data.memorias);
                     if (data.memorias) {
                         contenedorMemorias.innerHTML = `
-                        <a href="${data.memorias}" target="_blank" class="btn-ver-mas">
+                        <a href="${data.memorias}" target="_blank" class="btn btn-primary">
+                        <i class="fa-solid fa-file-arrow-down"></i> Ver memorias del evento
+                        </a>
+            `;
+                        linkMemorias.innerHTML = `
+                        <a href="${data.memorias}" target="_blank" class="btn btn-primary">
                         <i class="fa-solid fa-file-arrow-down"></i> Ver memorias del evento
                         </a>
             `;
                     } else {
                         contenedorMemorias.innerHTML = `
+                <p class="text-muted">No se ha subido memorias del evento.</p>
+            `;
+                        linkMemorias.innerHTML = `
                 <p class="text-muted">No se ha subido memorias del evento.</p>
             `;
                     }
@@ -52,6 +61,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     document
                         .getElementById("btnCriterios")
                         .setAttribute("data-url", baseCriteriosUrl + data.eve_id);
+                    document
+                        .getElementById("btnConfigCertificados")
+                        .setAttribute("data-url", baseConfigCertificadosUrl.replace("0", data.eve_id));
                     // Mostrar el modal
                     new bootstrap.Modal(document.getElementById("eventoModal")).show();
                 })
@@ -61,6 +73,14 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.getElementById("btnCriterios").addEventListener("click", function () {
+    const url = this.getAttribute("data-url");
+    if (url) {
+        // Redirige a la URL de la ruta Flask
+        window.location.href = url;
+    }
+});
+
+document.getElementById("btnConfigCertificados").addEventListener("click", function () {
     const url = this.getAttribute("data-url");
     if (url) {
         // Redirige a la URL de la ruta Flask

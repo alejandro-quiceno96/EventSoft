@@ -21,6 +21,7 @@ from app_asistente.models import Asistentes
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.utils import timezone
+import locale
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
@@ -30,6 +31,7 @@ from app_criterios.models import Criterios
 from app_evaluador.models import Calificaciones
 from app_participante.models import Participantes
 from app_evaluador.models import Evaluadores
+from app_certificados.models import Certificado
 
 from app_super_admin.models import SuperAdministradores
 from io import BytesIO
@@ -183,7 +185,7 @@ def obtener_evento(request, evento_id):
         'eve_categoria': categoria_nombre,
         'cantidad_participantes': participantes,
         'cantidad_asistentes': asistentes,
-        'memorias': evento.eve_memorias if evento.eve_memorias else "No se ha subido memorias del evento",
+        'memorias': evento.eve_memorias if evento.eve_memorias else "No se ha subido memorias del evento", 
     }
 
     return JsonResponse(datos_evento)
@@ -870,7 +872,7 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
-login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def editar_perfil(request):
     user = request.user  # Es instancia de tu modelo Usuario
 
@@ -937,6 +939,7 @@ def obtener_emails_por_destinatarios(destinatarios, ids_por_tipo=None):
 
     return list(set(correos))
 
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def enviar_correo(request, evento_id):
     # 🔹 1. Obtener el evento
     try:
@@ -1058,3 +1061,110 @@ def guardar_memorias(request):
             messages.error(request, "No se encontró el evento.")
 
     return redirect('administrador:index_administrador')
+
+
+
+#Rutas relativas de los diseños por defecto
+DEFAULT_VERTICAL = 'defaults/certificado_vertical.png'
+DEFAULT_HORIZONTAL = 'defaults/certificado_defecto.png'
+
+def is_default_design(path):
+    return DEFAULT_VERTICAL in path or DEFAULT_HORIZONTAL in path
+
+@login_required(login_url='login')
+def configuracion_certificados(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Obtener o crear el certificado del evento
+    certificado, _ = Certificado.objects.get_or_create(evento_fk=evento)
+
+    if request.method == 'POST':
+        certificado.certifica = request.POST.get('nombre_certificador')
+        certificado.tipografia = request.POST.get('tipografia')
+        certificado.orientacion = request.POST.get('orientacion')
+        certificado.lugar_expedicion = request.POST.get('lugar_expedicion')
+
+        # --------------------------
+        # Procesamiento del diseño
+        # --------------------------
+        con_diseno = request.POST.get('con_diseno')
+        if con_diseno == 'si' and 'diseno' in request.FILES:
+            # Eliminar diseño anterior si no es por defecto
+            if certificado.diseño and os.path.isfile(certificado.diseño.path) and not is_default_design(certificado.diseño.path):
+                os.remove(certificado.diseño.path)
+            certificado.diseño = request.FILES['diseno']
+        elif con_diseno == 'no':
+            # Eliminar diseño si se desactiva (si no es por defecto)
+            if certificado.diseño and os.path.isfile(certificado.diseño.path) and not is_default_design(certificado.diseño.path):
+                os.remove(certificado.diseño.path)
+            certificado.diseño = None
+
+        # --------------------------
+        # Procesamiento de la firma
+        # --------------------------
+        con_firma = request.POST.get('con_firma')
+        if con_firma == 'si':
+            certificado.firma_nombre = request.POST.get('firma_nombre')
+            certificado.firma_cargo = request.POST.get('firma_cargo')
+            if 'firma' in request.FILES:
+                if certificado.firma and os.path.isfile(certificado.firma.path):
+                    os.remove(certificado.firma.path)
+                certificado.firma = request.FILES['firma']
+        else:
+            if certificado.firma and os.path.isfile(certificado.firma.path):
+                os.remove(certificado.firma.path)
+            certificado.firma = None
+            certificado.firma_nombre = ''
+            certificado.firma_cargo = ''
+
+        certificado.save()
+
+        # --------------------------
+        # Asignar diseño por defecto si no hay diseño cargado
+        # --------------------------
+        if not certificado.diseño:
+            if certificado.orientacion == 'vertical':
+                certificado.diseño = DEFAULT_VERTICAL
+            elif certificado.orientacion == 'horizontal':
+                certificado.diseño = DEFAULT_HORIZONTAL
+            certificado.save()
+
+        return redirect(f"{reverse('administrador:configuracion_certificados', args=[evento.id])}?guardado=1")
+
+    # Mostrar formulario con datos existentes
+    guardado = request.GET.get('guardado') == '1'
+
+    return render(request, 'app_administrador/configuracion_certificados.html', {
+        'evento': evento,
+        'certificado': certificado,
+        'guardado': guardado,
+    })
+    
+@login_required(login_url='login')
+def descargar_certificado_pdf(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    certificado = get_object_or_404(Certificado, evento_fk=evento)
+
+    try:
+        locale.setlocale(locale.LC_TIME, 'es_CO.UTF-8')
+    except locale.Error:
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+
+    fecha_formateada = datetime.now().strftime('%d de %B de %Y')
+    
+    # Renderizar plantilla HTML con los datos del certificado
+    html_string = render_to_string('app_administrador/pdf_certificado.html', {
+        'certificado': certificado,
+        'evento': evento,
+        'now': fecha_formateada,
+    })
+
+    # Generar PDF desde HTML
+    html = HTML(string=html_string, base_url=request.build_absolute_uri())
+    pdf_file = html.write_pdf()
+
+    # Retornar respuesta como PDF descargable
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="certificado_{evento.id}.pdf"'
+
+    return response
