@@ -447,6 +447,9 @@ def ver_asistentes(request: HttpRequest, evento_id):
         'asistentes': asistentes_data,
         'evento': evento,
         'evento_nombre': evento.eve_nombre,
+        'estado': estado,
+        'evento_fecha_fin': evento.eve_fecha_fin.isoformat(),
+        'fecha_actual': now().isoformat(),
     })
     
 @csrf_exempt
@@ -777,6 +780,9 @@ def ver_evaluadores(request: HttpRequest, evento_id):
         'evento': evento,
         'evento_id': evento_id,  # Agregado para usar en el template
         'evento_nombre': evento.eve_nombre,
+        'estado': estado,
+        'evento_fecha_fin': evento.eve_fecha_fin.isoformat(),
+        'fecha_actual': now().isoformat(),
     })
 
 @csrf_exempt
@@ -1173,6 +1179,7 @@ def descargar_certificado_pdf(request, evento_id):
 
     return response
 
+@login_required(login_url='login')
 def enviar_certificado_participantes(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     
@@ -1185,7 +1192,6 @@ def enviar_certificado_participantes(request, evento_id):
         ).values_list('par_eve_participante_fk_id', flat=True)
     )
 
-    print(f"Participantes admitidos: {participantes.count()}")
     
     if request.method == 'POST':
 
@@ -1214,3 +1220,88 @@ def enviar_certificado_participantes(request, evento_id):
             correos_enviados.append(participante.usuario.email)
 
         return redirect('administrador:index_administrador')
+
+@login_required(login_url='login')
+def enviar_certificado_asistentes(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    
+
+    # Obtener participantes admitidos
+    participantes = Asistentes.objects.filter(
+        id__in=AsistentesEventos.objects.filter(
+            asi_eve_evento_fk=evento_id,
+            asi_eve_estado__iexact='Admitido'
+        ).values_list('asi_eve_asistente_fk_id', flat=True)
+    )
+
+    
+    if request.method == 'POST':
+
+        correos_enviados = []
+        for participante in participantes:
+            contexto = {
+                'evento': evento,
+                'participante': participante
+            }
+
+            mensaje = render_to_string('app_administrador/correos/correo_certificado.html', contexto)
+
+            email = EmailMessage(
+                subject=f"Certificado de participación en el evento { evento.eve_nombre}",
+                body=mensaje,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[participante.usuario.email]
+            )
+            email.content_subtype = 'html'
+
+            # Adjuntar certificado PDF
+            pdf_content = generar_certificados(request,evento_id, "asistente", participante.id )
+            email.attach(f'certificado_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
+
+            email.send(fail_silently=False)
+            correos_enviados.append(participante.usuario.email)
+
+        return redirect('administrador:index_administrador')
+
+@login_required(login_url='login') 
+def enviar_certificado_evaluadores(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    
+
+    # Obtener Evaluadores admitidos
+    participantes =Evaluadores.objects.filter(
+        id__in=EvaluadoresEventos.objects.filter(
+            eva_eve_evento_fk=evento_id,
+            eva_estado__iexact='Admitido'
+        ).values_list('eva_eve_evaluador_fk_id', flat=True)
+    )
+
+    
+    if request.method == 'POST':
+
+        correos_enviados = []
+        for participante in participantes:
+            contexto = {
+                'evento': evento,
+                'participante': participante
+            }
+
+            mensaje = render_to_string('app_administrador/correos/correo_certificado.html', contexto)
+
+            email = EmailMessage(
+                subject=f"Certificado de participación en el evento { evento.eve_nombre}",
+                body=mensaje,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[participante.usuario.email]
+            )
+            email.content_subtype = 'html'
+
+            # Adjuntar certificado PDF
+            pdf_content = generar_certificados(request,evento_id, "evaluador", participante.id )
+            email.attach(f'certificado_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
+
+            email.send(fail_silently=False)
+            correos_enviados.append(participante.usuario.email)
+
+        return redirect('administrador:index_administrador')
+    
