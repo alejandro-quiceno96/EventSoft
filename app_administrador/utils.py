@@ -142,10 +142,10 @@ def generar_certificados(request, evento_id, tipo, usuario):
         'now': fecha_formateada,
         'rol_participante': tipo.capitalize(),
         'nombre_participante': " ".join(filter(None, [
-            participante.usuario.first_name,
-            participante.usuario.segundo_nombre,
-            participante.usuario.last_name,
-            participante.usuario.segundo_apellido
+            participante.usuario.first_name.upper(),
+            participante.usuario.segundo_nombre.upper() ,
+            participante.usuario.last_name.upper(),
+            participante.usuario.segundo_apellido.upper()
         ])),
         'documento_participante': participante.usuario.documento_identidad,
         'fecha_inicio': fecha_inicio,
