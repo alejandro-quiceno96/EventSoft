@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gracias por participar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Work Sans', sans-serif; background-color: #f4f4f4; padding: 20px; margin: 0;">
+  <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 10px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    <h2 style="color: #007832; margin-top: 0;">
+      Hola <span style="color: #000;">{{ participante.usuario.first_name }}</span>,
+    </h2>
+
+    <h3 style="color: #007832; margin-top: 5px;">
+      ¡Gracias por participar en <span style="color: #000;">{{ evento.eve_nombre }}</span>!
+    </h3>
+    
+    <p style="font-size: 16px; color: #333;">
+      Queremos expresarte nuestro más sincero agradecimiento por haber sido parte del evento <strong>{{ evento.eve_nombre }}</strong>, realizado el <strong>{{ evento.eve_fecha_inicio|date:"j \\d\\e F \\d\\e Y" }}</strong>.
+    </p>
+
+    <p style="font-size: 16px; color: #333;">
+      Tu certificado de participación lo puedes encontrar adjunto a este correo o disponible también desde nuestra plataforma web.
+    </p>
+
+    <p style="font-size: 16px; color: #333;">
+      Esperamos que tu experiencia haya sido enriquecedora y que continúes participando en nuestras próximas actividades.
+    </p>
+
+    <p style="font-size: 16px; color: #333;">
+      ¡Gracias por hacer parte de esta experiencia!
+    </p>
+
+    <p style="margin-top: 30px; font-size: 14px; color: #777;">
+      Este correo fue generado automáticamente. Por favor, no respondas a este mensaje.
+    </p>
+  </div>
+</body>
+</html>

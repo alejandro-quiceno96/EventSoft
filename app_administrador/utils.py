@@ -14,6 +14,12 @@ from app_participante.models import Participantes
 from app_asistente.models import Asistentes
 from app_evaluador.models import Evaluadores
 from app_criterios.models import Criterios
+from app_eventos.models import Eventos, EvaluadoresEventos, ParticipantesEventos, AsistentesEventos
+from django.shortcuts import get_object_or_404
+from app_certificados.models import Certificado
+from django.http import HttpResponse
+from datetime import datetime
+import locale
 
 
 def generar_pdf(id_participante, usuario, id_evento, tipo="participante"):
@@ -105,3 +111,47 @@ def obtener_ranking(evento_id):
         })
 
     return ranking
+
+def generar_certificados(request, evento_id, tipo, usuario):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    certificado = get_object_or_404(Certificado, evento_fk=evento)
+    
+    # Obtener instancia del participante
+    if tipo == 'participante':
+        participante = get_object_or_404(Participantes, id=usuario)
+    elif tipo == 'evaluador':  
+        participante = get_object_or_404(Evaluadores, id=usuario)
+    elif tipo == 'asistente':
+        participante = get_object_or_404(Asistentes, id=usuario)
+    else:
+        return HttpResponse("Tipo de participante no válido", status=400)
+
+    # Configurar fecha en español
+    try:
+        locale.setlocale(locale.LC_TIME, 'es_CO.UTF-8')
+    except locale.Error:
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+
+    fecha_formateada = datetime.now().strftime('%d de %B de %Y')
+    fecha_inicio = evento.eve_fecha_inicio.strftime('%d de %B de %Y')
+
+    # Renderizar plantilla HTML con datos del certificado
+    html_string = render_to_string('app_administrador/pdf_certificado.html', {
+        'certificado': certificado,
+        'evento': evento,
+        'now': fecha_formateada,
+        'rol_participante': tipo.capitalize(),
+        'nombre_participante': " ".join(filter(None, [
+            participante.usuario.first_name,
+            participante.usuario.segundo_nombre,
+            participante.usuario.last_name,
+            participante.usuario.segundo_apellido
+        ])),
+        'documento_participante': participante.usuario.documento_identidad,
+        'fecha_inicio': fecha_inicio,
+    })
+
+    # Generar PDF
+    pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
+    return pdf_file
+

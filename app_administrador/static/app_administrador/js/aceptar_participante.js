@@ -103,3 +103,53 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 });
+
+// Mostrar modal al hacer clic en el botón de certificados
+const btnAbrirModal = document.getElementById("btnAbrirModalCertificados");
+let modalConfirmacion;  // Variable para guardar el modal
+
+btnAbrirModal.addEventListener('click', () => {
+    if (fechaActual < eventoFechaFin) {
+      const modalAdvertencia = new bootstrap.Modal(document.getElementById('modalFechaNoValida'));
+      modalAdvertencia.show();
+    } else {
+      const modalConfirmacion = new bootstrap.Modal(document.getElementById('modalEnviarCertificados'));
+      modalConfirmacion.show();
+    }
+  });
+
+// Confirmar envío
+const btnConfirmarEnvio = document.getElementById("btnConfirmarEnvioCertificados");
+if (btnConfirmarEnvio) {
+  btnConfirmarEnvio.addEventListener("click", function () {
+    if (modalConfirmacion) {
+      modalConfirmacion.hide();  // ✅ Cierra el modal antes de hacer fetch
+    }
+
+    showLoader();
+
+    fetch(UrlEnvioCertificados, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken")
+      }
+    })
+    .then(res => {
+      hideLoader();
+
+      if (res.ok) {
+        const modalExito = new bootstrap.Modal(document.getElementById("modalEnvioExitoso"));
+        modalExito.show();
+      } else {
+        return res.json().then(data => {
+          alert(data.message || "Error al enviar los certificados.");
+        });
+      }
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      alert("Error al conectar con el servidor.");
+      hideLoader();
+    });
+  });
+}
