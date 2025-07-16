@@ -33,6 +33,7 @@ def inicio_asistente(request):
                     "eve_fecha_fin": evento.eve_fecha_fin,
                     "eve_imagen": evento.eve_imagen,
                     "asi_eve_estado": participacion.asi_eve_estado,
+                    "eve_memorias": evento.eve_memorias
                 })
                 
 

@@ -11,163 +11,165 @@
 {% endblock %}
 
 {% block content %}
-         <header class="header">
-        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-        <div class="header-logo-nombre">
-            {% if request.user.is_authenticated %}
-                <button class="abrir-menu" onclick="openMenu()">
-                    <i class="fa-solid fa-bars"></i>
-                    <span class="tooltiptext">Menú</span>
-                </button>
-            {% endif %}
-            <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo">
-            <h2>EventSoft</h2>
+<header class="header">
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <div class="header-logo-nombre">
+        {% if request.user.is_authenticated %}
+        <button class="abrir-menu" onclick="openMenu()">
+            <i class="fa-solid fa-bars"></i>
+            <span class="tooltiptext">Menú</span>
+        </button>
+        {% endif %}
+        <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo">
+        <h2>EventSoft</h2>
+    </div>
+
+    <div class="search-section">
+
+
+
+        {% if request.user.is_authenticated %}
+        <button class="filter-btn" style="text-decoration: none;" data-bs-toggle="offcanvas"
+            data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
+            <i class="fa-solid fa-user"></i>
+            <span class="filter-text"> Mi Perfil</span>
+        </button>
+        {% endif %}
+    </div>
+    {% block extra_content %}{% endblock %}
+
+</header>
+<div id="loader">
+    <div class="loader-content">
+        <div class="eventsoft-text">
+            <span class="loader-text">E</span>
+            <span class="loader-text">v</span>
+            <span class="loader-text">e</span>
+            <span class="loader-text">n</span>
+            <span class="loader-text">t</span>
+            <span class="loader-text">S</span>
+            <span class="loader-text">o</span>
+            <span class="loader-text">f</span>
+            <span class="loader-text">t</span>
+        </div>
+        <p class="loader-message" id="loader-message">Cargando...</p>
+    </div>
+</div>
+
+<!-- Overlay -->
+<div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
+<!-- Sidebar Menu -->
+<div id="sidebarMenu" class="sidebar-menu">
+    <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="menu-content">
+        <a class="btn-menu" href="{% url 'app_participante:ver_info_participante' %}">
+            <i class="fa-solid fa-user"></i> Mis inscripciones como participante
+        </a>
+        <a class="btn-menu" href="{% url 'app_asistente:inicio_asistente' %}">
+            <i class="fa-solid fa-user"></i> Mis inscripciones como asistente
+        </a>
+        <a class="btn-menu" href="{% url 'app_evaluador:principal_evaluador' %}">
+            <i class="fas fa-chalkboard-user"></i> Evaluador
+        </a>
+        <a class="btn-menu" href="{% url 'inicio_visitante' %}">
+            <i class="fas fa-chalkboard-user"></i> Vistante Web
+        </a>
+    </div>
+</div>
+<div class="offcanvas offcanvas-end" tabindex="-1" id="perfilSidebar" aria-labelledby="perfilSidebarLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="perfilSidebarLabel">Perfil del Usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"><i
+                class="fa-solid fa-x"></i></button>
+    </div>
+
+    <div class="offcanvas-body">
+        <!-- Elementos decorativos -->
+        <div class="decorative-circle top"></div>
+        <div class="decorative-circle bottom"></div>
+
+        <!-- Avatar del usuario -->
+        <div class="profile-avatar">
+            <i class="fas fa-user"></i>
         </div>
 
-       <div class="search-section">
+        <!-- Información del perfil -->
+        <div class="profile-info">
 
-
-
-            {% if request.user.is_authenticated %}
-                <button class="filter-btn" style="text-decoration: none;"  data-bs-toggle="offcanvas" data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
-                    <i class="fa-solid fa-user"></i>
-                    <span class="filter-text"> Mi Perfil</span>
-                </button>
-            {% endif %}
-        </div>
-        {% block extra_content %}{% endblock %}
-
-    </header>
-     <div id="loader">
-        <div class="loader-content">
-            <div class="eventsoft-text">
-                <span class="loader-text">E</span>
-                <span class="loader-text">v</span>
-                <span class="loader-text">e</span>
-                <span class="loader-text">n</span>
-                <span class="loader-text">t</span>
-                <span class="loader-text">S</span>
-                <span class="loader-text">o</span>
-                <span class="loader-text">f</span>
-                <span class="loader-text">t</span>
+            <!-- Nombre completo -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Nombre completo</div>
+                    <div class="profile-item-value">
+                        {{ request.user.first_name }}
+                        {% if request.user.segundo_nombre %}{{ request.user.segundo_nombre }}{% endif %}
+                        {{ request.user.last_name }}
+                        {% if request.user.segundo_apellido %}{{ request.user.segundo_apellido }}{% endif %}
+                    </div>
+                </div>
             </div>
-            <p class="loader-message" id="loader-message">Cargando...</p>
-        </div>
-    </div>
 
-    <!-- Overlay -->
-    <div id="overlay" class="overlay" onclick="closeMenu()"></div>
+            <!-- Correo electrónico -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Correo electrónico</div>
+                    <div class="profile-item-value">{{ request.user.email }}</div>
+                </div>
+            </div>
 
-    <!-- Sidebar Menu -->
-    <div id="sidebarMenu" class="sidebar-menu">
-        <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
-        <div class="menu-content">
-            <a class="btn-menu" href="{% url 'app_participante:ver_info_participante' %}">
-                <i class="fa-solid fa-user"></i> Mis inscripciones como participante
-            </a>
-            <a class="btn-menu" href="{% url 'app_asistente:inicio_asistente' %}">
-                <i class="fa-solid fa-user"></i> Mis inscripciones como asistente
-            </a>
-            <a class="btn-menu" href="{% url 'app_evaluador:principal_evaluador' %}">
-                <i class="fas fa-chalkboard-user"></i> Evaluador
-            </a>
-            <a class="btn-menu" href="{% url 'inicio_visitante' %}">
-                <i class="fas fa-chalkboard-user"></i> Vistante Web
-            </a>
-        </div>
-    </div>
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="perfilSidebar" aria-labelledby="perfilSidebarLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="perfilSidebarLabel">Perfil del Usuario</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"><i class="fa-solid fa-x"></i></button>
-  </div>
-  
-  <div class="offcanvas-body">
-    <!-- Elementos decorativos -->
-    <div class="decorative-circle top"></div>
-    <div class="decorative-circle bottom"></div>
-    
-    <!-- Avatar del usuario -->
-    <div class="profile-avatar">
-      <i class="fas fa-user"></i>
-    </div>
-    
-    <!-- Información del perfil -->
-    <div class="profile-info">
-      
-      <!-- Nombre completo -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Nombre completo</div>
-          <div class="profile-item-value">
-            {{ request.user.first_name }}
-            {% if request.user.segundo_nombre %}{{ request.user.segundo_nombre }}{% endif %}
-            {{ request.user.last_name }}
-            {% if request.user.segundo_apellido %}{{ request.user.segundo_apellido }}{% endif %}
-        </div>
-        </div>
-      </div>
-      
-      <!-- Correo electrónico -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fas fa-envelope"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Correo electrónico</div>
-          <div class="profile-item-value">{{ request.user.email }}</div>
-        </div>
-      </div>
-      
-      <!-- Nombre de usuario -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fas fa-at"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Usuario</div>
-          <div class="profile-item-value">{{ request.user.username }}</div>
-        </div>
-      </div>
+            <!-- Nombre de usuario -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fas fa-at"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Usuario</div>
+                    <div class="profile-item-value">{{ request.user.username }}</div>
+                </div>
+            </div>
 
-      <!-- Telefono -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fa-solid fa-phone"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Telefono</div>
-          <div class="profile-item-value">{{ request.user.telefono }}</div>
-        </div>
-      </div>
+            <!-- Telefono -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Telefono</div>
+                    <div class="profile-item-value">{{ request.user.telefono }}</div>
+                </div>
+            </div>
 
-      <!-- Fecha de nacimiento-->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fa-solid fa-calendar-days"></i>
+            <!-- Fecha de nacimiento-->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Fecha de Nacimiento</div>
+                    <div class="profile-item-value">{{ request.user.fecha_nacimiento }}</div>
+                </div>
+            </div>
+
+
         </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Fecha de Nacimiento</div>
-          <div class="profile-item-value">{{ request.user.fecha_nacimiento }}</div>
-        </div>
-      </div>
-      
-      
+        <!-- Botón para activar el modal (agregar donde necesites) -->
+        <button type="button" class="edit-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+            <i class="fas fa-edit"></i>
+            Editar Perfil
+        </button>
+        <!-- Botón de cerrar sesión -->
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Cerrar sesión
+        </a>
     </div>
-    <!-- Botón para activar el modal (agregar donde necesites) -->
-    <button type="button" class="edit-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-        <i class="fas fa-edit"></i>
-        Editar Perfil
-    </button>
-    <!-- Botón de cerrar sesión -->
-    <a href="{% url 'logout' %}" class="logout-btn">
-      <i class="fas fa-sign-out-alt"></i>
-      Cerrar sesión
-    </a>
-  </div>
 </div>
 
 <!-- Modal de Editar Perfil -->
@@ -179,7 +181,8 @@
                 <h5 class="modal-title" id="editProfileModalLabel">
                     <i class="fas fa-user-edit me-2"></i> Editar Perfil
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" style="filter: invert(1);"><i class="fa-solid fa-x"></i></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"
+                    style="filter: invert(1);"><i class="fa-solid fa-x"></i></button>
             </div>
 
             <!-- Cuerpo -->
@@ -193,44 +196,52 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="firstName" class="form-label">Primer Nombre</label>
-                            <input type="text" class="form-control" id="firstName" name="first_name" value="{{ request.user.first_name }}" required>
+                            <input type="text" class="form-control" id="firstName" name="first_name"
+                                value="{{ request.user.first_name }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="secondName" class="form-label">Segundo Nombre</label>
-                            <input type="text" class="form-control" id="secondName" name="segundo_nombre" value="{{ request.user.segundo_nombre|default:'' }}">
+                            <input type="text" class="form-control" id="secondName" name="segundo_nombre"
+                                value="{{ request.user.segundo_nombre|default:'' }}">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="lastName" class="form-label">Primer Apellido</label>
-                            <input type="text" class="form-control" id="lastName" name="last_name" value="{{ request.user.last_name }}" required>
+                            <input type="text" class="form-control" id="lastName" name="last_name"
+                                value="{{ request.user.last_name }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="secondLastName" class="form-label">Segundo Apellido</label>
-                            <input type="text" class="form-control" id="secondLastName" name="segundo_apellido" value="{{ request.user.segundo_apellido|default:'' }}">
+                            <input type="text" class="form-control" id="secondLastName" name="segundo_apellido"
+                                value="{{ request.user.segundo_apellido|default:'' }}">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Correo Electrónico</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ request.user.email }}" required>
+                            <input type="email" class="form-control" id="email" name="email"
+                                value="{{ request.user.email }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">Teléfono</label>
-                            <input type="tel" class="form-control" id="phone" name="telefono" value="{{ request.user.telefono|default:'' }}">
+                            <input type="tel" class="form-control" id="phone" name="telefono"
+                                value="{{ request.user.telefono|default:'' }}">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">Nombre de Usuario</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ request.user.username }}" required>
+                            <input type="text" class="form-control" id="username" name="username"
+                                value="{{ request.user.username }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
-                            <input type="date" class="form-control" id="birthDate" name="fecha_nacimiento" value="{{ request.user.fecha_nacimiento|date:'Y-m-d' }}">
+                            <input type="date" class="form-control" id="birthDate" name="fecha_nacimiento"
+                                value="{{ request.user.fecha_nacimiento|date:'Y-m-d' }}">
                         </div>
                     </div>
 
@@ -245,17 +256,20 @@
                     <div id="passwordFields" style="display: none;">
                         <div class="mb-3">
                             <label for="currentPassword" class="form-label">Contraseña Actual</label>
-                            <input type="password" class="form-control" id="currentPassword" name="current_password" placeholder="Ingresa tu contraseña actual">
+                            <input type="password" class="form-control" id="currentPassword" name="current_password"
+                                placeholder="Ingresa tu contraseña actual">
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="newPassword" class="form-label">Nueva Contraseña</label>
-                                <input type="password" class="form-control" id="newPassword" name="new_password" placeholder="Nueva contraseña">
+                                <input type="password" class="form-control" id="newPassword" name="new_password"
+                                    placeholder="Nueva contraseña">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
-                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirma la nueva contraseña">
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password"
+                                    placeholder="Confirma la nueva contraseña">
                             </div>
                         </div>
                     </div>
@@ -275,230 +289,255 @@
     </div>
 </div>
 
-        <main>
-            <h2 class="text-center my-4">Mis Inscripciones Asistentes</h2>
-            <input type="hidden" name="evento_id" value="123">
-    
-            <div class="contenedor-principal-de-eventos">
-                {% if eventos %}
-                    {% for evento in eventos %}
-                        <div class="card" style="width: 18rem;">
-                            <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ evento.eve_nombre }}</h5>
-                                <h6 class="card-subtitle mb-2 text-body-secondary">
-                                    <i class="fa-solid fa-calendar"></i> {{evento.eve_fecha_inicio}} - {{evento.eve_fecha_fin}}
-                                </h6>
-    
-                                {% if evento.asi_eve_estado == "Admitido" %}
-                                    <div style="display: flex;">Estado: 
-                                        <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
-                                    </div>
-                                    <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula = "{{cedula_participante}}">
-                                        <i class="fa-solid fa-eye"></i> Ver Información del Asistente
-                                    </button>
-    
-                                {% elif evento.asi_eve_estado == "Rechazado" %}
-                                    <div style="display: flex;">Estado: 
-                                        <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
-                                    </div>
-                                    <button type="button" class="btn-cancelar"
-                                                data-id="{{ evento.eve_id }}"
-                                                data-cedula="{{ cedula_participante }}">
-                                        Cancelar mi Inscripción
-                                    </button>
-    
-                                {% else %}
-                                    <div style="display: flex;">Estado: 
-                                        <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
-                                    </div>
-                                        <button type="button" class="btn-cancelar"
-                                                data-id="{{ evento.eve_id }}"
-                                                data-cedula="{{ cedula_participante }}">
-                                        Cancelar mi Inscripción
-                                        </button>
-                                {% endif %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center my-5">
-                        <h4 class="text-muted">No estás inscrito en ningún evento actualmente.</h4>
-                        <p class="text-secondary">Explora los eventos disponibles y regístrate para participar.</p>
-                    </div>
-                {% endif %}
-    
+<main>
+    <h2 class="text-center my-4">Mis Inscripciones Asistentes</h2>
+    <input type="hidden" name="evento_id" value="123">
+    {% now "Y-m-d" as hoy %}
+    <div class="contenedor-principal-de-eventos">
+        {% if eventos %}
+        {% for evento in eventos %}
+        <div class="card" style="width: 18rem;">
+            <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
+            <div class="card-body">
+                <h5 class="card-title">{{ evento.eve_nombre }}</h5>
+                <h6 class="card-subtitle mb-2 text-body-secondary">
+                    <i class="fa-solid fa-calendar"></i> {{evento.eve_fecha_inicio}} - {{evento.eve_fecha_fin}}
+                </h6>
+
+                {% if evento.asi_eve_estado == "Admitido" %}
+                <div style="display: flex;">Estado:
+                    <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
+                </div>
                 
+                {% if hoy > evento.eve_fecha_fin|stringformat:"s" %}
+                <div class="alert alert-success mt-2 py-2 px-3 small" role="alert">
+                    <i class="fa-solid fa-check-circle me-1"></i> Evento terminado. ¡Muchas gracias por tu
+                    participación!
+                </div>
+                 {% if evento.eve_memorias %}
+                <a href="{{ evento.eve_memorias }}" class="btn-ver-mas" target="_blank">
+                    <i class="fa-solid fa-file-pdf"></i> Ver Memorias del Evento
+                </a>
+                {% else %}
+                <div class="alert alert-success mt-2 mb-0 py-2 px-3 small" role="alert">
+                    <i class="fa-solid fa-circle-info"></i> No se han subido las memorias del evento.
+                </div>
+                {% endif %}
+                {% else %}
+                <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula="{{cedula_participante}}">
+                    <i class="fa-solid fa-eye"></i> Ver Información del Asistente
+                </button>
+                <button class="btn-ver-mas" onclick="abrirCompartir(
+            '{{ evento.eve_nombre|escapejs }}',
+            '{{ evento.eve_fecha_inicio }}',
+            '{{ evento.eve_fecha_fin }}',
+            '{{ evento.eve_lugar|escapejs }}',
+            '{{ evento.eve_descripcion|escapejs }}',
+            '{{ request.build_absolute_uri }}'
+        )">
+                    <i class="fas fa-share-alt"></i> Compartir Evento
+                </button>
+                {% endif %}
+
+                {% elif evento.asi_eve_estado == "Rechazado" %}
+                <div style="display: flex;">Estado:
+                    <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
+                </div>
+                <button type="button" class="btn-cancelar" data-id="{{ evento.eve_id }}"
+                    data-cedula="{{ cedula_participante }}">
+                    Cancelar mi Inscripción
+                </button>
+
+                {% else %}
+                <div style="display: flex;">Estado:
+                    <p class="card-text" style="color: #007832;"> {{ evento.asi_eve_estado }}</p>
+                </div>
+                <button type="button" class="btn-cancelar" data-id="{{ evento.eve_id }}"
+                    data-cedula="{{ cedula_participante }}">
+                    Cancelar mi Inscripción
+                </button>
+                {% endif %}
             </div>
-        </main>
-
-         <!-- Modal -->
-        <div class="modal fade" id="eventoModalD" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      
-      <div class="modal-header">
-        <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-        <h5 id="modalNombre"></h5>
-
-        <p><strong><i class="fa-solid fa-file-lines"></i> Descripción:</strong> <span id="modalDescripcion"></span></p>
-        <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
-        <p><strong><i class="fa-solid fa-location-dot"></i> Lugar:</strong> <span id="modalLugar"></span></p>
-        <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
-        <p><strong><i class="fa-solid fa-list"></i> Categoría:</strong> <span id="modalCategoria"></span></p>
-        <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
-        <p><strong><i class="fa-solid fa-pencil"></i> Inscripción:</strong> <span id="modalInscripcion"></span></p>
-        <p><strong><i class="fa-solid fa-key"></i> Clave de Acceso:</strong> <span id="modalClave"></span></p>
-
-        <div class="modal-programacion mb-2">
-          <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
-          <a id="modalProgramacion" target="_blank" class="me-2"><i class="fa-solid fa-eye"></i></a>
-          <a id="modalProgramacionDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
         </div>
-
-        <div class="modal-programacion mb-2">
-          <p><strong><i class="fa-solid fa-qrcode"></i> Código QR:</strong></p>
-          <a id="modalCodigoQr" target="_blank" class="me-2"><i class="fa-solid fa-eye"></i></a>
-          <a id="modalCodigoQrDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
+        {% endfor %}
+        {% else %}
+        <div class="text-center my-5">
+            <h4 class="text-muted">No estás inscrito en ningún evento actualmente.</h4>
+            <p class="text-secondary">Explora los eventos disponibles y regístrate para participar.</p>
         </div>
+        {% endif %}
 
-      
-
-        <img
-          id="modalImagen"
-          src=""
-          alt="Imagen del evento"
-          class="img-fluid"
-          style="width: 100%; height: 300px; object-fit: contain;"
-        />
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" id="btnAbrirConfirmarCancelar" class="btn-ver-mas">
-          Cancelar mi Inscripción
-        </button>
-      </div>
 
     </div>
-  </div>
+</main>
+
+<!-- Modal -->
+<div class="modal fade" id="eventoModalD" tabindex="-1" aria-labelledby="eventoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <h5 id="modalNombre"></h5>
+
+                <p><strong><i class="fa-solid fa-file-lines"></i> Descripción:</strong> <span
+                        id="modalDescripcion"></span></p>
+                <p><strong><i class="fa-solid fa-city"></i> Ciudad:</strong> <span id="modalCiudad"></span></p>
+                <p><strong><i class="fa-solid fa-location-dot"></i> Lugar:</strong> <span id="modalLugar"></span></p>
+                <p><strong><i class="fa-solid fa-calendar-days"></i> Fecha:</strong> <span id="modalFecha"></span></p>
+                <p><strong><i class="fa-solid fa-list"></i> Categoría:</strong> <span id="modalCategoria"></span></p>
+                <p><strong><i class="fa-solid fa-users"></i> Aforo:</strong> <span id="modalAforo"></span></p>
+                <p><strong><i class="fa-solid fa-pencil"></i> Inscripción:</strong> <span id="modalInscripcion"></span>
+                </p>
+                <p><strong><i class="fa-solid fa-key"></i> Clave de Acceso:</strong> <span id="modalClave"></span></p>
+
+                <div class="modal-programacion mb-2">
+                    <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
+                    <a id="modalProgramacion" target="_blank" class="me-2"><i class="fa-solid fa-eye"></i></a>
+                    <a id="modalProgramacionDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
+                </div>
+
+                <div class="modal-programacion mb-2">
+                    <p><strong><i class="fa-solid fa-qrcode"></i> Código QR:</strong></p>
+                    <a id="modalCodigoQr" target="_blank" class="me-2"><i class="fa-solid fa-eye"></i></a>
+                    <a id="modalCodigoQrDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
+                </div>
+
+
+
+                <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid"
+                    style="width: 100%; height: 300px; object-fit: contain;" />
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="btnAbrirConfirmarCancelar" class="btn-ver-mas">
+                    Cancelar mi Inscripción
+                </button>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 
-        <!-- Modal de confirmación -->
-<div class="modal fade" id="confirmarCancelarModal" tabindex="-1" aria-labelledby="confirmarCancelarLabel" aria-hidden="true">
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmarCancelarModal" tabindex="-1" aria-labelledby="confirmarCancelarLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header  text-dark">
-          <h5 class="modal-title" id="confirmarCancelarLabel">¿Cancelar inscripción?</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <div class="modal-content">
+            <div class="modal-header  text-dark">
+                <h5 class="modal-title" id="confirmarCancelarLabel">¿Cancelar inscripción?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas cancelar tu inscripción a este evento?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarCancelar">Sí, cancelar</button>
+            </div>
         </div>
-        <div class="modal-body">
-          ¿Estás seguro de que deseas cancelar tu inscripción a este evento?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-          <button type="button" class="btn btn-danger" id="btnConfirmarCancelar">Sí, cancelar</button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
 
-  <script>
+<script>
     const urlDetalleEvento = "{% url 'app_asistente:evento_asistentes' 123 456 %}";
     const urlEliminarInscripcion = "{% url 'app_asistente:cancelar_inscripcion' 123 456 %}";
-  </script>
-   <script>
-        function openMenu() {
-            document.getElementById("sidebarMenu").style.left = "0";
-            document.getElementById("overlay").style.display = "block";
-        }
-
-            function closeMenu() {
-            document.getElementById("sidebarMenu").style.left = "-350px";
-            document.getElementById("overlay").style.display = "none";
-        }
-    </script>
-    <!-- Validación JS en tiempo real -->
+</script>
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const changePasswordCheckbox = document.getElementById("changePassword");
-    const passwordFields = document.getElementById("passwordFields");
-    const newPasswordInput = document.getElementById("newPassword");
-    const confirmPasswordInput = document.getElementById("confirmPassword");
-    const currentPasswordInput = document.getElementById("currentPassword");
-    const errorBox = document.getElementById("passwordValidationErrors");
-    const saveButton = document.getElementById("saveProfileBtn");
-
-    function validatePasswordFields() {
-        const currentPassword = currentPasswordInput.value;
-        const newPassword = newPasswordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
-
-        let errors = [];
-
-        if (!currentPassword) {
-            errors.push("Debes ingresar la contraseña actual.");
-        }
-
-        if (newPassword.length < 8) {
-            errors.push("La nueva contraseña debe tener al menos 8 caracteres.");
-        }
-
-        if (/^\d+$/.test(newPassword)) {
-            errors.push("La contraseña no puede ser completamente numérica.");
-        }
-
-        if (newPassword && confirmPassword && newPassword !== confirmPassword) {
-            errors.push("La confirmación de la contraseña no coincide.");
-        }
-
-        showErrors(errors);
-        return errors.length === 0;
+    function openMenu() {
+        document.getElementById("sidebarMenu").style.left = "0";
+        document.getElementById("overlay").style.display = "block";
     }
 
-    function showErrors(errors) {
-        if (errors.length > 0) {
-            const list = errors.map(e => `<li>${e}</li>`).join('');
-            errorBox.innerHTML = `<ul class="mb-0">${list}</ul>`;
-            errorBox.classList.remove("d-none");
-        } else {
-            errorBox.innerHTML = '';
-            errorBox.classList.add("d-none");
+    function closeMenu() {
+        document.getElementById("sidebarMenu").style.left = "-350px";
+        document.getElementById("overlay").style.display = "none";
+    }
+</script>
+<!-- Validación JS en tiempo real -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const changePasswordCheckbox = document.getElementById("changePassword");
+        const passwordFields = document.getElementById("passwordFields");
+        const newPasswordInput = document.getElementById("newPassword");
+        const confirmPasswordInput = document.getElementById("confirmPassword");
+        const currentPasswordInput = document.getElementById("currentPassword");
+        const errorBox = document.getElementById("passwordValidationErrors");
+        const saveButton = document.getElementById("saveProfileBtn");
+
+        function validatePasswordFields() {
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            let errors = [];
+
+            if (!currentPassword) {
+                errors.push("Debes ingresar la contraseña actual.");
+            }
+
+            if (newPassword.length < 8) {
+                errors.push("La nueva contraseña debe tener al menos 8 caracteres.");
+            }
+
+            if (/^\d+$/.test(newPassword)) {
+                errors.push("La contraseña no puede ser completamente numérica.");
+            }
+
+            if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+                errors.push("La confirmación de la contraseña no coincide.");
+            }
+
+            showErrors(errors);
+            return errors.length === 0;
         }
-    }
 
-    function clearErrors() {
-        errorBox.innerHTML = "";
-        errorBox.classList.add("d-none");
-    }
-
-    changePasswordCheckbox.addEventListener("change", function () {
-        passwordFields.style.display = this.checked ? "block" : "none";
-        if (!this.checked) clearErrors();
-    });
-
-    newPasswordInput.addEventListener("input", validatePasswordFields);
-    confirmPasswordInput.addEventListener("input", validatePasswordFields);
-    currentPasswordInput.addEventListener("input", validatePasswordFields);
-
-    saveButton.addEventListener("click", function (e) {
-        if (changePasswordCheckbox.checked) {
-            const isValid = validatePasswordFields();
-            if (!isValid) {
-                return;
+        function showErrors(errors) {
+            if (errors.length > 0) {
+                const list = errors.map(e => `<li>${e}</li>`).join('');
+                errorBox.innerHTML = `<ul class="mb-0">${list}</ul>`;
+                errorBox.classList.remove("d-none");
+            } else {
+                errorBox.innerHTML = '';
+                errorBox.classList.add("d-none");
             }
         }
-        document.getElementById("editProfileForm").submit();
+
+        function clearErrors() {
+            errorBox.innerHTML = "";
+            errorBox.classList.add("d-none");
+        }
+
+        changePasswordCheckbox.addEventListener("change", function () {
+            passwordFields.style.display = this.checked ? "block" : "none";
+            if (!this.checked) clearErrors();
+        });
+
+        newPasswordInput.addEventListener("input", validatePasswordFields);
+        confirmPasswordInput.addEventListener("input", validatePasswordFields);
+        currentPasswordInput.addEventListener("input", validatePasswordFields);
+
+        saveButton.addEventListener("click", function (e) {
+            if (changePasswordCheckbox.checked) {
+                const isValid = validatePasswordFields();
+                if (!isValid) {
+                    return;
+                }
+            }
+            document.getElementById("editProfileForm").submit();
+        });
     });
-});
 </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"></script>
-  <script src="{% static 'app_asistente/js/asistentes_eventos.js'%}"></script>
-    <script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
-    <script src="{% static 'app_administrador/js/modaleditarperfil.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"></script>
+<script src="{% static 'app_asistente/js/asistentes_eventos.js'%}"></script>
+<script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
+<script src="{% static 'app_administrador/js/modaleditarperfil.js' %}"></script>
 {% endblock %}

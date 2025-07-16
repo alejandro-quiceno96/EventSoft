@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
         button.addEventListener("click", function () {
             let eventoId = this.getAttribute("data-id");
             let participanteId = this.getAttribute("data-cedula")
-            let url =  urlTemplate.replace('/123/', `/${eventoId}/`).replace('/456', `/${participanteId}`);
+            let url =  urlDetalleEvento.replace('/123/', `/${eventoId}/`).replace('/456', `/${participanteId}`);
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
