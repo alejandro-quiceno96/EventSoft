@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Certificado</title>
+  <link rel="stylesheet" href="{% static 'app_administrador/css/pdf_certificado.css' %}">
+  <style>
+    {% if certificado.orientacion == 'horizontal' %}
+    @page {
+      size: 11in 8.5in;
+      margin: 0;
+    }
+    {% else %}
+    @page {
+      size: 8.5in 11in;
+      margin: 0;
+    }
+    {% endif %}
+  </style>
+</head>
+<body style="background-image: url('{{ certificado.diseño.url }}'); font-family: {{ certificado.tipografia }}; background-size: cover;">
+  <div class="preview-certificado">
+    <div id="nombre_genera_certificado">{{ certificado.certifica }}</div>
+
+    <div id="constar" class="constar">CERTIFICA:</div>
+
+   <div id="preview-texto" class="preview-texto">
+  Que <strong>{{ nombre_participante|default:"Nombre del participante" }}</strong>, identificado(a) con el número de documento <strong>{{ documento_participante|default:"###########" }}</strong>, partició en el evento <strong>{{ evento.eve_nombre|default:"nombre del evento" }}</strong>, llevado a cabo el día <strong>{{ fecha_inicio|default:"fecha del evento" }}</strong>, obteniendo el <strong>PRIMER LUGAR</strong> por su destacada participación.
+</div>
+
+
+    <div id="preview-lugar-fecha" class="preview-lugar-fecha">
+      Para constancia se expide en {{ certificado.lugar_expedicion }}, el dia {{ now}}
+
+    </div>
+
+    {% if certificado.firma %}
+    <div class="preview-firma-container">
+      <img src="{{ certificado.firma.url }}" class="preview-firma" style="display: block;">
+      <div class="preview-nombre">{{ certificado.firma_nombre }}</div>
+      <div class="preview-cargo">{{ certificado.firma_cargo }}</div>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

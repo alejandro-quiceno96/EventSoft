@@ -79,7 +79,7 @@
     <table>
         <thead>
             <tr>
-                <th>#</th>
+                <th>Cedula</th>
                 <th>Participante</th>
                 <th>Promedio</th>
             </tr>
@@ -87,7 +87,7 @@
         <tbody>
             {% for p in ranking %}
             <tr>
-                <td>{{ forloop.counter }}</td>
+                <td>{{ p.cedula }}</td>
                 <td style="text-align: left;">{{ p.nombre }}</td>
                 <td><strong>{{ p.promedio|floatformat:2 }}</strong></td>
             </tr>

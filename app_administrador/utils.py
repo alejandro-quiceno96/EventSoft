@@ -106,6 +106,7 @@ def obtener_ranking(evento_id):
         participante = Participantes.objects.get(id=participante_id)
         ranking.append({
             'id': participante.usuario.id,
+            'cedula': participante.usuario.documento_identidad,
             'nombre': participante.usuario.first_name + " " + participante.usuario.last_name,
             'promedio': round(promedio, 2)
         })
@@ -155,3 +156,35 @@ def generar_certificados(request, evento_id, tipo, usuario):
     pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
     return pdf_file
 
+def generar_reconocmiento(request, evento_id, usuario):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    certificado = get_object_or_404(Certificado, evento_fk=evento)
+    
+    participante = get_object_or_404(Participantes, id=usuario)
+    # Configurar fecha en español
+    try:
+        locale.setlocale(locale.LC_TIME, 'es_CO.UTF-8')
+    except locale.Error:
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+
+    fecha_formateada = datetime.now().strftime('%d de %B de %Y')
+    fecha_inicio = evento.eve_fecha_inicio.strftime('%d de %B de %Y')
+
+    # Renderizar plantilla HTML con datos del certificado
+    html_string = render_to_string('app_administrador/pdf_certificado_primer_lugar.html', {
+        'certificado': certificado,
+        'evento': evento,
+        'now': fecha_formateada,
+        'nombre_participante': " ".join(filter(None, [
+            participante.usuario.first_name.upper(),
+            participante.usuario.segundo_nombre.upper() ,
+            participante.usuario.last_name.upper(),
+            participante.usuario.segundo_apellido.upper()
+        ])),
+        'documento_participante': participante.usuario.documento_identidad,
+        'fecha_inicio': fecha_inicio,
+    })
+
+    # Generar PDF
+    pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
+    return pdf_file

@@ -21,38 +21,122 @@
     />
 
     <style>
-      .extra-buttons {
-        display: none;
-        margin-top: 10px;
-      }
-
       .modal-compartir {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-      }
+  display: none; /* Se muestra con JS */
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+  font-family: 'Work Sans', sans-serif;
+}
 
-      .modal-contenido {
-        background: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 500px;
-        text-align: center;
-      }
+.modal-contenido {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 30px 40px;
+  border-radius: 12px;
+  max-width: 500px;
+  position: relative;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
 
-      .cerrar {
-        float: right;
-        font-size: 1.5rem;
-        cursor: pointer;
-      }
+.cerrar {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+.titulo-modal {
+  margin-bottom: 25px;
+  font-size: 22px;
+  color: #007832;
+}
+
+.botones-compartir {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.btn-compartir {
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.btn-compartir i {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.btn-compartir.whatsapp { background-color: #25D366; }
+.btn-compartir.correo   { background-color: #007832; }
+.btn-compartir.telegram { background-color: #0088cc; }
+
+.btn-compartir:hover {
+  opacity: 0.9;
+}
+
+.btn-copiar {
+  background-color: transparent;
+  border: 2px solid #007832;
+  color: #007832;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-copiar:hover {
+  background-color: #007832;
+  color: white;
+}
+
+
+      .inscripcion-alert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e6f4ea;
+  border-left: 5px solid #007832;
+  border-radius: 10px;
+  padding: 15px 20px;
+  font-family: 'Work Sans', sans-serif;
+  color: #2b4a2d;
+  margin: 20px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.inscripcion-alert .icono-check {
+  font-size: 28px;
+  color: #007832;
+  margin-right: 15px;
+}
+
+.inscripcion-alert .texto-alerta {
+  font-size: 18px;
+  font-weight: 500;
+}
+
     </style>
   </head>
 
@@ -101,89 +185,84 @@
             <i class="fas fa-file-alt"></i> Ver programación
           </a>
 
-          <div class="action-buttons">
-            {% if usuario_inscrito_asistente %}
-            <button class="action-btn disabled" disabled>
-              <i class="fas fa-check"></i> Ya estás inscrito como asistente
-            </button>
-            {% else %}
-            <a
-              href="{% url 'preinscripcion_asistente' evento.id %}"
-              class="action-btn"
-            >
-              <i class="fas fa-user"></i> Preinscribirme como asistente
-            </a>
-            {% endif %}
+         <div class="action-buttons">
 
-            <button class="action-btn-outline" onclick="mostrarOpciones()">
-              Más opciones
-            </button>
+  {% if usuario_inscrito_asistente or usuario_inscrito_participante or usuario_inscrito_evaluador %}
+  <div class="inscripcion-alert shadow-sm">
+    <div class="icono-check">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="texto-alerta">
+      {% if usuario_inscrito_asistente %}
+        Ya estás inscrito como <strong>asistente</strong>.
+      {% elif usuario_inscrito_participante %}
+        Ya estás inscrito como <strong>participante</strong>.
+      {% elif usuario_inscrito_evaluador %}
+        Ya estás inscrito como <strong>evaluador</strong>.
+      {% endif %}
+    </div>
+  </div>
 
-            <div id="opciones-ocultas" class="extra-buttons">
-              {% if usuario_inscrito_participante %}
-              <button class="action-btn disabled" disabled>
-                <i class="fas fa-check"></i> Ya estás inscrito como participante
-              </button>
-              {% else %}
-              <a
-                href="{% url 'preinscripcion_participante' evento.id %}"
-                class="action-btn"
-              >
-                <i class="fas fa-pen"></i> Preinscribirme como participante
-              </a>
-              {% endif %} {% if usuario_inscrito_evaluador %}
-              <button class="action-btn disabled" disabled>
-                <i class="fas fa-check"></i> Ya estás inscrito como evaluador
-              </button>
-              {% else %}
-              <a
-                href="{% url 'preinscripcion_evaluador' evento.id %}"
-                class="action-btn"
-              >
-                <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como
-                Evaluador
-              </a>
-              {% endif %}
-            </div>
-          </div>
+
+  {% else %}
+    <!-- Mostrar opciones de inscripción solo si NO está inscrito en nada -->
+    <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
+      <i class="fas fa-user"></i> Preinscribirme como asistente
+    </a>
+
+    <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
+
+    <div id="opciones-ocultas" class="extra-buttons">
+      <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
+        <i class="fas fa-pen"></i> Preinscribirme como participante
+      </a>
+
+      <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
+        <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como Evaluador
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+
 
           <!-- Botón Compartir -->
           <button class="action-btn-outline" onclick="abrirCompartir()">
-            <i class="fas fa-share-alt"></i>
+            <i class="fas fa-share-alt"></i> Compartir Evento
           </button>
         </div>
       </div>
     </div>
 
     <!-- MODAL COMPARTIR -->
-    <div id="modal-compartir" class="modal-compartir">
-      <div class="modal-contenido">
-        <span class="cerrar" onclick="cerrarCompartir()">&times;</span>
-        <h3>Compartir este evento</h3>
+<div id="modal-compartir" class="modal-compartir">
+  <div class="modal-contenido">
+    <span class="cerrar" onclick="cerrarCompartir()">&times;</span>
+    <h3 class="titulo-modal">📣 Compartir este evento</h3>
 
-        <a
-          href="https://wa.me/?text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}"
-          target="_blank"
-        >
-          <i class="fab fa-whatsapp"></i> WhatsApp </a
-        ><br />
+    <div class="botones-compartir">
+      <a class="btn-compartir whatsapp" target="_blank"
+        href="https://wa.me/?text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
+        <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
+      </a>
 
-        <a
-          href="mailto:?subject=Te invito a este evento&body=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}"
-        >
-          <i class="fas fa-envelope"></i> Correo </a
-        ><br />
+      <a class="btn-compartir correo"
+        href="mailto:?subject=Te invito a este evento&body=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
+        <i class="fas fa-envelope"></i> Compartir por Correo
+      </a>
 
-        <a
-          href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}"
-          target="_blank"
-        >
-          <i class="fab fa-telegram"></i> Telegram </a
-        ><br />
+      <a class="btn-compartir telegram" target="_blank"
+        href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}">
+        <i class="fab fa-telegram"></i> Compartir por Telegram
+      </a>
 
-        <button onclick="copiarTexto()">📋 Copiar mensaje</button>
-      </div>
+      <button onclick="copiarTexto()" class="btn-copiar">
+        📋 Copiar mensaje
+      </button>
     </div>
+  </div>
+</div>
+
 
     <script>
       function mostrarOpciones() {
