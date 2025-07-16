@@ -19,7 +19,7 @@ from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
-from django.contrib import messages
+from django.contrib import messages 
 
 
 @csrf_exempt
@@ -68,7 +68,8 @@ def info_participantes_eventos(request):
                 "par_eve_estado": participacion.par_eve_estado,
                 "calificacion": round(promedio, 2) if promedio is not None else "Sin calificar",
                 "comentarios": comentarios,
-                "eve_memorias": evento.eve_memorias
+                "eve_memorias": evento.eve_memorias,
+
             })
         # Ordenar eventos por fecha de inicio
         return render(request, 'app_participantes/eventos_participante.html', {
@@ -130,7 +131,10 @@ def evento_detalle_participante(request, evento_id, participante_id):
         'eve_categoria': categoria_nombre,
         'eve_clave': clave_acceso.par_eve_clave,
         'codigo_qr': clave_acceso.par_eve_qr.url,
-        'cedula': participante_id
+        'cedula': participante_id,
+        "eve_informacion_tecnica": evento.eve_informacion_tecnica.url,
+        
+        
     }
 
     return JsonResponse(datos_evento)

@@ -46,11 +46,6 @@
                 </div>
                 {% endif %}
         {% else %}
-        {% if evento.calificacion == "Sin calificar" %}
-        <span class="text-muted fst-italic">Calificación: {{ evento.calificacion }}</span>
-        {% else %}
-        <span class="badge bg-success">Calificación: {{ evento.calificacion }}</span>
-        {% endif %}
 
         <button class="btn-ver-mas" data-id="{{ evento.eve_id }}" data-cedula="{{ cedula_participante }}">
           <i class="fa-solid fa-eye"></i> Ver Información
@@ -69,26 +64,30 @@
           <i class="fas fa-share-alt"></i> Compartir Evento
         </button>
         {% endif %}
-
+        
         {% elif evento.par_eve_estado == "Rechazado" %}
         <div style="display: flex;">Estado:
           <p class="card-text" style="color: rgb(158, 28, 28);"> {{ evento.par_eve_estado }}</p>
         </div>
-        <button type="button" class="btn-cancelar" data-id="{{ evento.eve_id }}"
-          data-cedula="{{ cedula_participante }}">
+        <button type="button" class="btn-cancelar"
+        data-id="{{ evento.eve_id }}"
+        data-cedula="{{ participante.usuario.documento_identidad }}"
+        data-bs-toggle="modal"
+        data-bs-target="#confirmarCancelarModal">
           Cancelar mi Inscripción
         </button>
+
 
         {% else %}
         <div style="display: flex;">Estado:
           <p class="card-text" style="color: rgb(199, 80, 12);"> {{ evento.par_eve_estado }}</p>
         </div>
         <button class="btn-modificar-participante btn-abrir-editar-externo" data-id="{{ evento.eve_id }}"
-          data-cedula="{{cedula_participante}}">
+          data-cedula="{{participante.usuario.documento_identidad}}">
           Modificar Información de Inscripción
         </button>
         <button type="button" class="btn-cancelar" data-id="{{ evento.eve_id }}"
-          data-cedula="{{ cedula_participante }}">
+          data-cedula="{{ participante.usuario.documento_identidad }}">
           Cancelar mi Inscripción
         </button>
         {% endif %}
@@ -116,6 +115,9 @@
         <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      
+
+
       <div class="modal-body">
         <h5 id="modalNombre"></h5>
         <p><strong>Descripción:</strong> <span id="modalDescripcion"></span></p>
@@ -138,6 +140,11 @@
           <p><strong><i class="fa-solid fa-qrcode"></i> Codigo Qr:</strong></p>
           <a id="modalCodigoQr" target="_blank"><i class="fa-solid fa-eye"></i></a>
           <a id="modalCodigoQrDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
+        </div>
+        <div class="modal-programacion">
+          <p><strong><i class="fa-solid fa-qrcode"></i> Informacion Técnica</strong></p>
+          <a id="modalTecnica" target="_blank"><i class="fa-solid fa-eye"></i></a>
+          <a id="modalTecnicaDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
         </div>
 
         <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid" style="width: 100%;
@@ -201,6 +208,7 @@
               <i class="fa-solid fa-eye"></i> Ver documento
             </a>
           </div>
+          
 
           <!-- Subir nuevo documento -->
           <div class="mb-3">
@@ -260,6 +268,7 @@
 </script>
 
 <script>
+  
   let mensajeCompartir = "";
 
   // Función para abrir el modal y actualizar enlaces con datos del evento
@@ -284,6 +293,26 @@
       alert('¡Mensaje copiado! Puedes pegarlo donde quieras.');
     });
   }
+</script>
+<script>
+  let eventoIdCancelar = null;
+  let participanteCedula = null;
+
+  // Cuando se abre el modal por un botón con clase .btn-cancelar
+  document.querySelectorAll('.btn-cancelar').forEach(button => {
+    button.addEventListener('click', function () {
+      eventoIdCancelar = this.dataset.id;
+      participanteCedula = this.dataset.cedula;
+    });
+  });
+
+  // Al confirmar cancelación
+  document.getElementById('btnConfirmarCancelar').addEventListener('click', function () {
+    if (eventoIdCancelar && participanteCedula) {
+      // Redirige a una URL de Django para cancelar
+      window.location.href = `/participante/cancelar_inscripcion/${eventoIdCancelar}/${participanteCedula}/`;
+    }
+  });
 </script>
 
 

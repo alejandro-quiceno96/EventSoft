@@ -4,6 +4,13 @@ from collections import defaultdict
 from app_eventos.models import Eventos
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
+from app_usuarios.models import Usuario
+from app_administrador.models import Administradores
+from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.http import require_POST
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from datetime import datetime
 
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def index(request):
@@ -85,3 +92,65 @@ def editar_perfil(request):
         return redirect('super_admin:index_super_admin')
 
     return redirect('super_admin:index_super_admin')  # Redirige a la página de inicio si no es POST
+
+def gestionar_usuarios(request):
+    # Todos los administradores actuales (IDs de usuario)
+    admins_ids = Administradores.objects.values_list('usuario_id', flat=True)
+
+    # Usuarios que no son superusuario y no están en la tabla Administradores
+    usuarios_no_admin = Usuario.objects.exclude(is_superuser=True).exclude(id__in=admins_ids)
+
+    # Usuarios que ya están como administradores
+    administradores = Administradores.objects.select_related('usuario')
+
+    return render(request, 'app_super_admin/asignar_nuevo_admin_eventos.html', {
+        'usuarios_no_admin': usuarios_no_admin,
+        'administradores': administradores,
+    })
+    
+def asignar_admin_evento(request):
+    usuario_id = request.POST.get('usuario_id')
+    eventos_maximos = request.POST.get('eventos')
+    fecha_limite = request.POST.get('fecha_limite')
+    codigo = request.POST.get('codigo')
+
+    if not all([usuario_id, eventos_maximos, fecha_limite, codigo]):
+        return HttpResponseBadRequest("Faltan campos obligatorios.")
+
+    try:
+        usuario = Usuario.objects.get(id=usuario_id)
+
+        Administradores.objects.create(
+            usuario=usuario,
+            num_eventos=int(eventos_maximos),
+            tiempo_limite=fecha_limite,
+            estado="Creado",
+            clave_acceso=codigo
+        )
+
+        # Enviar correo
+        html_content = render_to_string('app_super_admin/correos/asignar_rol.html', {
+            'nombre': usuario.get_full_name(),
+            'clave': codigo,
+            'fecha_limite': fecha_limite,
+            'num_eventos': eventos_maximos,
+            'nombre_usuario': usuario.username,
+            'año_actual': datetime.now().year,
+        })
+
+        subject = 'Asignación de rol como Administrador de Eventos'
+        from_email = 'eventsoft3@gmail.com'
+        to = [usuario.email]
+
+        msg = EmailMultiAlternatives(subject, '', from_email, to)
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+
+        return JsonResponse({"success": True}, content_type="application/json")
+
+
+    except Usuario.DoesNotExist:
+        return JsonResponse({"error": "Usuario no encontrado."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
