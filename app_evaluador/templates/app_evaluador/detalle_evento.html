@@ -154,13 +154,10 @@
             <div class="info-item">
                 <div class="info-label">Información técnica</div>
                 <div class="info-value">
-                    {% if evento.eve_informacion_tecnica %}
-                    <a href="{{ evento.eve_informacion_tecnica.url }}" target="_blank" class="pdf-link" download>
-                        <i class="fa-solid fa-download"></i> Descargar Información Técnica
-                    </a>
-                    {% else %}
-                    <span class="text-muted">No se ha subido ningún archivo</span>
-                    {% endif %}
+                    {% if evento_obj.eve_informacion_tecnica %}
+                <a href="{{ evento_obj.eve_informacion_tecnica.url }}" target="_blank">Ver archivo</a>
+                {% endif %}
+
                 </div>
             </div>
 
@@ -266,8 +263,9 @@
 <div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="post" enctype="multipart/form-data" action="{% url 'app_evaluador:subir_info_tecnica' evento_obj.id %}">
+            <form method="post" enctype="multipart/form-data" action="{% url 'app_evaluador:subir_info_tecnica' evento_obj.id  %}">
                 {% csrf_token %}
+                <input type="hidden" name="cedula" value="{{ evaluador.id }}"> 
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalSubirInfoTecnicaLabel">
                         <i class="fa-solid fa-upload"></i> Subir Información Técnica
@@ -294,5 +292,6 @@
         </div>
     </div>
 </div>
+
 
 {% endblock %}

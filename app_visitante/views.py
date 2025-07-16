@@ -142,13 +142,12 @@ def inicio_visitante(request):
 
 
 
-
-
 def inicio_sesion_administrador(request):
     return render(request, 'app_visitante/inicio_sesion_administrador.html')
 
 def inicio_evaluador(request):
     return render(request, 'app_visitante/inicio_sesion_evaluador.html')
+
 
 def detalle_evento(request, evento_id):
     """
@@ -165,13 +164,30 @@ def detalle_evento(request, evento_id):
         eva_eve_evento_fk=evento_id
     ).select_related('eva_eve_evaluador_fk')
     
+    asistentes = AsistentesEventos.objects.filter(
+        asi_eve_evento_fk=evento_id
+    ).select_related('asi_eve_asistente_fk')
+
+    # Calcular totales
+    total_participantes = participantes.count()
+    total_evaluadores = evaluadores.count()
+    total_asistentes = asistentes.count()
+    total_inscritos = total_participantes + total_evaluadores + total_asistentes
+
     # Determinar roles del usuario actual
     roles = []
     usuario_inscrito = False
-    
+    usuario_inscrito_participante = False
+    usuario_inscrito_evaluador = False
+    usuario_inscrito_asistente = False
+
+    estado_participante = None
+    estado_evaluador = None
+    estado_asistente = None
+
     if request.user.is_authenticated:
         usuario = request.user
-        
+
         # Verificar roles
         if Participantes.objects.filter(usuario=usuario).exists():
             roles.append('Participante')
@@ -179,40 +195,58 @@ def detalle_evento(request, evento_id):
             roles.append('Asistente')
         if Evaluadores.objects.filter(usuario=usuario).exists():
             roles.append('Evaluador')
-        
-        # Verificar inscripciones específicas por rol
-        usuario_inscrito_participante = ParticipantesEventos.objects.filter(
+
+        # Estado del participante
+        participante_evento = ParticipantesEventos.objects.filter(
             par_eve_evento_fk=evento_id,
             par_eve_participante_fk__usuario=usuario
-        ).exists()
-        
-        usuario_inscrito_evaluador = EvaluadoresEventos.objects.filter(
+        ).first()
+        if participante_evento:
+            estado_participante = participante_evento.estado
+            usuario_inscrito_participante = estado_participante == 'activo'
+
+        # Estado del evaluador
+        evaluador_evento = EvaluadoresEventos.objects.filter(
             eva_eve_evento_fk=evento_id,
             eva_eve_evaluador_fk__usuario=usuario
-        ).exists()
-        
-        # Asumiendo que tienes un modelo AsistentesEventos
-        usuario_inscrito_asistente = AsistentesEventos.objects.filter(
+        ).first()
+        if evaluador_evento:
+            estado_evaluador = evaluador_evento.estado
+            usuario_inscrito_evaluador = estado_evaluador == 'activo'
+
+        # Estado del asistente
+        asistente_evento = AsistentesEventos.objects.filter(
             asi_eve_evento_fk=evento_id,
             asi_eve_asistente_fk__usuario=usuario
-        ).exists()
-        
-        # Usuario inscrito en cualquier rol
+        ).first()
+        if asistente_evento:
+            estado_asistente = asistente_evento.estado
+            usuario_inscrito_asistente = estado_asistente == 'activo'
+
+        # Inscripción activa en cualquiera de los roles
         usuario_inscrito = (
             usuario_inscrito_participante or 
             usuario_inscrito_evaluador or 
             usuario_inscrito_asistente
         )
-    
+
     context = {
         'evento': evento,
         'participantes': participantes,
         'evaluadores': evaluadores,
+        'asistentes': asistentes,
+        'total_participantes': total_participantes,
+        'total_evaluadores': total_evaluadores,
+        'total_asistentes': total_asistentes,
+        'total_inscritos': total_inscritos,
         'roles': roles,
         'usuario_inscrito': usuario_inscrito,
         'usuario_inscrito_participante': usuario_inscrito_participante,
         'usuario_inscrito_evaluador': usuario_inscrito_evaluador,
         'usuario_inscrito_asistente': usuario_inscrito_asistente,
+        'estado_participante': estado_participante,
+        'estado_evaluador': estado_evaluador,
+        'estado_asistente': estado_asistente,
     }
     
     return render(request, 'app_visitante/detalle_evento.html', context)

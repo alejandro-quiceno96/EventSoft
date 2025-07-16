@@ -186,6 +186,19 @@
           </a>
 
          <div class="action-buttons">
+  {% if estado_participante and estado_participante != 'activo' %}
+  <div class="alert alert-warning shadow-sm">
+    Fuiste inscrito como <strong>participante</strong>, pero tu inscripción fue <strong>deshabilitada</strong>.
+  </div>
+{% elif estado_evaluador and estado_evaluador != 'activo' %}
+  <div class="alert alert-warning shadow-sm">
+    Fuiste inscrito como <strong>evaluador</strong>, pero tu inscripción fue <strong>deshabilitada</strong>.
+  </div>
+{% elif estado_asistente and estado_asistente != 'activo' %}
+  <div class="alert alert-warning shadow-sm">
+    Fuiste inscrito como <strong>asistente</strong>, pero tu inscripción fue <strong>deshabilitada</strong>.
+  </div>
+{% endif %}
 
   {% if usuario_inscrito_asistente or usuario_inscrito_participante or usuario_inscrito_evaluador %}
   <div class="inscripcion-alert shadow-sm">
@@ -222,18 +235,18 @@
       </a>
     </div>
   {% endif %}
-
+  
 </div>
 
 
-          <!-- Botón Compartir -->
-          <button class="action-btn-outline" onclick="abrirCompartir()">
-            <i class="fas fa-share-alt"></i> Compartir Evento
-          </button>
-        </div>
-      </div>
-    </div>
-
+        <!-- Botón Compartir Evento -->
+        <button class="action-btn-outline" onclick="abrirCompartir()">
+          <i class="fas fa-share-alt"></i> Compartir Evento
+        </button>
+        
+       
+    
+    
     <!-- MODAL COMPARTIR -->
 <div id="modal-compartir" class="modal-compartir">
   <div class="modal-contenido">
@@ -264,42 +277,47 @@
 </div>
 
 
-    <script>
-      function mostrarOpciones() {
-        const opciones = document.getElementById("opciones-ocultas");
-        const btn = document.querySelector(".action-btn-outline");
 
-        if (
-          opciones.style.display === "none" ||
-          opciones.style.display === ""
-        ) {
-          opciones.style.display = "block";
-          btn.textContent = "Ocultar opciones";
-        } else {
-          opciones.style.display = "none";
-          btn.textContent = "Más opciones";
-        }
-      }
 
-      function abrirCompartir() {
-        document.getElementById("modal-compartir").style.display = "flex";
-      }
+<script>
+  function mostrarOpciones() {
+    const opciones = document.getElementById("opciones-ocultas");
+    const btn = document.querySelector(".action-btn-outline");
 
-      function cerrarCompartir() {
-        document.getElementById("modal-compartir").style.display = "none";
-      }
+    if (
+      opciones.style.display === "none" ||
+      opciones.style.display === ""
+    ) {
+      opciones.style.display = "block";
+      btn.textContent = "Ocultar opciones";
+    } else {
+      opciones.style.display = "none";
+      btn.textContent = "Más opciones";
+    }
+  }
 
-      function copiarTexto() {
-        const texto = `Mira este evento en el que estoy participando:
+  function abrirCompartir() {
+    document.getElementById("modal-compartir").style.display = "flex";
+  }
+
+  function cerrarCompartir() {
+    document.getElementById("modal-compartir").style.display = "none";
+  }
+
+  function copiarTexto() {
+    const texto = `Mira este evento en el que estoy participando:
 📌 {{ evento.eve_nombre }}
 📅 Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }}
 📍 Lugar: {{ evento.eve_lugar }}
 👉 Ver más: {{ request.build_absolute_uri }}`;
 
-        navigator.clipboard.writeText(texto).then(() => {
-          alert("¡Mensaje copiado! Puedes pegarlo donde quieras.");
-        });
-      }
-    </script>
+    navigator.clipboard.writeText(texto).then(() => {
+      alert("¡Mensaje copiado! Puedes pegarlo donde quieras.");
+    });
+  }
+
+</script>
+
+
   </body>
 </html>

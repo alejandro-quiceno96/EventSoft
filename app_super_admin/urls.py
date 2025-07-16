@@ -9,4 +9,7 @@ urlpatterns = [
     path('evento_adm/<int:evento_id>/', views.ver_evento_adm, name='ver_evento_adm'),
     path('editar_perfil/', views.editar_perfil, name='editar_perfil'),
     path('modificar_evento/<int:evento_id>/<str:nuevo_estado>', views.modificar_estado_evento, name='modificar_eventos'),
+    path('usuarios/', views.gestionar_usuarios, name='usuarios'),
+    path("asignar-admin/", views.asignar_admin_evento, name="asignar_admin_evento"),
+
 ]

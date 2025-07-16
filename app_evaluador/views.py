@@ -242,6 +242,7 @@ def detalle_evento_evaluador(request, evento_id, evaluador_cedula):
         'eve_costo': 'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
         'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
         'eve_categoria': categoria_nombre,
+        'evaluador': evaluador 
     }
 
     return JsonResponse(datos_evento)
@@ -411,6 +412,8 @@ def inicio_evaluador(request):
 
 
 def subir_info_tecnica(request, pk):
+    print("Archivos recibidos:", request.FILES)
+
     if request.method == 'POST':
         evento = get_object_or_404(Eventos, pk=pk)
         evaluador_id = request.POST.get('cedula')

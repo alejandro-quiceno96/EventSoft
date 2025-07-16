@@ -4,31 +4,50 @@
 {% block title %}Super Admin - EventSoft{% endblock %}
 
 {% block content %}
-            <section class="header-admin">
-                <div class="contenedor-1">
-                    <img class="logo-sena" src="{% static 'app_administrador/image/Logo Sena 1.png'%}" alt="Logo Sena">
-                    <a href="">EventSoft</a>
-                </div>
-                <div class="contenedor-2">
-                    <img class="img-user" src="{% static 'app_administrador/image/user.png' %}" alt="user">
-                    <button class="btn btn-link text-white text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
-                        Mi Perfil
-                    </button>
-                    <span class="position-relative ms-3" style="cursor:pointer;" data-bs-toggle="modal"
-                    data-bs-target="#modalEventosActivos">
-                    <i class="fa-solid fa-bell" id="notificationBell" style="color: aliceblue;"></i>
-                    {% if pendientes_count > 0 %}
-                    <span id="notificationCount"
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                        style="font-size:0.8rem;">
-                        {{ pendientes_count }}
-                    </span>
-                    {% endif %}
-                </span>
-                </div>
-                
-            </section>
-        </header>
+<section class="header-admin">
+    <!-- Sidebar personalizado tipo offcanvas -->
+<div id="sidebar-admin-custom" class="sidebar-custom collapsed">
+  <div class="sidebar-header d-flex justify-content-between align-items-center">
+    <h4>Super Admin</h4>
+    <button class="btn btn-sm text-danger close-sidebar"><i class="fas fa-times"></i></button>
+  </div>
+  <ul class="sidebar-list">
+    <li><a href="{% url 'super_admin:index_super_admin' %}"><i class="fas fa-home me-2"></i>Inicio</a></li>
+    <li><a href="{% url 'super_admin:usuarios' %}"><i class="fas fa-user-plus me-2"></i>Asignar nuevo administrador</a></li>
+  </ul>
+</div>
+
+
+    <div class="contenedor-1">
+        <!-- Botón hamburguesa -->
+        <button class="btn text-white ms-2" id="toggleSidebarBtn">
+            <i class="fas fa-bars fa-lg"></i>
+        </button>
+
+        <img class="logo-sena" src="{% static 'app_administrador/image/Logo Sena 1.png'%}" alt="Logo Sena">
+        <a href="">EventSoft</a>
+    </div>
+    <div class="contenedor-2">
+        <img class="img-user" src="{% static 'app_administrador/image/user.png' %}" alt="user">
+        <button class="btn btn-link text-white text-decoration-none" data-bs-toggle="offcanvas"
+            data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
+            Mi Perfil
+        </button>
+        <span class="position-relative ms-3" style="cursor:pointer;" data-bs-toggle="modal"
+            data-bs-target="#modalEventosActivos">
+            <i class="fa-solid fa-bell" id="notificationBell" style="color: aliceblue;"></i>
+            {% if pendientes_count > 0 %}
+            <span id="notificationCount"
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                style="font-size:0.8rem;">
+                {{ pendientes_count }}
+            </span>
+            {% endif %}
+        </span>
+    </div>
+
+</section>
+</header>
 
 <main class="text-center">
     <h2 class="p-2 mt-4 rounded" style=" margin: 0 auto;">Eventos activos</h2>
@@ -43,7 +62,7 @@
                 <p class="card-text mb-1">📍 {{ evento.eve_lugar }}</p>
                 <p class="card-text mb-1">🏙️ {{ evento.eve_ciudad }}</p>
                 <p class="card-text mb-1">📅 {{ evento.eve_fecha_inicio }}</p>
-                <p class="card-text mb-1">👤 {{ evento.eve_administrador_fk.usuario.first_name }} {{ evento.eve_administrador_fk.usuario.last_name }}</p>
+                <p class="card-text mb-1">👤 {{ evento.eve_administrador_fk.usuario.first_name }} {{evento.eve_administrador_fk.usuario.last_name }}</p>
                 <p class="card-text mb-2">
                     Estado:
                     <span class="text-success fw-bold">{{ evento.eve_estado|capfirst }}</span>
@@ -103,97 +122,98 @@
     </div>
 </div>
 <div class="offcanvas offcanvas-end" tabindex="-1" id="perfilSidebar" aria-labelledby="perfilSidebarLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="perfilSidebarLabel">Perfil del Usuario</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"><i class="fa-solid fa-x"></i></button>
-  </div>
-  
-  <div class="offcanvas-body">
-    <!-- Elementos decorativos -->
-    <div class="decorative-circle top"></div>
-    <div class="decorative-circle bottom"></div>
-    
-    <!-- Avatar del usuario -->
-    <div class="profile-avatar">
-      <i class="fas fa-user"></i>
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="perfilSidebarLabel">Perfil del Usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"><i
+                class="fa-solid fa-x"></i></button>
     </div>
-    
-    <!-- Información del perfil -->
-    <div class="profile-info">
-      
-      <!-- Nombre completo -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fas fa-user"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Nombre completo</div>
-          <div class="profile-item-value">
-            {{ request.user.first_name }}
-            {% if request.user.segundo_nombre %}{{ request.user.segundo_nombre }}{% endif %}
-            {{ request.user.last_name }}
-            {% if request.user.segundo_apellido %}{{ request.user.segundo_apellido }}{% endif %}
-        </div>
-        </div>
-      </div>
-      
-      <!-- Correo electrónico -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fas fa-envelope"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Correo electrónico</div>
-          <div class="profile-item-value">{{ request.user.email }}</div>
-        </div>
-      </div>
-      
-      <!-- Nombre de usuario -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fas fa-at"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Usuario</div>
-          <div class="profile-item-value">{{ request.user.username }}</div>
-        </div>
-      </div>
 
-      <!-- Telefono -->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fa-solid fa-phone"></i>
-        </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Telefono</div>
-          <div class="profile-item-value">{{ request.user.telefono }}</div>
-        </div>
-      </div>
+    <div class="offcanvas-body">
+        <!-- Elementos decorativos -->
+        <div class="decorative-circle top"></div>
+        <div class="decorative-circle bottom"></div>
 
-      <!-- Fecha de nacimiento-->
-      <div class="profile-item">
-        <div class="profile-item-icon">
-          <i class="fa-solid fa-calendar-days"></i>
+        <!-- Avatar del usuario -->
+        <div class="profile-avatar">
+            <i class="fas fa-user"></i>
         </div>
-        <div class="profile-item-content">
-          <div class="profile-item-label">Fecha de Nacimiento</div>
-          <div class="profile-item-value">{{ request.user.fecha_nacimiento }}</div>
+
+        <!-- Información del perfil -->
+        <div class="profile-info">
+
+            <!-- Nombre completo -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Nombre completo</div>
+                    <div class="profile-item-value">
+                        {{ request.user.first_name }}
+                        {% if request.user.segundo_nombre %}{{ request.user.segundo_nombre }}{% endif %}
+                        {{ request.user.last_name }}
+                        {% if request.user.segundo_apellido %}{{ request.user.segundo_apellido }}{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Correo electrónico -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Correo electrónico</div>
+                    <div class="profile-item-value">{{ request.user.email }}</div>
+                </div>
+            </div>
+
+            <!-- Nombre de usuario -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fas fa-at"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Usuario</div>
+                    <div class="profile-item-value">{{ request.user.username }}</div>
+                </div>
+            </div>
+
+            <!-- Telefono -->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Telefono</div>
+                    <div class="profile-item-value">{{ request.user.telefono }}</div>
+                </div>
+            </div>
+
+            <!-- Fecha de nacimiento-->
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Fecha de Nacimiento</div>
+                    <div class="profile-item-value">{{ request.user.fecha_nacimiento }}</div>
+                </div>
+            </div>
+
+
         </div>
-      </div>
-      
-      
+        <!-- Botón para activar el modal (agregar donde necesites) -->
+        <button type="button" class="edit-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+            <i class="fas fa-edit"></i>
+            Editar Perfil
+        </button>
+        <!-- Botón de cerrar sesión -->
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Cerrar sesión
+        </a>
     </div>
-    <!-- Botón para activar el modal (agregar donde necesites) -->
-    <button type="button" class="edit-btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-        <i class="fas fa-edit"></i>
-        Editar Perfil
-    </button>
-    <!-- Botón de cerrar sesión -->
-    <a href="{% url 'logout' %}" class="logout-btn">
-      <i class="fas fa-sign-out-alt"></i>
-      Cerrar sesión
-    </a>
-  </div>
 </div>
 
 <!-- Modal de Editar Perfil -->
@@ -205,7 +225,8 @@
                 <h5 class="modal-title" id="editProfileModalLabel">
                     <i class="fas fa-user-edit me-2"></i> Editar Perfil
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" style="filter: invert(1);"><i class="fa-solid fa-x"></i></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"
+                    style="filter: invert(1);"><i class="fa-solid fa-x"></i></button>
             </div>
 
             <!-- Cuerpo -->
@@ -219,44 +240,52 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="firstName" class="form-label">Primer Nombre</label>
-                            <input type="text" class="form-control" id="firstName" name="first_name" value="{{ request.user.first_name }}" required>
+                            <input type="text" class="form-control" id="firstName" name="first_name"
+                                value="{{ request.user.first_name }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="secondName" class="form-label">Segundo Nombre</label>
-                            <input type="text" class="form-control" id="secondName" name="segundo_nombre" value="{{ request.user.segundo_nombre|default:'' }}">
+                            <input type="text" class="form-control" id="secondName" name="segundo_nombre"
+                                value="{{ request.user.segundo_nombre|default:'' }}">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="lastName" class="form-label">Primer Apellido</label>
-                            <input type="text" class="form-control" id="lastName" name="last_name" value="{{ request.user.last_name }}" required>
+                            <input type="text" class="form-control" id="lastName" name="last_name"
+                                value="{{ request.user.last_name }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="secondLastName" class="form-label">Segundo Apellido</label>
-                            <input type="text" class="form-control" id="secondLastName" name="segundo_apellido" value="{{ request.user.segundo_apellido|default:'' }}">
+                            <input type="text" class="form-control" id="secondLastName" name="segundo_apellido"
+                                value="{{ request.user.segundo_apellido|default:'' }}">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Correo Electrónico</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ request.user.email }}" required>
+                            <input type="email" class="form-control" id="email" name="email"
+                                value="{{ request.user.email }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">Teléfono</label>
-                            <input type="tel" class="form-control" id="phone" name="telefono" value="{{ request.user.telefono|default:'' }}">
+                            <input type="tel" class="form-control" id="phone" name="telefono"
+                                value="{{ request.user.telefono|default:'' }}">
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">Nombre de Usuario</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ request.user.username }}" required>
+                            <input type="text" class="form-control" id="username" name="username"
+                                value="{{ request.user.username }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="birthDate" class="form-label">Fecha de Nacimiento</label>
-                            <input type="date" class="form-control" id="birthDate" name="fecha_nacimiento" value="{{ request.user.fecha_nacimiento|date:'Y-m-d' }}">
+                            <input type="date" class="form-control" id="birthDate" name="fecha_nacimiento"
+                                value="{{ request.user.fecha_nacimiento|date:'Y-m-d' }}">
                         </div>
                     </div>
 
@@ -271,17 +300,20 @@
                     <div id="passwordFields" style="display: none;">
                         <div class="mb-3">
                             <label for="currentPassword" class="form-label">Contraseña Actual</label>
-                            <input type="password" class="form-control" id="currentPassword" name="current_password" placeholder="Ingresa tu contraseña actual">
+                            <input type="password" class="form-control" id="currentPassword" name="current_password"
+                                placeholder="Ingresa tu contraseña actual">
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="newPassword" class="form-label">Nueva Contraseña</label>
-                                <input type="password" class="form-control" id="newPassword" name="new_password" placeholder="Nueva contraseña">
+                                <input type="password" class="form-control" id="newPassword" name="new_password"
+                                    placeholder="Nueva contraseña">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
-                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Confirma la nueva contraseña">
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password"
+                                    placeholder="Confirma la nueva contraseña">
                             </div>
                         </div>
                     </div>
@@ -319,90 +351,114 @@
 </style>
 <!-- Validación JS en tiempo real -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const changePasswordCheckbox = document.getElementById("changePassword");
-    const passwordFields = document.getElementById("passwordFields");
-    const newPasswordInput = document.getElementById("newPassword");
-    const confirmPasswordInput = document.getElementById("confirmPassword");
-    const currentPasswordInput = document.getElementById("currentPassword");
-    const errorBox = document.getElementById("passwordValidationErrors");
-    const saveButton = document.getElementById("saveProfileBtn");
+    document.addEventListener("DOMContentLoaded", function () {
+        const changePasswordCheckbox = document.getElementById("changePassword");
+        const passwordFields = document.getElementById("passwordFields");
+        const newPasswordInput = document.getElementById("newPassword");
+        const confirmPasswordInput = document.getElementById("confirmPassword");
+        const currentPasswordInput = document.getElementById("currentPassword");
+        const errorBox = document.getElementById("passwordValidationErrors");
+        const saveButton = document.getElementById("saveProfileBtn");
 
-    function validatePasswordFields() {
-        const currentPassword = currentPasswordInput.value;
-        const newPassword = newPasswordInput.value;
-        const confirmPassword = confirmPasswordInput.value;
+        function validatePasswordFields() {
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
 
-        let errors = [];
+            let errors = [];
 
-        if (!currentPassword) {
-            errors.push("Debes ingresar la contraseña actual.");
+            if (!currentPassword) {
+                errors.push("Debes ingresar la contraseña actual.");
+            }
+
+            if (newPassword.length < 8) {
+                errors.push("La nueva contraseña debe tener al menos 8 caracteres.");
+            }
+
+            if (/^\d+$/.test(newPassword)) {
+                errors.push("La contraseña no puede ser completamente numérica.");
+            }
+
+            if (newPassword && confirmPassword && newPassword !== confirmPassword) {
+                errors.push("La confirmación de la contraseña no coincide.");
+            }
+
+            showErrors(errors);
+            return errors.length === 0;
         }
 
-        if (newPassword.length < 8) {
-            errors.push("La nueva contraseña debe tener al menos 8 caracteres.");
-        }
-
-        if (/^\d+$/.test(newPassword)) {
-            errors.push("La contraseña no puede ser completamente numérica.");
-        }
-
-        if (newPassword && confirmPassword && newPassword !== confirmPassword) {
-            errors.push("La confirmación de la contraseña no coincide.");
-        }
-
-        showErrors(errors);
-        return errors.length === 0;
-    }
-
-    function showErrors(errors) {
-        if (errors.length > 0) {
-            const list = errors.map(e => `<li>${e}</li>`).join('');
-            errorBox.innerHTML = `<ul class="mb-0">${list}</ul>`;
-            errorBox.classList.remove("d-none");
-        } else {
-            errorBox.innerHTML = '';
-            errorBox.classList.add("d-none");
-        }
-    }
-
-    function clearErrors() {
-        errorBox.innerHTML = "";
-        errorBox.classList.add("d-none");
-    }
-
-    changePasswordCheckbox.addEventListener("change", function () {
-        passwordFields.style.display = this.checked ? "block" : "none";
-        if (!this.checked) clearErrors();
-    });
-
-    newPasswordInput.addEventListener("input", validatePasswordFields);
-    confirmPasswordInput.addEventListener("input", validatePasswordFields);
-    currentPasswordInput.addEventListener("input", validatePasswordFields);
-
-    saveButton.addEventListener("click", function (e) {
-        if (changePasswordCheckbox.checked) {
-            const isValid = validatePasswordFields();
-            if (!isValid) {
-                return;
+        function showErrors(errors) {
+            if (errors.length > 0) {
+                const list = errors.map(e => `<li>${e}</li>`).join('');
+                errorBox.innerHTML = `<ul class="mb-0">${list}</ul>`;
+                errorBox.classList.remove("d-none");
+            } else {
+                errorBox.innerHTML = '';
+                errorBox.classList.add("d-none");
             }
         }
-        document.getElementById("editProfileForm").submit();
+
+        function clearErrors() {
+            errorBox.innerHTML = "";
+            errorBox.classList.add("d-none");
+        }
+
+        changePasswordCheckbox.addEventListener("change", function () {
+            passwordFields.style.display = this.checked ? "block" : "none";
+            if (!this.checked) clearErrors();
+        });
+
+        newPasswordInput.addEventListener("input", validatePasswordFields);
+        confirmPasswordInput.addEventListener("input", validatePasswordFields);
+        currentPasswordInput.addEventListener("input", validatePasswordFields);
+
+        saveButton.addEventListener("click", function (e) {
+            if (changePasswordCheckbox.checked) {
+                const isValid = validatePasswordFields();
+                if (!isValid) {
+                    return;
+                }
+            }
+            document.getElementById("editProfileForm").submit();
+        });
     });
-});
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    const bell = document.getElementById("notificationBell");
-    const count = document.getElementById("notificationCount");
-    if (count && parseInt(count.textContent) > 0) {
-        // Solo efecto shake sin color amarillo
-        bell.classList.add("fa-shake");
-        bell.classList.remove("text-warning"); // en caso que ya venga
-    }
-});
+        const bell = document.getElementById("notificationBell");
+        const count = document.getElementById("notificationCount");
+        if (count && parseInt(count.textContent) > 0) {
+            // Solo efecto shake sin color amarillo
+            bell.classList.add("fa-shake");
+            bell.classList.remove("text-warning"); // en caso que ya venga
+        }
+    });
 
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const toggleBtn = document.getElementById('toggleSidebarBtn');
+  const sidebar = document.getElementById('sidebar-admin-custom');
+  const closeBtn = sidebar.querySelector('.close-sidebar');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.add('active');
+  });
+
+  closeBtn.addEventListener('click', () => {
+    sidebar.classList.remove('active');
+  });
+
+  // Cerrar sidebar al hacer clic fuera (opcional)
+  document.addEventListener('click', (e) => {
+    if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+      sidebar.classList.remove('active');
+    }
+  });
+});
+</script>
+
 <script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
 <script src="{% static 'app_administrador/js/modaleditarperfil.js' %}"></script>
 {% endblock %}

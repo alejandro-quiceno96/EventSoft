@@ -136,15 +136,31 @@ def crear_evento(request):
         'administrador': request.session.get('admin_nombre'),
     }
     return render(request, 'app_administrador/crearevento.html', context)
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def inicio(request):
     administrador = Administradores.objects.get(usuario_id=request.user.id)
-    # Obtener eventos relacionados con el administrador autenticado
     eventos = Eventos.objects.filter(eve_administrador_fk=administrador.id)
+
+    eventos_con_totales = []
+
+    for evento in eventos:
+        total_inscritos = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento.id).count()
+        total_asistentes = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento.id).count()
+        total_participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento.id).count()
+        total_evaluadores = EvaluadoresEventos.objects.filter(eva_eve_evento_fk=evento.id).count()
+
+        eventos_con_totales.append({
+            'evento': evento,
+            'total_inscritos': total_inscritos,
+            'total_asistentes': total_asistentes,
+            'total_participantes': total_participantes,
+            'total_evaluadores': total_evaluadores,
+        })
 
     context = {
         'administrador': f"{request.user.first_name} {request.user.last_name}",
-        'eventos': eventos,
+        'eventos': eventos,  # Para usar eventos puros en otro lugar si quieres
+        'eventos_con_totales': eventos_con_totales,  # Para el listado con totales
     }
 
     return render(request, 'app_administrador/admin.html', context)
@@ -1337,3 +1353,51 @@ def enviar_certificado_reconocimiento(request, evento_id, participante_id):
         return JsonResponse({'success': True, 'message': 'Reconocimiento enviado correctamente.'})
     
     return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
+
+
+
+
+
+def habilitar_participantes(request, evento_id):
+    participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk_id=evento_id)
+    
+    if not participantes.exists():
+        messages.warning(request, 'No hay participantes para este evento.')
+        return redirect('administrador:index_administrador')
+    
+    # Determinar si habilitar o deshabilitar todos
+    todos_habilitados = all(p.habilitado for p in participantes)
+    nuevo_estado = not todos_habilitados
+    
+    # Actualizar todos los participantes
+    for p in participantes:
+        p.habilitado = nuevo_estado
+        p.save()
+    
+    # Mensaje de confirmación
+    estado_texto = "habilitados" if nuevo_estado else "deshabilitados"
+    messages.success(request, f'Todos los participantes han sido {estado_texto}.')
+    
+    return redirect('administrador:inicio')
+
+def habilitar_evaluadores(request, evento_id):
+    evaluadores = EvaluadoresEventos.objects.filter(evento_id=evento_id)
+    
+    if not evaluadores.exists():
+        messages.warning(request, 'No hay evaluadores para este evento.')
+        return redirect('administrador:index_administrador')
+    
+    # Determinar si habilitar o deshabilitar todos
+    todos_habilitados = all(e.habilitado for e in evaluadores)
+    nuevo_estado = not todos_habilitados
+    
+    # Actualizar todos los evaluadores
+    for e in evaluadores:
+        e.habilitado = nuevo_estado
+        e.save()
+    
+    # Mensaje de confirmación
+    estado_texto = "habilitados" if nuevo_estado else "deshabilitados"
+    messages.success(request, f'Todos los evaluadores han sido {estado_texto}.')
+    
+    return redirect('administrador:index_administrador')

@@ -50,6 +50,10 @@ urlpatterns=[
     path('configuracion_certificados/<int:evento_id>/', views.configuracion_certificados, name='configuracion_certificados'),
     path('certificados/<int:evento_id>/descargar/', views.descargar_certificado_pdf, name='descargar_certificado_pdf'),
 
+    # habilitar y desabilitar
+    path('evento/<int:evento_id>/habilitar-participantes/', views.habilitar_participantes, name='habilitar_participantes'),
+    path('evento/<int:evento_id>/habilitar-evaluadores/', views.habilitar_evaluadores, name='habilitar_evaluadores'),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("modalImagen").src = data.eve_imagen;
                     document.getElementById("modalProgramacion").href = data.eve_programacion;
                     document.getElementById("modalCodigoQr").href = data.codigo_qr;
+                    document.getElementById("modalTecnica").href = data.eve_informacion_tecnica;
+                    document.getElementById("modalTecnicaDescargar").href = data.eve_informacion_tecnica;
                     document.getElementById("btnCriterios").setAttribute('data-evento-id', data.eve_id);
                     enlace_programacion.href = data.eve_programacion;
                     enlace_qr.href = data.codigo_qr
