@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    {{ administrador|default:"Administrador" }}
+{{ administrador|default:"Administrador" }}
 {% endblock %}
 
 {% block content %}
@@ -39,65 +39,161 @@
         <h2 class="ranking-title">
             <i class="fa-solid fa-trophy"></i> Ranking de Promedios
             {% if evento %}
-                <div class="ranking-subtitle">{{ evento.eve_nombre }}</div>
+            <div class="ranking-subtitle">{{ evento.eve_nombre }}</div>
             {% endif %}
         </h2>
     </div>
 
     <div class="d-flex justify-content-end mt-3 p-2">
-        <a href="{% url 'administrador:descargar_ranking_pdf' evento.id %}" class="btn btn-outline-success" target="_blank">
+        <a href="{% url 'administrador:descargar_ranking_pdf' evento.id %}" class="btn btn-outline-success"
+            target="_blank">
             <i class="fa-solid fa-file-pdf"></i> Descargar Ranking (PDF)
         </a>
     </div>
 
     <div class="table-responsive shadow-lg rounded-4 overflow-hidden">
-    <table class="table table-hover align-middle mb-0">
-        <thead class="table-dark">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Participante</th>
-                <th scope="col">Promedio</th>
-                <th scope="col">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for p in ranking %}
-            <tr>
-                <td>
-                    <strong>
-                        {% if forloop.counter == 1 %}
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Participante</th>
+                    <th scope="col">Promedio</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in ranking %}
+                <tr>
+                    <td>
+                        <strong>
+                            {% if forloop.counter == 1 %}
                             🥇
-                        {% elif forloop.counter == 2 %}
+                            {% elif forloop.counter == 2 %}
                             🥈
-                        {% elif forloop.counter == 3 %}
+                            {% elif forloop.counter == 3 %}
                             🥉
-                        {% else %}
+                            {% else %}
                             {{ forloop.counter }}
+                            {% endif %}
+                        </strong>
+                    </td>
+                    <td class="fw-semibold text-dark">{{ p.nombre }}</td>
+                    <td>
+                        <span class="badge bg-success fs-6">
+                            {{ p.promedio|floatformat:2 }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'administrador:detalle_calificaciones' evento.id p.id %}"
+                            class="btn btn-detalle-calificacion">
+                            <i class="fa-solid fa-eye"></i> Ver Detalles
+                        </a>
+
+                        {% if forloop.counter == 1 %}
+                        <button class="btn btn-detalle-calificacion btn-enviar-certificado" data-nombre="{{ p.nombre }}"
+                            data-id="{{ p.id }}" data-evento="{{ evento.id }}">
+                            <i class="fa-solid fa-paper-plane"></i> Enviar Reconocimiento
+                        </button>
                         {% endif %}
-                    </strong>
-                </td>
-                <td class="fw-semibold text-dark">{{ p.nombre }}</td>
-                <td>
-                    <span class="badge bg-success fs-6">
-                        {{ p.promedio|floatformat:2 }}
-                    </span>
-                </td>
-                <td>
-                    <a href="{% url 'administrador:detalle_calificaciones' evento.id p.id %}" class="btn btn-detalle-calificacion">
-                        <i class="fa-solid fa-eye"></i> Ver Detalles    
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4" class="text-center text-muted py-4">
-                    <i class="fa-solid fa-circle-info"></i> Aún no hay calificaciones registradas para este evento.
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+                        <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        <i class="fa-solid fa-circle-info"></i> Aún no hay calificaciones registradas para este evento.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 </div>
+
+<!-- Modal Confirmación -->
+<div class="modal fade" id="modalConfirmarEnvio" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <h5 class="mb-3">¿Deseas enviar el certificado de primer lugar a <span id="nombreParticipante"></span>?</h5>
+            <div class="d-flex justify-content-center gap-3">
+                <button class="btn btn-success" id="confirmarEnvioBtn">Sí, enviar</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Éxito -->
+<div class="modal fade" id="modalEnvioExitoso" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+            <p class="fw-bold mb-0">¡Reconocimiento enviado exitosamente!</p>
+        </div>
+    </div>
+</div>
+
+
+<!-- Loader con mensaje -->
+<div id="loader-bg" class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-none" style="z-index: 1055;">
+  <div class="d-flex flex-column justify-content-center align-items-center h-100 text-white">
+    <div class="spinner-border mb-3" role="status" style="width: 4rem; height: 4rem;"></div>
+    <p class="fs-5 fw-semibold">Enviando certificado de reconocimiento...</p>
+  </div>
+</div>
+
+
+<script>
+    function getCSRFToken() {
+  return document.getElementById('csrf-token').value;
+}
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let participanteId = null;
+        let eventoId = null;
+
+        const loader = document.getElementById("loader-bg");
+        const modalConfirmar = new bootstrap.Modal(document.getElementById("modalConfirmarEnvio"));
+        const modalExito = new bootstrap.Modal(document.getElementById("modalEnvioExitoso"));
+        const nombreParticipanteSpan = document.getElementById("nombreParticipante");
+        const UrlReconocimiento = "{% url 'administrador:enviar_certificado_reconocimiento' 123 456 %}"
+
+        // Al hacer clic en "Enviar certificado"
+        document.querySelectorAll(".btn-enviar-certificado").forEach(btn => {
+            btn.addEventListener("click", function () {
+                participanteId = this.dataset.id;
+                eventoId = this.dataset.evento;
+                const nombre = this.dataset.nombre;
+                nombreParticipanteSpan.textContent = nombre;
+                modalConfirmar.show();
+            });
+        });
+
+        // Confirmar envío
+        document.getElementById("confirmarEnvioBtn").addEventListener("click", function () {
+            modalConfirmar.hide();
+            loader.classList.remove("d-none");
+            const url = UrlReconocimiento.replace("123", eventoId).replace("456", participanteId);
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-CSRFToken': getCSRFToken()
+                },
+            })
+                .then(response => {
+                    loader.classList.add("d-none");
+                    if (response.ok) {
+                        modalExito.show();
+                    } else {
+                        alert("Error al enviar el certificado.");
+                    }
+                });
+        });
+    });
+</script>
+
+
 {% endblock %}

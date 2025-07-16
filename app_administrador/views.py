@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth import update_session_auth_hash
 from datetime import datetime
 import os
-from .utils import generar_pdf, generar_clave_acceso, obtener_ranking, generar_certificados
+from .utils import generar_pdf, generar_clave_acceso, obtener_ranking, generar_certificados, generar_reconocmiento
 from django.urls import reverse
 from decimal import Decimal
 import json
@@ -663,7 +663,8 @@ def descargar_ranking_pdf(request, evento_id):
     })
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'filename="ranking_evento_{evento_id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="ranking_evento_{evento_id}.pdf"'
+
 
     HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(response)
     return response
@@ -1304,4 +1305,35 @@ def enviar_certificado_evaluadores(request, evento_id):
             correos_enviados.append(participante.usuario.email)
 
         return redirect('administrador:index_administrador')
+
+@csrf_exempt 
+@login_required(login_url='login')
+def enviar_certificado_reconocimiento(request, evento_id, participante_id):
+    if request.method == 'POST':
+        evento = get_object_or_404(Eventos, id=evento_id)
+        participante = get_object_or_404(Participantes, id=participante_id)
+
+        contexto = {
+            'evento': evento,
+            'participante': participante
+        }
+
+        mensaje = render_to_string('app_administrador/correos/certificado_reconocimiento.html', contexto)
+
+        email = EmailMessage(
+            subject=f"Reconocimiento en el evento {evento.eve_nombre}",
+            body=mensaje,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[participante.usuario.email]
+        )
+        email.content_subtype = 'html'
+
+        # Adjuntar certificado PDF
+        pdf_content = generar_reconocmiento(request, evento_id, participante_id)
+        email.attach(f'Reconocmiento_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
+
+        email.send(fail_silently=False)
+
+        return JsonResponse({'success': True, 'message': 'Reconocimiento enviado correctamente.'})
     
+    return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)

@@ -40,6 +40,8 @@ urlpatterns=[
     path('enviar_certificado_participantes/<int:evento_id>/', views.enviar_certificado_participantes, name='enviar_certificado_participantes'),
     path('enviar_certificado_asistentes/<int:evento_id>/', views.enviar_certificado_asistentes, name='enviar_certificado_asistentes'),
     path('enviar_certificado_evaluadores/<int:evento_id>/', views.enviar_certificado_evaluadores, name='enviar_certificado_evaluadores'),
+    path('enviar_certificado_primer_lugar/<int:evento_id>/<int:participante_id>/', views.enviar_certificado_reconocimiento, name='enviar_certificado_reconocimiento'),
+
 
     #memorias
     path('guardar-memorias/', views.guardar_memorias, name='guardar_memorias'),
