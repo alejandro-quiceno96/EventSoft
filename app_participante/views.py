@@ -68,11 +68,12 @@ def info_participantes_eventos(request):
                 "par_eve_estado": participacion.par_eve_estado,
                 "calificacion": round(promedio, 2) if promedio is not None else "Sin calificar",
                 "comentarios": comentarios,
+                "eve_memorias": evento.eve_memorias
             })
         # Ordenar eventos por fecha de inicio
         return render(request, 'app_participantes/eventos_participante.html', {
             "eventos": eventos_data,
-            "cedula_participante": participante.id
+            "cedula_participante": participante.id,
         })
 
     except Exception as e:
