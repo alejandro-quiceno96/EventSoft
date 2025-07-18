@@ -25,6 +25,22 @@
                     <textarea id="mensaje" name="descripcion_evento" placeholder="Escribe aquí..." maxlength="400" oninput="actualizarContador()"></textarea>
                     <small id="contador">0 / 400</small>
                 </div>
+                <div class="div contenedor-input-toggle">
+  <label for="habilitar_participantes" class="form-label">Habilitar Participantes</label>
+  <label class="switch">
+    <input type="checkbox" name="habilitar_participantes" id="habilitar_participantes" {% if evento.eve_habilitar_participantes %}checked{% endif %}>
+    <span class="slider round"></span>
+  </label>
+</div>
+
+<div class="div contenedor-input-toggle">
+  <label for="habilitar_evaluadores" class="form-label">Habilitar Evaluadores</label>
+  <label class="switch">
+    <input type="checkbox" name="habilitar_evaluadores" id="habilitar_evaluadores" {% if evento.eve_habilitar_evaluadores %}checked{% endif %}>
+    <span class="slider round"></span>
+  </label>
+</div>
+
 
                 <div class="div contenedor-input-3">
                     <div class="div-1">

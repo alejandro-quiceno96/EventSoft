@@ -77,14 +77,13 @@ WSGI_APPLICATION = 'pr_eventsoft.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='3306'),
+        'NAME': 'eventsoft',
+        'USER': 'root',
+        'PASSWORD': 'Sebas123.',
+        'HOST': 'localhost',  # o la IP/host del servidor MySQL
+        'PORT': '3306',       # puerto por defecto de MySQL
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",}
     }
 }
 

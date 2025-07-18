@@ -196,7 +196,7 @@ def detalle_evento(request, evento_id):
         if Evaluadores.objects.filter(usuario=usuario).exists():
             roles.append('Evaluador')
 
-        # Estado del participante
+        # Estado del participante en el evento
         participante_evento = ParticipantesEventos.objects.filter(
             par_eve_evento_fk=evento_id,
             par_eve_participante_fk__usuario=usuario
@@ -205,7 +205,7 @@ def detalle_evento(request, evento_id):
             estado_participante = participante_evento.estado
             usuario_inscrito_participante = estado_participante == 'activo'
 
-        # Estado del evaluador
+        # Estado del evaluador en el evento
         evaluador_evento = EvaluadoresEventos.objects.filter(
             eva_eve_evento_fk=evento_id,
             eva_eve_evaluador_fk__usuario=usuario
@@ -214,7 +214,7 @@ def detalle_evento(request, evento_id):
             estado_evaluador = evaluador_evento.estado
             usuario_inscrito_evaluador = estado_evaluador == 'activo'
 
-        # Estado del asistente
+        # Estado del asistente en el evento
         asistente_evento = AsistentesEventos.objects.filter(
             asi_eve_evento_fk=evento_id,
             asi_eve_asistente_fk__usuario=usuario
@@ -247,10 +247,13 @@ def detalle_evento(request, evento_id):
         'estado_participante': estado_participante,
         'estado_evaluador': estado_evaluador,
         'estado_asistente': estado_asistente,
-    }
+
+        # Aquí enviamos los flags de habilitación desde el evento
+        'habilitado_participantes': evento.eve_habilitar_participantes,
+        'habilitado_evaluadores': evento.eve_habilitar_evaluadores,
+        }
     
     return render(request, 'app_visitante/detalle_evento.html', context)
-
 
 @login_required(login_url='login')
 def preinscripcion_participante(request, evento_id):
