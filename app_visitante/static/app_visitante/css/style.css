@@ -31,7 +31,7 @@ body, html {
 }
 
 .logo-sena {
-    width: 110px;
+    width: 300px;
 }
 
 .img-user {
@@ -50,11 +50,6 @@ body, html {
     gap: 10px;
 }
 
-.contenedor-1 a {
-    font-size: 40px;
-    text-decoration: none;
-    color: var(--color-texto);
-}
 
 .contenedor-2 a {
     font-size: 20px;

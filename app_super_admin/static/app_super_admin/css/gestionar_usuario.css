@@ -1,6 +1,9 @@
 :root {
     --color-naranja: #007832;
     --color-texto: #ffffff;
+     --rojo: #dc3545;
+    --gris-claro: #f2f2f2;
+    --fuente: 'Work Sans', sans-serif;
 }
 
 body {
@@ -268,4 +271,50 @@ main {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+.btn-cancelar-admin {
+  background-color: var(--rojo);
+  color: var(--color-texto);
+  border: none;
+  padding: 6px 12px;
+  font-family: var(--fuente);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-cancelar-admin:hover {
+  background-color: #c82333;
+}
+
+.btn-cancelar-admin:active {
+  transform: scale(0.98);
+}
+
+.tabla-usuarios td:last-child {
+  text-align: center;
+}
+
+#modalExito .modal-content {
+  font-family: var(--fuente);
+  border-radius: 15px;
+  background-color: var(--color-texto);
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#modalExito .text-success {
+  color: var(--color-naranja) !important;
+}
+
+#modalExito .mensaje-exito {
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+}
+
+#buscadorCedula {
+  max-width: 300px;
 }

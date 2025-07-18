@@ -186,19 +186,7 @@
           </a>
 
          <div class="action-buttons">
-  {% if estado_participante and estado_participante != 'activo' %}
-  <div class="alert alert-warning shadow-sm">
-    Fuiste inscrito como <strong>participante</strong>, pero tu inscripción fue <strong>deshabilitada</strong>.
-  </div>
-{% elif estado_evaluador and estado_evaluador != 'activo' %}
-  <div class="alert alert-warning shadow-sm">
-    Fuiste inscrito como <strong>evaluador</strong>, pero tu inscripción fue <strong>deshabilitada</strong>.
-  </div>
-{% elif estado_asistente and estado_asistente != 'activo' %}
-  <div class="alert alert-warning shadow-sm">
-    Fuiste inscrito como <strong>asistente</strong>, pero tu inscripción fue <strong>deshabilitada</strong>.
-  </div>
-{% endif %}
+  
 
   {% if usuario_inscrito_asistente or usuario_inscrito_participante or usuario_inscrito_evaluador %}
   <div class="inscripcion-alert shadow-sm">
@@ -219,39 +207,57 @@
 
   {% else %}
     <!-- Mostrar opciones de inscripción solo si NO está inscrito en nada -->
+    
+    <div class="action-buttons">
+  {% if usuario_estuvo_inscrito %}
+    <div class="inscripcion-alert shadow-sm">
+      <div class="icono-check">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="texto-alerta">
+        {% if usuario_inscrito_asistente %}
+          Ya estás inscrito como <strong>asistente</strong>.
+        {% elif usuario_inscrito_participante %}
+          Ya estás inscrito como <strong>participante</strong>.
+        {% elif usuario_inscrito_evaluador %}
+          Ya estás inscrito como <strong>evaluador</strong>.
+        {% else %}
+          Ya estuviste inscrito en este evento.
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <!-- Si no está inscrito en ningún rol -->
     <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
       <i class="fas fa-user"></i> Preinscribirme como asistente
     </a>
-
+    
     <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
 
     <div id="opciones-ocultas" class="extra-buttons">
-
-      {% if not evento.eve_habilitar_participantes %}
-        <button class="action-btn disabled" disabled>
-          <i class="fas fa-pen"></i> Inscripción deshabilitada
-        </button>
-      {% else %}
+      {% if evento.eve_habilitar_participantes %}
         <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
           <i class="fas fa-pen"></i> Preinscribirme como participante
         </a>
+      {% else %}
+        <button class="action-btn disabled" disabled>
+          <i class="fas fa-pen"></i> Inscripción como participante deshabilitada
+        </button>
       {% endif %}
 
-          {% if not evento.eve_habilitar_evaluadores or estado_evaluador != 'activo' %}
-  <button class="action-btn disabled" disabled>
-    <i class="fa-solid fa-chalkboard-user"></i> Inscripción deshabilitada
-  </button>
-{% else %}
-  <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
-    <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como evaluador
-  </a>
-{% endif %}
-
-
-
-
-
+      {% if evento.eve_habilitar_evaluadores %}
+        <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
+          <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como evaluador
+        </a>
+      {% else %}
+        <button class="action-btn disabled" disabled>
+          <i class="fa-solid fa-chalkboard-user"></i> Inscripción como evaluador deshabilitada
+        </button>
+      {% endif %}
     </div>
+  {% endif %}
+</div>
+
 
 
 

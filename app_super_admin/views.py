@@ -11,6 +11,9 @@ from django.views.decorators.http import require_POST
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def index(request):
@@ -154,3 +157,18 @@ def asignar_admin_evento(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+@csrf_exempt
+@login_required
+def cancelar_administrador(request):
+    if request.method == "POST":
+        try:
+            datos = json.loads(request.body)
+            admin_id = datos.get("admin_id")
+
+            admin = Administradores.objects.get(id=admin_id)
+            admin.delete()  # O admin.estado = 'Inactivo'; admin.save()
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Método no permitido"})

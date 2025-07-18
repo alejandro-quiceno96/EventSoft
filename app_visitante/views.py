@@ -105,40 +105,66 @@ def inicio_visitante(request):
     area = request.GET.get('area')
     fecha_inicio = request.GET.get('fecha_inicio')
 
-
-    # Filtrar por categoría (a través del modelo intermedio)
+    # Filtrar por categoría
     if categoria:
         eventos = eventos.filter(eventoscategorias__eve_cat_categoria_fk=categoria)
 
-    # Filtrar por área (a través de categoria relacionada al evento)
+    # Filtrar por área
     if area:
-        eventos = eventos.filter(
-            eventoscategorias__eve_cat_categoria_fk__cat_area_fk=area
-        )
+        eventos = eventos.filter(eventoscategorias__eve_cat_categoria_fk__cat_area_fk=area)
 
     # Filtrar por fecha de inicio
     if fecha_inicio:
         eventos = eventos.filter(eve_fecha_inicio=fecha_inicio)
 
-    eventos = eventos.distinct()  # Evitar duplicados por joins
+    eventos = eventos.distinct()
 
     categorias = Categorias.objects.all()
     areas = Areas.objects.all()
+
+    roles = []
+    estado_admin = None
+    
+    admin = Administradores.objects.filter(usuario=request.user).first()
+    
     if request.user.is_authenticated:
-        roles = []
         if SuperAdministradores.objects.filter(usuario=request.user).exists():
             roles.append('Super Administrador')
-        if Administradores.objects.filter(usuario=request.user).exists():
+            
+        
+        if admin:
             roles.append('Administrador de Eventos')
-    
+            estado_admin = admin.estado  # "Creado", "Activo", etc.
+
     contexto = {
         'eventos': eventos,
         'categorias': categorias,
         'areas': areas,
-        'roles': roles if request.user.is_authenticated else [],
+        'roles': roles,
+        'estado_admin': estado_admin,
     }
 
     return render(request, 'app_visitante/index.html', contexto)
+
+
+@csrf_exempt
+@login_required
+def validar_clave_admin(request):
+    if request.method == "POST":
+        try:
+            datos = json.loads(request.body)
+            clave_ingresada = datos.get("clave")
+
+            admin = Administradores.objects.filter(usuario=request.user).first()
+            if admin and admin.clave_acceso == clave_ingresada:
+                admin.estado = "Activo"
+                admin.save()
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "error": "Clave incorrecta"})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
+    return JsonResponse({"success": False, "error": "Método no permitido"})
 
 
 
@@ -202,7 +228,7 @@ def detalle_evento(request, evento_id):
             par_eve_participante_fk__usuario=usuario
         ).first()
         if participante_evento:
-            estado_participante = participante_evento.estado
+            estado_participante = participante_evento.par_eve_estado
             usuario_inscrito_participante = estado_participante == 'activo'
 
         # Estado del evaluador en el evento
@@ -211,7 +237,7 @@ def detalle_evento(request, evento_id):
             eva_eve_evaluador_fk__usuario=usuario
         ).first()
         if evaluador_evento:
-            estado_evaluador = evaluador_evento.estado
+            estado_evaluador = evaluador_evento.eva_estado
             usuario_inscrito_evaluador = estado_evaluador == 'activo'
 
         # Estado del asistente en el evento
@@ -220,15 +246,19 @@ def detalle_evento(request, evento_id):
             asi_eve_asistente_fk__usuario=usuario
         ).first()
         if asistente_evento:
-            estado_asistente = asistente_evento.estado
+            estado_asistente = asistente_evento.asi_eve_estado
             usuario_inscrito_asistente = estado_asistente == 'activo'
 
-        # Inscripción activa en cualquiera de los roles
-        usuario_inscrito = (
-            usuario_inscrito_participante or 
-            usuario_inscrito_evaluador or 
-            usuario_inscrito_asistente
+        estado_general_participante = participante_evento is not None
+        estado_general_evaluador = evaluador_evento is not None
+        estado_general_asistente = asistente_evento is not None
+
+        usuario_estuvo_inscrito = (
+            estado_general_participante or 
+            estado_general_evaluador or 
+            estado_general_asistente
         )
+
 
     context = {
         'evento': evento,
@@ -247,6 +277,8 @@ def detalle_evento(request, evento_id):
         'estado_participante': estado_participante,
         'estado_evaluador': estado_evaluador,
         'estado_asistente': estado_asistente,
+        'usuario_estuvo_inscrito': usuario_estuvo_inscrito,
+
 
         # Aquí enviamos los flags de habilitación desde el evento
         'habilitado_participantes': evento.eve_habilitar_participantes,
