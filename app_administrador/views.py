@@ -138,34 +138,41 @@ def crear_evento(request):
         'administrador': request.session.get('admin_nombre'),
     }
     return render(request, 'app_administrador/crearevento.html', context)
+
+
+def subir_info_tecnica(request, evento_id):
+    evento = get_object_or_404(Eventos, pk=evento_id)
+
+    if request.method == 'POST' and request.FILES.get('eve_informacion_tecnica'):
+        archivo = request.FILES['eve_informacion_tecnica']
+        evento.eve_informacion_tecnica = archivo
+        evento.save()
+
+        messages.success(request, 'Información técnica subida exitosamente.')
+        return redirect('administrador:index_administrador')  # Ajusta según tu vista de origen
+
+    messages.error(request, 'No se pudo subir la información técnica.')
+    return redirect('administrador:index_administrador')
+
 @login_required(login_url='login')
 def inicio(request):
     administrador = Administradores.objects.get(usuario_id=request.user.id)
     eventos = Eventos.objects.filter(eve_administrador_fk=administrador.id)
-
-    eventos_con_totales = []
-
+    
+    # Agregar los totales directamente a cada evento
     for evento in eventos:
-        total_inscritos = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento.id).count()
-        total_asistentes = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento.id).count()
-        total_participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento.id).count()
-        total_evaluadores = EvaluadoresEventos.objects.filter(eva_eve_evento_fk=evento.id).count()
-
-        eventos_con_totales.append({
-            'evento': evento,
-            'total_inscritos': total_inscritos,
-            'total_asistentes': total_asistentes,
-            'total_participantes': total_participantes,
-            'total_evaluadores': total_evaluadores,
-        })
+        evento.total_participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento.id).count()
+        evento.total_asistentes = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento.id).count()
+        evento.total_evaluadores = EvaluadoresEventos.objects.filter(eva_eve_evento_fk=evento.id).count()
+        evento.total_inscritos = evento.total_participantes + evento.total_asistentes + evento.total_evaluadores
 
     context = {
         'administrador': f"{request.user.first_name} {request.user.last_name}",
-        'eventos': eventos,  # Para usar eventos puros en otro lugar si quieres
-        'eventos_con_totales': eventos_con_totales,  # Para el listado con totales
+        'eventos': eventos,
     }
 
     return render(request, 'app_administrador/admin.html', context)
+
 
 @require_http_methods(["GET"])
 def obtener_evento(request, evento_id):
@@ -1406,3 +1413,5 @@ def habilitar_evaluadores(request, evento_id):
     messages.success(request, f'Todos los evaluadores han sido {estado_texto}.')
     
     return redirect('administrador:index_administrador')
+
+

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'app_visitante/css/style_visitante.css' %}" />
     <link rel="stylesheet" href="{% static 'app_administrador/css/sidebarderecha.css'%}">
     <link rel="stylesheet" href="{% static 'app_administrador/css/modaleditarperfil.css'%}">
+    <link rel="stylesheet" href="{% static 'app_visitante/css/modal_validacion.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"> 
@@ -48,8 +49,7 @@
                     <span class="tooltiptext">Menú</span>
                 </button>
             {% endif %}
-            <img src="{% static 'app_visitante/image/Logo Sena 1.png' %}" alt="Logo">
-            <h2>EventSoft</h2>
+            <img class="logo-sena" src="{% static 'image/logo_eventsoft.png'%}" alt="Logo Eventsof">
         </div>
 
        <div class="search-section">
@@ -99,9 +99,12 @@
             </a>
 
             {% if 'Administrador de Eventos' in roles %}
-                <a class="btn-menu" href="{% url 'administrador:index_administrador' %}">
+               <a class="btn-menu" href="{% url 'administrador:index_administrador' %}"
+                    id="btn-admin-eventos"
+                    data-estado="{{ estado_admin|default:'' }}">
                     <i class="fa-solid fa-cog"></i> Panel de Administrador Eventos
                 </a>
+
             {% endif %}
 
             {% if 'Super Administrador' in roles %}
@@ -420,6 +423,31 @@
     </div>
     </div>
 
+    <!-- MODAL: Validación de Clave de Acceso -->
+<div id="modalClave" class="modal-custom" style="display: none;">
+  <div class="modal-custom-content">
+    <span class="modal-close" onclick="cerrarModalClave()">&times;</span>
+    <h3 class="modal-title">Validar clave de acceso</h3>
+    <p class="modal-text">Ingrese la clave de acceso que recibió por correo para activar su rol de Administrador de Eventos.</p>
+    <form id="formClave">
+      {% csrf_token %}
+      <input type="text" id="clave-acceso" name="clave-acceso" class="modal-input" placeholder="Clave de acceso" required>
+      <button type="submit" class="modal-button">Validar y acceder</button>
+    </form>
+  </div>
+</div>
+<!-- MODAL DE ERROR -->
+<div id="modalError" class="modal-custom" style="display: none;">
+  <div class="modal-custom-content">
+    <span class="modal-close" onclick="cerrarModalError()">&times;</span>
+    <i class="fa-solid fa-circle-exclamation" style="font-size: 40px; color: #c0392b; margin-bottom: 15px;"></i>
+    <h3 class="modal-title" style="color: #c0392b;">Error</h3>
+    <p class="modal-text" id="modal-error-mensaje">Clave incorrecta. Por favor intente de nuevo.</p>
+    <button onclick="cerrarModalError()" class="modal-button" style="background-color: #c0392b;">Cerrar</button>
+  </div>
+</div>
+
+
    <script>
     function openFilterEventsModal() {
             const modal = document.getElementById("filterEventsModal");
@@ -590,6 +618,10 @@
         return document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
     }
 </script>
+<script>
+    const UrlValidaradministrador = "{% url 'validar_clave_admin' %}";
+    const UrlAdministrador = "{% url 'administrador:index_administrador' %}";
+</script>
 <!-- Validación JS en tiempo real -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -667,5 +699,6 @@ document.addEventListener("DOMContentLoaded", function () {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
 <script src="{% static 'app_administrador/js/modaleditarperfil.js' %}"></script>
+<script src="{% static 'app_visitante/js/modal_validacion.js' %}"></script>
 </body>
 </html>

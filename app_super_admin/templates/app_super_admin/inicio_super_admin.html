@@ -14,7 +14,8 @@
   <ul class="sidebar-list">
     <li><a href="{% url 'super_admin:index_super_admin' %}"><i class="fas fa-home me-2"></i>Inicio</a></li>
     <li><a href="{% url 'super_admin:usuarios' %}"><i class="fas fa-user-plus me-2"></i>Asignar nuevo administrador</a></li>
-  </ul>
+    <li><a href="{% url 'inicio_visitante' %}"><i class="fa-solid fa-user"></i></i> Volver al Visitante</a></li>
+</ul>
 </div>
 
 
@@ -24,8 +25,7 @@
             <i class="fas fa-bars fa-lg"></i>
         </button>
 
-        <img class="logo-sena" src="{% static 'app_administrador/image/Logo Sena 1.png'%}" alt="Logo Sena">
-        <a href="">EventSoft</a>
+        <img class="logo-sena" src="{% static 'image/logo_eventsoft.png'%}" alt="Logo Sena">
     </div>
     <div class="contenedor-2">
         <img class="img-user" src="{% static 'app_administrador/image/user.png' %}" alt="user">
@@ -50,34 +50,34 @@
 </header>
 
 <main class="text-center">
-    <h2 class="p-2 mt-4 rounded" style=" margin: 0 auto;">Eventos activos</h2>
-    <div class="d-flex flex-wrap justify-content-center gap-3 p-3">
-        {% for evento in eventos %}
-        {% if evento.eve_estado == "activo" %}
-        <div class="event-card card shadow-sm" style="width: 280px;">
-            <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="Imagen evento"
-                style="height: 160px; object-fit: cover;">
-            <div class="card-body text-start">
-                <h5 class="card-title">{{ evento.eve_nombre }}</h5>
-                <p class="card-text mb-1">📍 {{ evento.eve_lugar }}</p>
-                <p class="card-text mb-1">🏙️ {{ evento.eve_ciudad }}</p>
-                <p class="card-text mb-1">📅 {{ evento.eve_fecha_inicio }}</p>
-                <p class="card-text mb-1">👤 {{ evento.eve_administrador_fk.usuario.first_name }} {{evento.eve_administrador_fk.usuario.last_name }}</p>
-                <p class="card-text mb-2">
-                    Estado:
-                    <span class="text-success fw-bold">{{ evento.eve_estado|capfirst }}</span>
-                </p>
-                <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}"
-                    class="btn-ver-mas text-white w-100 fw-semibold">Ver evento</a>
-            </div>
-        </div>
-        {% endif %}
-        {% empty %}
-        <p>No hay eventos activos disponibles.</p>
-        {% endfor %}
+  <h2 class="p-2 mt-4 rounded">Eventos Activos</h2>
+  <div class="d-flex flex-wrap justify-content-center gap-3 p-3">
+    {% for evento in eventos %}
+    {% if evento.eve_estado == "activo" %}
+    <div class="event-card card shadow-sm" style="width: 280px;">
+      <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="Imagen evento"
+           style="height: 160px; object-fit: cover;">
+      <div class="card-body text-start">
+        <h5 class="card-title">{{ evento.eve_nombre }}</h5>
+        <p class="card-text mb-1"><i class="fas fa-map-marker-alt me-2"></i>{{ evento.eve_lugar }}</p>
+        <p class="card-text mb-1"><i class="fas fa-city me-2"></i>{{ evento.eve_ciudad }}</p>
+        <p class="card-text mb-1"><i class="fas fa-calendar-day me-2"></i>{{ evento.eve_fecha_inicio }}</p>
+        <p class="card-text mb-1"><i class="fas fa-user me-2"></i>{{ evento.eve_administrador_fk.usuario.first_name }} {{ evento.eve_administrador_fk.usuario.last_name }}</p>
+        <p class="card-text mb-2">
+          Estado:
+          <span class="text-success fw-bold">{{ evento.eve_estado|capfirst }}</span>
+        </p>
+        <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}" class="btn-ver-mas text-white w-100 fw-semibold">
+          Ver evento
+        </a>
+      </div>
     </div>
+    {% endif %}
+    {% empty %}
+    <p>No hay eventos activos disponibles.</p>
+    {% endfor %}
+  </div>
 </main>
-
 <!-- Modal de eventos activos -->
 <div class="modal fade" id="modalEventosActivos" tabindex="-1" aria-hidden="true"
     aria-labelledby="modalEventosActivosLabel">

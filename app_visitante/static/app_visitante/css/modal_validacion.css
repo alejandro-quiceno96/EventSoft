@@ -1,0 +1,100 @@
+:root {
+  --color-principal: #007832;
+  --color-principal-hover: #005f29;
+  --color-fondo-modal: #fff;
+  --color-texto: #444;
+  --color-titulo: var(--color-principal);
+  --color-cierre: #888;
+  --color-cierre-hover: #000;
+  --fuente-principal: 'Work Sans', sans-serif;
+
+  --padding-contenedor: 30px 20px;
+  --radio-borde: 12px;
+  --sombra-modal: 0 5px 15px rgba(0, 0, 0, 0.3);
+  --ancho-maximo: 400px;
+}
+
+/* Fondo del modal */
+.modal-custom {
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-family: var(--fuente-principal);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Contenido */
+.modal-custom-content {
+  background-color: var(--color-fondo-modal);
+  padding: var(--padding-contenedor);
+  border-radius: var(--radio-borde);
+  max-width: var(--ancho-maximo);
+  width: 90%;
+  box-shadow: var(--sombra-modal);
+  position: relative;
+  text-align: center;
+}
+
+/* Título */
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-titulo);
+  margin-bottom: 15px;
+}
+
+/* Texto descriptivo */
+.modal-text {
+  font-size: 15px;
+  color: var(--color-texto);
+  margin-bottom: 20px;
+}
+
+/* Input */
+.modal-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-family: var(--fuente-principal);
+}
+
+/* Botón */
+.modal-button {
+  background-color: var(--color-principal);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  font-family: var(--fuente-principal);
+}
+
+.modal-button:hover {
+  background-color: var(--color-principal-hover);
+}
+
+/* Botón de cerrar (X) */
+.modal-close {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-cierre);
+}
+
+.modal-close:hover {
+  color: var(--color-cierre-hover);
+}

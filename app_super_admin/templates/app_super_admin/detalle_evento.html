@@ -11,71 +11,62 @@
 
 <div class="container"
     style="display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column;">
-    <div class="info-section"
-        style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); text-align: center; width: 80%; max-width: 600px; margin-bottom: 20px;">
+    <div class="info-section d-flex flex-wrap"
+     style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 1000px;">
 
-        <!-- Imagen del evento -->
-        {% if evento.eve_imagen %}
-        <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" class="event-image"
-            style="width: 100%; height: 300px; object-fit: contain; border-radius: 10px;">
-        {% elif evento.imagen_url %}
-        <img src="{{ evento.imagen_url }}" alt="Imagen del evento" class="event-image"
-            style="width: 100%; height: 300px; object-fit: contain; border-radius: 10px;">
-        {% endif %}
-
-        <!-- Título del evento -->
-        <h2>
-            {{ evento.eve_nombre|default:"Evento de No asignado" }}
-        </h2>
-
-        <!-- Nombre del administrador -->
-        <h3>
-            Evento de {{ evento.eve_administrador_fk.usuario.first_name }} {{ evento.eve_administrador_fk.usuario.last_name }}
-        </h3>
-
-        <!-- Descripción -->
-        {% if evento.eve_descripcion %}
-        <p><strong>Descripción:</strong> {{ evento.eve_descripcion }}</p>
-        {% endif %}
-
-        <!-- Información general -->
-        <p>Se realizará el próximo
-            {% if evento.eve_fecha_inicio %}
-            {{ evento.eve_fecha_inicio }}
-            {% else %}
-            <em>fecha por definir</em>
-            {% endif %}, en
-            {% if evento.eve_lugar %}
-            {{ evento.eve_lugar }}
-            {% else %}
-            <em>lugar por definir</em>
-            {% endif %}
-            {% if evento.eve_ciudad %}
-            , en la ciudad de {{ evento.eve_ciudad }}
-            {% endif %}.
-        </p>
-
-        <!-- Detalles específicos -->
-        <div class="event-details" style="text-align: left; margin-top: 20px;">
-            <p>📍 <strong>Lugar:</strong> {{ evento.eve_lugar|default:"Por definir" }}</p>
-            <p>📅 <strong>Fecha:</strong> {{ evento.eve_fecha_inicio|default:"Por definir" }}</p>
-            {% if evento.eve_fecha_fin %}
-            <p>📅 <strong>Fecha fin:</strong> {{ evento.eve_fecha_fin }}</p>
-            {% endif %}
-            {% if evento.eve_ciudad %}
-            <p>🏙️ <strong>Ciudad:</strong> {{ evento.eve_ciudad }}</p>
-            {% endif %}
-            {% if evento.eve_estado %}
-            <p>📊 <strong>Estado:</strong> {{ evento.eve_estado }}</p>
-            {% endif %}
-            {% if evento.eve_capacidad %}
-            <p>👥 <strong>Capacidad:</strong> {{ evento.eve_capacidad }}</p>
-            {% endif %}
-            {% if evento.eve_programacion %}
-            <p>📝 <strong>Programacion:</strong><a href="{{ evento.eve_programacion.url}}" target="_blank">Ver programacion</a></p>
-            {% endif %}
-        </div>
+  <!-- Imagen a la izquierda -->
+  <div class="col-md-6" style="padding-right: 15px;">
+    {% if evento.eve_imagen %}
+    <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento"
+         style="width: 100%; height: 100%; max-height: 400px; object-fit: cover; border-radius: 10px;">
+    {% elif evento.imagen_url %}
+    <img src="{{ evento.imagen_url }}" alt="Imagen del evento"
+         style="width: 100%; height: 100%; max-height: 400px; object-fit: cover; border-radius: 10px;">
+    {% else %}
+    <div style="width: 100%; height: 300px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 10px;">
+      <span class="text-muted">Sin imagen</span>
     </div>
+    {% endif %}
+  </div>
+
+  <!-- Información a la derecha -->
+  <div class="col-md-6" style="padding-left: 15px;">
+    <h2 class="mb-3">{{ evento.eve_nombre|default:"Evento no asignado" }}</h2>
+
+    <h5 class="text-muted mb-3">
+      Organizado por {{ evento.eve_administrador_fk.usuario.first_name }} {{ evento.eve_administrador_fk.usuario.last_name }}
+    </h5>
+
+    {% if evento.eve_descripcion %}
+    <p><strong>Descripción:</strong> {{ evento.eve_descripcion }}</p>
+    {% endif %}
+
+    <p>
+      El evento se realizará el
+      <strong>{{ evento.eve_fecha_inicio|default:"fecha por definir" }}</strong>,
+      en <strong>{{ evento.eve_lugar|default:"lugar por definir" }}</strong>
+      {% if evento.eve_ciudad %}, {{ evento.eve_ciudad }}{% endif %}.
+    </p>
+
+    <ul class="list-unstyled mt-3">
+      {% if evento.eve_fecha_fin %}
+      <li>📅 <strong>Fecha fin:</strong> {{ evento.eve_fecha_fin }}</li>
+      {% endif %}
+      {% if evento.eve_estado %}
+      <li>📊 <strong>Estado:</strong> {{ evento.eve_estado }}</li>
+      {% endif %}
+      {% if evento.eve_capacidad %}
+      <li>👥 <strong>Capacidad:</strong> {{ evento.eve_capacidad }}</li>
+      {% endif %}
+      {% if evento.eve_programacion %}
+      <li>📝 <strong>Programación:</strong>
+        <a href="{{ evento.eve_programacion.url }}" class="btn-ver-mas" style="padding: 10px;" target="_blank">Ver programación</a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+
 
     <div class="btn-container">
         <a href="{% url 'super_admin:index_super_admin' %}" class="open-menu-btn"

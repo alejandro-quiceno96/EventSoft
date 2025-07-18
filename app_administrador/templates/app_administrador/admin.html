@@ -49,6 +49,16 @@
             <i class="fa-solid fa-trophy"></i> Tabla de Posiciones
           </button>
         </a>
+        <button class="btn btn-primary btn-subir-info" 
+        data-evento-id="{{ evento.id }}" 
+        data-archivo-url="{% if evento.eve_informacion_tecnica %}{{ evento.eve_informacion_tecnica.url }}{% else %}{% endif %}"
+        
+        data-has-archivo="{{ evento.eve_informacion_tecnica|yesno:'1,0' }}"
+        data-bs-toggle="modal" 
+        data-bs-target="#modalSubirInfoTecnica">
+          <i class="fa-solid fa-upload"></i> Subir Información Técnica
+        </button>
+
 
         <a href="{% url 'administrador:enviar_correo' evento.id %}" class="text-decoration-none">
           <button class="btn-ver_participantes w-100">
@@ -57,14 +67,18 @@
         </a>
 
         <!-- Botón Ver Estadística del Evento -->
-        <button class="action-btn-outline btn-estadisticas" type="button" data-evento-id="{{ evento.id }}"
+         
+        <button class="action-btn-outline btn-estadisticas btn-ver_participantes w-100 "  type="button" data-evento-id="{{ evento.id }}"
           data-inscritos="{{ evento.total_inscritos }}" data-asistentes="{{ evento.total_asistentes }}"
           data-participantes="{{ evento.total_participantes }}" data-evaluadores="{{ evento.total_evaluadores }}"
           data-fecha-inicio="{{ evento.eve_fecha_inicio }}" data-fecha-fin="{{ evento.eve_fecha_fin }}"
           data-lugar="{{ evento.eve_lugar }}" data-ciudad="{{ evento.eve_ciudad }}">
           <i class="fa-solid fa-magnifying-glass"></i> Ver estadística del Evento
         </button>
+        
       </div>
+
+
 
     </div>
   </div>
@@ -99,6 +113,7 @@
         <p><strong>Inscripción:</strong> <span id="modalInscripcion"></span></p>
         <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
         <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
+        
         <p><strong>Memorias:</strong>
         <div id="modalMemorias"></div>
         </p>
@@ -111,6 +126,7 @@
           Evaluación</button>
         <button type="button" id="btnConfigCertificados" class="btn-eliminar" data-bs-dismiss="modal">Configuración de
           Certificados</button>
+          
         <button type="button" class="btn-ver-mas" data-bs-toggle="modal" data-bs-target="#modalSubirMemorias">
           <i class="fa-solid fa-upload"></i> Subir memorias del evento
         </button>
@@ -148,7 +164,9 @@
         <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
           <i class="fa-solid fa-trash"></i> Eliminar
         </button>
+
       </div>
+      
     </div>
   </div>
 </div>
@@ -220,25 +238,160 @@
 </div>
 
 <!-- Modal Estadísticas (vacío, rellenado por JS) -->
-<div id="modal-estadisticas" class="modal-compartir" style="display:none;">
-  <div class="modal-contenido">
-    <span class="cerrar" id="cerrarEstadisticas">&times;</span>
-    <h3 class="titulo-modal">📈 Estadísticas del Evento</h3>
+<!-- Modal Estadísticas con diseño Bootstrap -->
+<div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalEstadisticasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
 
-    <div class="estadisticas-contenido">
-      <p><strong>Total de inscritos:</strong> <span id="statInscritos">0</span></p>
-      <p><i class="fas fa-user"></i> Asistentes: <span id="statAsistentes">0</span></p>
-      <p><i class="fas fa-pen"></i> Participantes: <span id="statParticipantes">0</span></p>
-      <p><i class="fas fa-chalkboard-teacher"></i> Evaluadores: <span id="statEvaluadores">0</span></p>
-    </div>
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEstadisticasLabel">
+          <i class="fa-solid fa-chart-column me-2"></i> Estadísticas del Evento
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
 
-    <div style="margin-top: 20px;">
-      <p><strong>Fecha:</strong> <span id="statFecha"></span></p>
-      <p><strong>Lugar:</strong> <span id="statLugar"></span></p>
-      <p><strong>Ciudad:</strong> <span id="statCiudad"></span></p>
+      <div class="modal-body">
+        <div class="row text-center">
+          <div class="col-md-6 mb-3">
+            <p class="fw-bold mb-1">Total de Inscritos</p>
+            <p id="statInscritos" class="fs-5 text-primary">0</p>
+          </div>
+          <div class="col-md-6 mb-3">
+            <p class="fw-bold mb-1"><i class="fas fa-user"></i> Asistentes</p>
+            <p id="statAsistentes" class="fs-5 text-success">0</p>
+          </div>
+          <div class="col-md-6 mb-3">
+            <p class="fw-bold mb-1"><i class="fas fa-pen"></i> Participantes</p>
+            <p id="statParticipantes" class="fs-5 text-info">0</p>
+          </div>
+          <div class="col-md-6 mb-3">
+            <p class="fw-bold mb-1"><i class="fas fa-chalkboard-teacher"></i> Evaluadores</p>
+            <p id="statEvaluadores" class="fs-5 text-warning">0</p>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row text-center">
+          <div class="col-md-4 mb-2">
+            <p class="fw-bold mb-1">📅 Fecha</p>
+            <p id="statFecha">-</p>
+          </div>
+          <div class="col-md-4 mb-2">
+            <p class="fw-bold mb-1">📍 Lugar</p>
+            <p id="statLugar">-</p>
+          </div>
+          <div class="col-md-4 mb-2">
+            <p class="fw-bold mb-1">🌆 Ciudad</p>
+            <p id="statCiudad">-</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fa-solid fa-times me-1"></i> Cerrar
+        </button>
+      </div>
+
     </div>
   </div>
 </div>
+<!-- Modal Subir Información Técnica -->
+<div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" enctype="multipart/form-data" id="formSubirInfoTecnica" action="{% url 'administrador:subir_info_tecnica' evento.id %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalSubirInfoTecnicaLabel">
+            <i class="fa-solid fa-upload"></i> Subir Información Técnica
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="archivoInfoTecnica" class="form-label">Selecciona un archivo PDF:</label>
+            <input type="file" class="form-control" name="eve_informacion_tecnica" id="archivoInfoTecnica" accept="application/pdf" required>
+          </div>
+          <input type="hidden" name="evento_id" id="inputEventoIdTecnica">
+          <div id="archivoActualInfoTecnica" class="alert alert-info d-none mt-3">
+            Ya hay un archivo subido: <a href="#" id="linkArchivoActual" target="_blank">Ver archivo actual</a>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Subir</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const subirInfoButtons = document.querySelectorAll('.btn-subir-info');
+    const inputEventoId = document.getElementById('inputEventoIdTecnica');
+    const archivoActualDiv = document.getElementById('archivoActualInfoTecnica');
+    const archivoActualLink = document.getElementById('linkArchivoActual');
+    const form = document.getElementById('formSubirInfoTecnica');
+
+    subirInfoButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const eventoId = button.getAttribute('evento-id');
+        const archivoUrl = button.getAttribute('archivo-url');
+        const hasArchivo = button.getAttribute('has-archivo') === '1';
+
+        inputEventoId.value = eventoId;
+
+        if (hasArchivo && archivoUrl) {
+          archivoActualDiv.classList.remove('d-none');
+          archivoActualLink.href = archivoUrl;
+        } else {
+          archivoActualDiv.classList.add('d-none');
+          archivoActualLink.href = '#';
+        }
+
+        console.log('Evento ID:', eventoId);
+        console.log('Archivo URL:', archivoUrl);
+        console.log('¿Tiene archivo?', hasArchivo);
+        // Actualizar acción del formulario
+        form.action =`/administrador/evento/${eventoId}/subir-info-tecnica/`.replace('eventoId', eventoId);
+      });
+    });
+  });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.btn-estadisticas').forEach(button => {
+    button.addEventListener('click', () => {
+      const inscritos = button.dataset.inscritos || '0';
+      const asistentes = button.dataset.asistentes || '0';
+      const participantes = button.dataset.participantes || '0';
+      const evaluadores = button.dataset.evaluadores || '0';
+      const fechaInicio = button.dataset.fechaInicio || '';
+      const fechaFin = button.dataset.fechaFin || '';
+      const lugar = button.dataset.lugar || '';
+      const ciudad = button.dataset.ciudad || '';
+
+      // Rellenar contenido del modal
+      document.getElementById('statInscritos').textContent = inscritos;
+      document.getElementById('statAsistentes').textContent = asistentes;
+      document.getElementById('statParticipantes').textContent = participantes;
+      document.getElementById('statEvaluadores').textContent = evaluadores;
+      document.getElementById('statFecha').textContent = `${fechaInicio} al ${fechaFin}`;
+      document.getElementById('statLugar').textContent = lugar;
+      document.getElementById('statCiudad').textContent = ciudad;
+
+      // Mostrar el modal
+      const modal = new bootstrap.Modal(document.getElementById('modalEstadisticas'));
+      modal.show();
+    });
+  });
+});
+</script>
+
 
 <!-- SCRIPT -->
 <script>
@@ -249,48 +402,9 @@
   const baseCriteriosUrl = "{% url 'administrador:criterios_evaluacion' 0 %}".replace('0', '');
   const baseConfigCertificadosUrl = "{% url 'administrador:configuracion_certificados' 0 %}";
 
-  function abrirEstadisticas() {
-    document.getElementById("modal-estadisticas").style.display = "flex";
-  }
+  
 
-  function cerrarEstadisticas() {
-    document.getElementById("modal-estadisticas").style.display = "none";
-  }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    // Cerrar modal estadísticas con el botón X
-    document.getElementById('cerrarEstadisticas').addEventListener('click', cerrarEstadisticas);
-
-    // Cerrar modal estadisticas al hacer click fuera del contenido
-    document.getElementById('modal-estadisticas').addEventListener('click', e => {
-      if (e.target === e.currentTarget) cerrarEstadisticas();
-    });
-
-    // Botones para abrir modal estadísticas - asignar eventos y rellenar datos
-    document.querySelectorAll('.btn-estadisticas').forEach(button => {
-      button.addEventListener('click', () => {
-        const inscritos = button.dataset.inscritos || '0';
-        const asistentes = button.dataset.asistentes || '0';
-        const participantes = button.dataset.participantes || '0';
-        const evaluadores = button.dataset.evaluadores || '0';
-        const fechaInicio = button.dataset.fechaInicio || '';
-        const fechaFin = button.dataset.fechaFin || '';
-        const lugar = button.dataset.lugar || '';
-        const ciudad = button.dataset.ciudad || '';
-
-        // Actualizar el contenido del modal
-        document.getElementById('statInscritos').textContent = inscritos;
-        document.getElementById('statAsistentes').textContent = asistentes;
-        document.getElementById('statParticipantes').textContent = participantes;
-        document.getElementById('statEvaluadores').textContent = evaluadores;
-        document.getElementById('statFecha').textContent = `${fechaInicio} al ${fechaFin}`;
-        document.getElementById('statLugar').textContent = lugar;
-        document.getElementById('statCiudad').textContent = ciudad;
-
-        // Mostrar modal
-        abrirEstadisticas();
-      });
-    });
 
     // Manejar formulario memorias con modal cargando
     const formMemorias = document.getElementById('form-guardar-memorias');
@@ -320,7 +434,6 @@
         window.history.replaceState({}, document.title, url.toString());
       });
     }
-  });
   document.addEventListener('DOMContentLoaded', function () {
   const botonesVerMas = document.querySelectorAll('.btn-ver-mas');
   

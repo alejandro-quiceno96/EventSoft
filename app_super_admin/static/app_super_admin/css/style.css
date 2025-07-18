@@ -32,7 +32,7 @@ html {
 }
 
 .logo-sena {
-    width: 110px;
+    width: 300px;
 }
 
 .img-user {
@@ -52,12 +52,7 @@ html {
     gap: 10px;
 }
 
-.contenedor-1 a {
-    font-size: 40px;
-    text-decoration: none;
-    color: var(--color-texto);
-    text-shadow: 2px 2px 4px #000000;
-}
+
 
 .contenedor-2 a,
 .contenedor-2 button {
@@ -206,3 +201,27 @@ html {
   color: var(--color-naranja);
 }
 
+ h2 {
+      font-weight: 600;
+      color: var(--color-naranja);
+    }
+
+    .event-card {
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .event-card:hover {
+      transform: scale(1.02);
+    }
+
+    .card-title {
+      font-weight: 600;
+      color: #343a40;
+    }
+
+    .card-text {
+      font-size: 0.95rem;
+      color: #5a5a5a;
+    }
