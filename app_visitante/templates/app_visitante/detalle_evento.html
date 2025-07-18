@@ -226,13 +226,40 @@
     <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
 
     <div id="opciones-ocultas" class="extra-buttons">
-      <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
-        <i class="fas fa-pen"></i> Preinscribirme como participante
-      </a>
 
-      <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
-        <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como Evaluador
-      </a>
+      {% if not evento.eve_habilitar_participantes %}
+        <button class="action-btn disabled" disabled>
+          <i class="fas fa-pen"></i> Inscripción deshabilitada
+        </button>
+      {% else %}
+        <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
+          <i class="fas fa-pen"></i> Preinscribirme como participante
+        </a>
+      {% endif %}
+
+          {% if not evento.eve_habilitar_evaluadores or estado_evaluador != 'activo' %}
+  <button class="action-btn disabled" disabled>
+    <i class="fa-solid fa-chalkboard-user"></i> Inscripción deshabilitada
+  </button>
+{% else %}
+  <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
+    <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como evaluador
+  </a>
+{% endif %}
+
+
+
+
+
+    </div>
+
+
+
+
+
+
+      
+
     </div>
   {% endif %}
   

@@ -39,6 +39,8 @@ from io import BytesIO
 from reportlab.pdfgen import canvas
 from twilio.rest import Client
 
+
+
 # Obtener áreas disponibles
 def obtener_areas_eventos():
     return Areas.objects.all()
@@ -184,7 +186,8 @@ def obtener_evento(request, evento_id):
     # Contar participantes y asistentes admitidos
     participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento_id, par_eve_estado='Admitido').count()
     asistentes = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_estado='Admitido').count()
-
+    
+    
 
     datos_evento = {
         'eve_id': evento.id,
@@ -251,6 +254,8 @@ def editar_evento(request, evento_id):
         estado = request.POST.get('estado_evento')
         aforo = request.POST.get('cantidad_personas') or None
         aforo = int(aforo) if aforo else None
+        evento.eve_habilitar_participantes = 'habilitar_participantes' in request.POST
+        evento.eve_habilitar_evaluadores = 'habilitar_evaluadores' in request.POST
         
         # Archivos
         imagen = request.FILES.get('imagen_evento')

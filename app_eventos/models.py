@@ -16,15 +16,11 @@ class Eventos(models.Model):
     eve_administrador_fk = models.ForeignKey('app_administrador.Administradores', on_delete=models.CASCADE)
     eve_informacion_tecnica = models.FileField(upload_to='pdf/info_tecnica/', blank=True, null=True)
     eve_memorias = models.URLField(max_length=200, blank=True, null=True)
+    
+    eve_habilitar_participantes = models.BooleanField(default=True)
+    eve_habilitar_evaluadores = models.BooleanField(default=True)
 
 
-class EstadosInscripcionesEvento(models.Model):
-    evento = models.OneToOneField('Eventos', on_delete=models.CASCADE, related_name='estado_inscripciones')
-    permitir_participantes = models.BooleanField(default=True)
-    permitir_evaluadores = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"Inscripciones de {self.evento.eve_nombre}"
 
 
 class EventosCategorias(models.Model):
