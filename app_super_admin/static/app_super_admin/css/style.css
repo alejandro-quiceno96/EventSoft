@@ -107,6 +107,11 @@ html {
     text-decoration: none;
 }
 
+.btn-ver-mas:hover {
+    background-color: #005f26;
+    color: var(--color-texto);
+}
+
 .btn-ver-mas-creado {
     width: 200px;
     margin-top: 5px;

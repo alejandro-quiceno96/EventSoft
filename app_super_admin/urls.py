@@ -12,6 +12,10 @@ urlpatterns = [
     path('usuarios/', views.gestionar_usuarios, name='usuarios'),
     path("asignar-admin/", views.asignar_admin_evento, name="asignar_admin_evento"),
     path('cancelar-administrador/', views.cancelar_administrador, name='cancelar_administrador'),
+    path('estadisticas-evento/<int:evento_id>/', views.obtener_estadisticas_evento, name='estadisticas_evento'),
+    path('cancelar-evento/<int:evento_id>/', views.cancelar_evento, name='cancelar_evento'),
+    path('eliminar-evento/<int:evento_id>/', views.eliminar_evento, name='eliminar_evento'),
+
 
 
 ]

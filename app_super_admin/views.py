@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from collections import defaultdict
-from app_eventos.models import Eventos
+from app_eventos.models import Eventos, EvaluadoresEventos, AsistentesEventos, ParticipantesEventos
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from app_usuarios.models import Usuario
@@ -13,6 +13,8 @@ from django.core.mail import EmailMultiAlternatives
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.shortcuts import redirect
+from django.urls import reverse
 
 
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
@@ -54,7 +56,9 @@ def modificar_estado_evento(request, evento_id, nuevo_estado):
     evento = get_object_or_404(Eventos, pk=evento_id)
     evento.eve_estado = nuevo_estado
     evento.save()
-    return redirect('super_admin:index_super_admin')
+    # Redirigir con parámetro GET
+    url = reverse('super_admin:index_super_admin') + '?modal_evento_activo=true'
+    return redirect(url)
 
 login_required(login_url='login')  # Protege la vista para usuarios logueados
 def editar_perfil(request):
@@ -105,12 +109,21 @@ def gestionar_usuarios(request):
 
     # Usuarios que ya están como administradores
     administradores = Administradores.objects.select_related('usuario')
+  # Agregar eventos_creados y cupo_disponible a cada administrador
+    for admin in administradores:
+        eventos_creados = Eventos.objects.filter(eve_administrador_fk=admin).count()
+        admin.eventos_creados = eventos_creados
+        if admin.num_eventos == eventos_creados:
+            admin.cupo_disponible = "No tiene cupo disponible"
+        else:
+            admin.cupo_disponible = (admin.num_eventos or 0) - eventos_creados
 
     return render(request, 'app_super_admin/asignar_nuevo_admin_eventos.html', {
         'usuarios_no_admin': usuarios_no_admin,
         'administradores': administradores,
     })
     
+@login_required(login_url='login')  # Protege la vista para usuarios logueados 
 def asignar_admin_evento(request):
     usuario_id = request.POST.get('usuario_id')
     eventos_maximos = request.POST.get('eventos')
@@ -158,7 +171,7 @@ def asignar_admin_evento(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 @csrf_exempt
-@login_required
+@login_required(login_url='login')  # Protege la vista para usuarios logueados
 def cancelar_administrador(request):
     if request.method == "POST":
         try:
@@ -172,3 +185,37 @@ def cancelar_administrador(request):
             return JsonResponse({"success": False, "error": str(e)})
 
     return JsonResponse({"success": False, "error": "Método no permitido"})
+
+def obtener_estadisticas_evento(request, evento_id):
+    asistentes = AsistentesEventos.objects.filter(id=evento_id, asi_eve_estado = "Admitido").count()
+    evaluadores = EvaluadoresEventos.objects.filter(id=evento_id, eva_estado = "Admitido").count()
+    Participantes = ParticipantesEventos.objects.filter(id=evento_id, par_eve_estado = "Admitido").count()
+    total_particpantes = asistentes + evaluadores + Participantes
+    
+    return JsonResponse({
+        'asistentes': asistentes,
+        'evaluadores': evaluadores,
+        'participantes': Participantes,
+        'total_participantes': total_particpantes
+    })
+    
+
+
+@login_required(login_url='login')
+def cancelar_evento(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    evento.eve_estado = "Cancelado"
+    evento.save()
+    
+    # Redirigir con parámetro GET
+    url = reverse('super_admin:index_super_admin') + '?modal_cancelar_evento=true'
+    return redirect(url)
+ 
+@login_required(login_url='login')
+def eliminar_evento(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    evento.delete()
+    
+    # Redirigir con parámetro GET
+    url = reverse('super_admin:index_super_admin') + '?modal_eliminado_evento=true'
+    return redirect(url)

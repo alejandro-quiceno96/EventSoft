@@ -98,9 +98,11 @@
     <th>Cédula</th>
     <th>Nombre</th>
     <th>Apellido</th>
-    <th>Tipo Documento</th>
     <th>Teléfono</th>
     <th>Correo</th>
+    <th>Eventos Creados</th>
+    <th>Cupo disponible</th>
+    <th>Tiempo limite</th>
     <th>Acciones</th> <!-- Nueva columna -->
   </tr>
 </thead>
@@ -110,9 +112,11 @@
     <td>{{ admin.usuario.documento_identidad }}</td>
     <td>{{ admin.usuario.first_name }}</td>
     <td>{{ admin.usuario.last_name }}</td>
-    <td>{{ admin.usuario.tipo_documento }}</td>
     <td>{{ admin.usuario.telefono }}</td>
     <td>{{ admin.usuario.email }}</td>
+    <td>{{ admin.eventos_creados }}</td>
+    <td>{{ admin.cupo_disponible }}</td>
+    <td>{{ admin.tiempo_limite|date:"Y-m-d" }}</td>
     <td>
       <button class="btn-cancelar-admin"
               data-id="{{ admin.id }}"

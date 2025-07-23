@@ -147,12 +147,9 @@ def subir_info_tecnica(request, evento_id):
         archivo = request.FILES['eve_informacion_tecnica']
         evento.eve_informacion_tecnica = archivo
         evento.save()
+        return JsonResponse({'success': True})
 
-        messages.success(request, 'Información técnica subida exitosamente.')
-        return redirect('administrador:index_administrador')  # Ajusta según tu vista de origen
-
-    messages.error(request, 'No se pudo subir la información técnica.')
-    return redirect('administrador:index_administrador')
+    return JsonResponse({'success': False}, status=400)
 
 @login_required(login_url='login')
 def inicio(request):
