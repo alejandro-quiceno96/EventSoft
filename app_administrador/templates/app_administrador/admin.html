@@ -49,13 +49,13 @@
             <i class="fa-solid fa-trophy"></i> Tabla de Posiciones
           </button>
         </a>
-        <button class="btn btn-primary btn-subir-info" 
+        <button class="btn-ver_participantes w-100" 
         data-evento-id="{{ evento.id }}" 
         data-archivo-url="{% if evento.eve_informacion_tecnica %}{{ evento.eve_informacion_tecnica.url }}{% else %}{% endif %}"
         
         data-has-archivo="{{ evento.eve_informacion_tecnica|yesno:'1,0' }}"
         data-bs-toggle="modal" 
-        data-bs-target="#modalSubirInfoTecnica">
+        data-bs-target="#modalSubirInfoTecnica" id="SubirFichaTecnica">
           <i class="fa-solid fa-upload"></i> Subir Información Técnica
         </button>
 
@@ -237,7 +237,7 @@
   </div>
 </div>
 
-<!-- Modal Estadísticas (vacío, rellenado por JS) -->
+
 <!-- Modal Estadísticas con diseño Bootstrap -->
 <div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalEstadisticasLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -300,97 +300,46 @@
 <!-- Modal Subir Información Técnica -->
 <div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form method="post" enctype="multipart/form-data" id="formSubirInfoTecnica" action="{% url 'administrador:subir_info_tecnica' evento.id %}">
-      {% csrf_token %}
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalSubirInfoTecnicaLabel">
-            <i class="fa-solid fa-upload"></i> Subir Información Técnica
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
+    <div class="modal-content rounded-4 shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalSubirInfoTecnicaLabel">Subir Ficha Técnica</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      
+      <form id="formFichaTecnica" enctype="multipart/form-data">
+        {% csrf_token %}
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="archivoInfoTecnica" class="form-label">Selecciona un archivo PDF:</label>
-            <input type="file" class="form-control" name="eve_informacion_tecnica" id="archivoInfoTecnica" accept="application/pdf" required>
-          </div>
-          <input type="hidden" name="evento_id" id="inputEventoIdTecnica">
-          <div id="archivoActualInfoTecnica" class="alert alert-info d-none mt-3">
-            Ya hay un archivo subido: <a href="#" id="linkArchivoActual" target="_blank">Ver archivo actual</a>
-          </div>
+          <input type="file" name="eve_informacion_tecnica" accept=".pdf,.doc,.docx" class="form-control" required>
+          <input type="hidden" name="evento_id" id="eventoIdInput">
         </div>
         <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Subir</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Subir</button>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const subirInfoButtons = document.querySelectorAll('.btn-subir-info');
-    const inputEventoId = document.getElementById('inputEventoIdTecnica');
-    const archivoActualDiv = document.getElementById('archivoActualInfoTecnica');
-    const archivoActualLink = document.getElementById('linkArchivoActual');
-    const form = document.getElementById('formSubirInfoTecnica');
+<!-- Modal de éxito -->
+<div class="modal fade" id="modalExitoFicha" tabindex="-1" aria-labelledby="modalExitoFichaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalExitoFichaLabel">¡Éxito!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        La información técnica se subió exitosamente.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    subirInfoButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const eventoId = button.getAttribute('evento-id');
-        const archivoUrl = button.getAttribute('archivo-url');
-        const hasArchivo = button.getAttribute('has-archivo') === '1';
 
-        inputEventoId.value = eventoId;
-
-        if (hasArchivo && archivoUrl) {
-          archivoActualDiv.classList.remove('d-none');
-          archivoActualLink.href = archivoUrl;
-        } else {
-          archivoActualDiv.classList.add('d-none');
-          archivoActualLink.href = '#';
-        }
-
-        console.log('Evento ID:', eventoId);
-        console.log('Archivo URL:', archivoUrl);
-        console.log('¿Tiene archivo?', hasArchivo);
-        // Actualizar acción del formulario
-        form.action =`/administrador/evento/${eventoId}/subir-info-tecnica/`.replace('eventoId', eventoId);
-      });
-    });
-  });
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('.btn-estadisticas').forEach(button => {
-    button.addEventListener('click', () => {
-      const inscritos = button.dataset.inscritos || '0';
-      const asistentes = button.dataset.asistentes || '0';
-      const participantes = button.dataset.participantes || '0';
-      const evaluadores = button.dataset.evaluadores || '0';
-      const fechaInicio = button.dataset.fechaInicio || '';
-      const fechaFin = button.dataset.fechaFin || '';
-      const lugar = button.dataset.lugar || '';
-      const ciudad = button.dataset.ciudad || '';
-
-      // Rellenar contenido del modal
-      document.getElementById('statInscritos').textContent = inscritos;
-      document.getElementById('statAsistentes').textContent = asistentes;
-      document.getElementById('statParticipantes').textContent = participantes;
-      document.getElementById('statEvaluadores').textContent = evaluadores;
-      document.getElementById('statFecha').textContent = `${fechaInicio} al ${fechaFin}`;
-      document.getElementById('statLugar').textContent = lugar;
-      document.getElementById('statCiudad').textContent = ciudad;
-
-      // Mostrar el modal
-      const modal = new bootstrap.Modal(document.getElementById('modalEstadisticas'));
-      modal.show();
-    });
-  });
-});
-</script>
 
 
 <!-- SCRIPT -->
@@ -401,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const baseModificarUrl = "{% url 'administrador:editar_evento' 0 %}".replace('0', '');
   const baseCriteriosUrl = "{% url 'administrador:criterios_evaluacion' 0 %}".replace('0', '');
   const baseConfigCertificadosUrl = "{% url 'administrador:configuracion_certificados' 0 %}";
-
+  const baseFichaTecnicaUrl = "{% url 'administrador:subir_info_tecnica' 123 %}".replace('0', '');
   
 
 
@@ -463,5 +412,6 @@ document.addEventListener('DOMContentLoaded', () => {
 <script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>
 <script src="{% static 'app_administrador/js/Eliminar.js' %}"></script>
 <script src="{% static 'app_administrador/js/modalModificarEvento.js' %}"></script>
+<script src="{% static 'app_administrador/js/subir_ficha_tecnica.js' %}"></script>
 
 {% endblock %}

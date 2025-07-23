@@ -50,10 +50,11 @@
 </header>
 
 <main class="text-center">
-  <h2 class="p-2 mt-4 rounded">Eventos Activos</h2>
+  <h2 class="p-2 rounded">Eventos Activos</h2>
   <div class="d-flex flex-wrap justify-content-center gap-3 p-3">
     {% for evento in eventos %}
-    {% if evento.eve_estado == "activo" %}
+    {% if evento.eve_estado == 'activo' or evento.eve_estado == 'Cancelado' %}
+
     <div class="event-card card shadow-sm" style="width: 280px;">
       <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="Imagen evento"
            style="height: 160px; object-fit: cover;">
@@ -65,11 +66,18 @@
         <p class="card-text mb-1"><i class="fas fa-user me-2"></i>{{ evento.eve_administrador_fk.usuario.first_name }} {{ evento.eve_administrador_fk.usuario.last_name }}</p>
         <p class="card-text mb-2">
           Estado:
-          <span class="text-success fw-bold">{{ evento.eve_estado|capfirst }}</span>
+          {% if evento.eve_estado == 'activo' %}
+            <span class="text-success fw-bold">{{ evento.eve_estado|capfirst }}</span>
+            {% elif evento.eve_estado == 'Cancelado' %}
+            <span class="text-danger fw-bold">{{ evento.eve_estado|capfirst }}</span>
+        {% endif %}
         </p>
-        <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}" class="btn-ver-mas text-white w-100 fw-semibold">
+        <a href="{% url 'super_administrador:ver_evento_adm' evento.id %}" class="btn btn-ver-mas text-white w-100 fw-semibold">
           Ver evento
         </a>
+        <button type="button" class="btn btn-ver-mas" data-evento-id = "{{evento.id}}" onclick="abrirModalEstadisticas(this)">
+            Ver estadísticas    
+        </button>
       </div>
     </div>
     {% endif %}
@@ -78,6 +86,46 @@
     {% endfor %}
   </div>
 </main>
+
+
+<!-- Modal de estadísticas -->
+<div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalLabelEstadisticas" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalLabelEstadisticas">Estadísticas del evento</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row text-center">
+          <div class="col-4">
+            <h6>Total Inscritos</h6>
+            <p id="dato-inscritos" class="fs-4 text-success">--</p>
+          </div>
+          <div class="col-4">
+            <h6>Asistentes</h6>
+            <p id="dato-asistentes" class="fs-4 text-success">--</p>
+          </div>
+          <div class="col-4">
+            <h6>Evaluadores</h6>
+            <p id="dato-evaluadores" class="fs-4 text-warning">--</p>
+          </div>
+          <div class="col-4">
+            <h6>Participantes</h6>
+            <p id="dato-participantes" class="fs-4 text-primary">--</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
 <!-- Modal de eventos activos -->
 <div class="modal fade" id="modalEventosActivos" tabindex="-1" aria-hidden="true"
     aria-labelledby="modalEventosActivosLabel">
@@ -333,6 +381,104 @@
     </div>
 </div>
 
+<!-- Modal Evento Cancelado -->
+<div class="modal fade" id="modalEventoCancelado" tabindex="-1" aria-labelledby="modalEventoCanceladoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center" style="font-family: 'Work Sans', sans-serif;">
+      <div class="modal-header bg-success text-white" style="background-color: #007832 !important;">
+        <h5 class="modal-title w-100" id="modalEventoCanceladoLabel">Evento cancelado</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="fs-5">El evento ha sido cancelado exitosamente.</p>
+        <i class="bi bi-check-circle-fill" style="font-size: 2.5rem; color: #007832;"></i>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-success" style="background-color: #007832;" data-bs-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEventoEliminado" tabindex="-1" aria-labelledby="modalEventoEliminadoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center p-4">
+      <div class="modal-body">
+        <h4 class="mb-3 text-success">Evento eliminado exitosamente</h4>
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalEventoActivo" tabindex="-1" aria-labelledby="modalEventoActivoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalEventoActivoLabel">Evento Activo</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p class="fs-5">El evento está activo y ya se encuentra disponible en la web.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const params = new URLSearchParams(window.location.search);
+    const modalElement = document.getElementById('modalEventoCancelado');
+    const modalEliminado = document.getElementById('modalEventoEliminado');
+    const modalActivo = document.getElementById('modalEventoActivo');
+
+    // Modal de cancelación de evento
+    if (params.get("modal_cancelar_evento") === "true" && modalElement) {
+      const modal = new bootstrap.Modal(modalElement);
+      modal.show();
+
+      modalElement.addEventListener('hidden.bs.modal', function () {
+        params.delete("modal_cancelar_evento");
+        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.replaceState({}, document.title, newUrl);
+      });
+    }
+
+    // Modal de evento eliminado exitosamente
+    if (params.get("modal_eliminado_evento") === "true" && modalEliminado) {
+      const modal = new bootstrap.Modal(modalEliminado);
+      modal.show();
+
+      modalEliminado.addEventListener('hidden.bs.modal', function () {
+        params.delete("modal_eliminado_evento");
+        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.replaceState({}, document.title, newUrl);
+      });
+    }
+
+    
+
+    if (params.get("modal_evento_activo") === "true" && modalActivo) {
+    const modal = new bootstrap.Modal(modalActivo);
+    modal.show();
+
+    modalActivo.addEventListener('hidden.bs.modal', function () {
+        params.delete("modal_evento_activo");
+        const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+        window.history.replaceState({}, document.title, newUrl);
+    });
+    }
+
+  });
+</script>
+
+
+
+
 
 {% endblock %}
 
@@ -459,6 +605,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<script>
+function abrirModalEstadisticas(button) {
+    const eventoId = button.getAttribute('data-evento-id');
+    const url = `{% url 'super_administrador:estadisticas_evento' 0 %}`.replace('0', eventoId);
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("dato-asistentes").textContent = data.asistentes;
+            document.getElementById("dato-evaluadores").textContent = data.evaluadores;
+            document.getElementById("dato-participantes").textContent = data.participantes;
+            document.getElementById("dato-inscritos").textContent = data.total_participantes;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalEstadisticas'));
+            modal.show();
+        });
+}
+</script>
+
+
 <script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
 <script src="{% static 'app_administrador/js/modaleditarperfil.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Bootstrap JS con Popper incluido -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+
 {% endblock %}
