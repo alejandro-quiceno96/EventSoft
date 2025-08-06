@@ -24,6 +24,11 @@ from app_usuarios.models import Usuario
 from django.db import IntegrityError
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
+import os
 
 def login_view(request):
     if request.method == 'POST':
@@ -124,14 +129,15 @@ def inicio_visitante(request):
 
     roles = []
     estado_admin = None
-    
-    admin = Administradores.objects.filter(usuario=request.user).first()
-    
+
+    admin = None
     if request.user.is_authenticated:
+        # Solo filtrar si el usuario está autenticado
+        admin = Administradores.objects.filter(usuario=request.user).first()
+
         if SuperAdministradores.objects.filter(usuario=request.user).exists():
             roles.append('Super Administrador')
-            
-        
+
         if admin:
             roles.append('Administrador de Eventos')
             estado_admin = admin.estado  # "Creado", "Activo", etc.
@@ -145,6 +151,7 @@ def inicio_visitante(request):
     }
 
     return render(request, 'app_visitante/index.html', contexto)
+
 
 
 @csrf_exempt
@@ -174,7 +181,7 @@ def inicio_sesion_administrador(request):
 def inicio_evaluador(request):
     return render(request, 'app_visitante/inicio_sesion_evaluador.html')
 
-
+@login_required(login_url='login')
 def detalle_evento(request, evento_id):
     """
     Vista para mostrar el detalle de un evento con información adicional
@@ -366,10 +373,7 @@ def registrar_asistente(request, evento_id):
         try:
             asistente = Asistentes.objects.get(usuario_id=request.user.id)
         except Asistentes.DoesNotExist:
-            # Si no existe, crear un nuevo asistente
-            asistente = Asistentes.objects.create(
-                usuario_id = request.user.id,
-            )
+            asistente = Asistentes.objects.create(usuario_id=request.user.id)
 
         # Crear la inscripción del asistente al evento
         if evento.eve_tienecosto:
@@ -378,21 +382,33 @@ def registrar_asistente(request, evento_id):
             clave = ''
         else:
             estado = 'Admitido'
-            qr = generar_pdf(asistente.id, 'Asistente', evento_id, tipo="asistente")
+            qr = generar_pdf(asistente.id, "Asistente", evento_id, tipo="asistente")
             clave = generar_clave_acceso()
 
-        asistente_evento = AsistentesEventos.objects.create(
-            asi_eve_asistente_fk=asistente,
-            asi_eve_evento_fk=evento,
-            asi_eve_fecha_hora=timezone.now(),
-            asi_eve_soporte=documento,
-            asi_eve_estado=estado,
-            asi_eve_qr=qr,
-            asi_eve_clave=clave
-        )
-        asistente_evento.save()
+        # 🔹 Enviar correo solo si está admitido
+        if estado == 'Admitido':
+            subject = f"🎉 Confirmación de inscripción a {evento.eve_nombre}"
+            
+            # Renderizar plantilla HTML
+            html_content = render_to_string('app_visitante/correos/registro_asistente.html', {
+                'evento': evento,
+                'usuario': request.user,
+                'clave': clave
+            })
+            text_content = strip_tags(html_content)  # Versión solo texto
+            
+            email = EmailMultiAlternatives(
+                subject,
+                text_content,
+                settings.DEFAULT_FROM_EMAIL,
+                [request.user.email]
+            )
+            email.attach_alternative(html_content, "text/html")
+            
+            qr_absoluta = os.path.join(settings.MEDIA_ROOT, qr)
+            email.attach_file(qr_absoluta)
+            email.send()
 
-                
     return redirect(reverse('inicio_visitante') + '?registro=exito_asistente')
 
 @login_required(login_url='login')

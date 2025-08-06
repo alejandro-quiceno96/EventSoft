@@ -207,9 +207,6 @@ body {
     flex-direction: column;
   }
 
-  .info-image {
-    height: 220px;
-  }
 
   .info-content {
     padding: 20px;
@@ -460,4 +457,10 @@ body {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.share-mas-buttons{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
