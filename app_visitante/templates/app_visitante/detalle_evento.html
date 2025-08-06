@@ -148,6 +148,7 @@
         title="Inicio"
       >
         <i class="fas fa-home"></i>
+        Volver al Inicio
       </a>
       Información del Evento
     </div>
@@ -231,10 +232,15 @@
     <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
       <i class="fas fa-user"></i> Preinscribirme como asistente
     </a>
-    
-    <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
+    <div class="share-mas-buttons">
+      <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
+       <!-- Botón Compartir Evento -->
+        <button class="action-btn-outline" onclick="abrirCompartir()">
+          <i class="fas fa-share-alt"></i> Compartir Evento
+        </button>
+    </div>
 
-    <div id="opciones-ocultas" class="extra-buttons">
+    <div id="opciones-ocultas" class="extra-buttons" style="display: none;">
       {% if evento.eve_habilitar_participantes %}
         <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
           <i class="fas fa-pen"></i> Preinscribirme como participante
@@ -271,16 +277,7 @@
   
 </div>
 
-
-        <!-- Botón Compartir Evento -->
-        <button class="action-btn-outline" onclick="abrirCompartir()">
-          <i class="fas fa-share-alt"></i> Compartir Evento
-        </button>
-        
-       
-    
-    
-    <!-- MODAL COMPARTIR -->
+<!-- MODAL COMPARTIR -->
 <div id="modal-compartir" class="modal-compartir">
   <div class="modal-contenido">
     <span class="cerrar" onclick="cerrarCompartir()">&times;</span>
