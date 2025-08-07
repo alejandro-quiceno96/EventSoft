@@ -19,10 +19,10 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from app_asistente.models import Asistentes
 from django.core.mail import EmailMultiAlternatives
-from django.core.mail import send_mail
 from django.utils import timezone
 import locale
 from django.utils.timezone import now
+from django.core.exceptions import ObjectDoesNotExist
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
 from app_areas.models import Areas
@@ -209,7 +209,7 @@ def obtener_evento(request, evento_id):
         'eve_categoria': categoria_nombre,
         'cantidad_participantes': participantes,
         'cantidad_asistentes': asistentes,
-        'memorias': evento.eve_memorias if evento.eve_memorias else "No se ha subido memorias del evento", 
+        'memorias': evento.eve_memorias if evento.eve_memorias else "No se ha subido memorias del evento",
     }
 
     return JsonResponse(datos_evento)
@@ -1106,15 +1106,21 @@ DEFAULT_HORIZONTAL = 'defaults/certificado_defecto.png'
 
 def is_default_design(path):
     return DEFAULT_VERTICAL in path or DEFAULT_HORIZONTAL in path
+  # si lo estás usando en diseño
 
 @login_required(login_url='login')
 def configuracion_certificados(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
 
-    # Obtener o crear el certificado del evento
-    certificado, _ = Certificado.objects.get_or_create(evento_fk=evento)
+    try:
+        certificado = Certificado.objects.get(evento_fk=evento)
+    except Certificado.DoesNotExist:
+        certificado = None
 
     if request.method == 'POST':
+        if not certificado:
+            certificado = Certificado(evento_fk=evento)  # ⚠️ SE CREA AQUÍ
+
         certificado.certifica = request.POST.get('nombre_certificador')
         certificado.tipografia = request.POST.get('tipografia')
         certificado.orientacion = request.POST.get('orientacion')
@@ -1125,12 +1131,10 @@ def configuracion_certificados(request, evento_id):
         # --------------------------
         con_diseno = request.POST.get('con_diseno')
         if con_diseno == 'si' and 'diseno' in request.FILES:
-            # Eliminar diseño anterior si no es por defecto
             if certificado.diseño and os.path.isfile(certificado.diseño.path) and not is_default_design(certificado.diseño.path):
                 os.remove(certificado.diseño.path)
             certificado.diseño = request.FILES['diseno']
         elif con_diseno == 'no':
-            # Eliminar diseño si se desactiva (si no es por defecto)
             if certificado.diseño and os.path.isfile(certificado.diseño.path) and not is_default_design(certificado.diseño.path):
                 os.remove(certificado.diseño.path)
             certificado.diseño = None
@@ -1167,14 +1171,13 @@ def configuracion_certificados(request, evento_id):
 
         return redirect(f"{reverse('administrador:configuracion_certificados', args=[evento.id])}?guardado=1")
 
-    # Mostrar formulario con datos existentes
     guardado = request.GET.get('guardado') == '1'
 
     return render(request, 'app_administrador/configuracion_certificados.html', {
         'evento': evento,
-        'certificado': certificado,
         'guardado': guardado,
     })
+
     
 @login_required(login_url='login')
 def descargar_certificado_pdf(request, evento_id):

@@ -66,7 +66,7 @@ const constar = document.getElementById("constar");
           preview.style.backgroundImage = "url('../../../../static/image/certificado_vertical.png')";
           document.getElementById("preview-lugar-fecha").style.right = "120px";
         } else {
-            preview.style.backgroundImage = "url('../../../../static/image/')"; 
+            preview.style.backgroundImage = "url('../../../../static/image/certificado_defecto.png')"; 
         }
       
     }
