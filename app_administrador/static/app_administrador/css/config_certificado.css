@@ -31,8 +31,8 @@ body {
 }
 
 .contenedor-configuracion {
-  max-width: 800px;
-  margin: auto;
+  max-width: 500px;
+  margin-top: 10px;
   background: #fff;
   padding: 30px;
   border-radius: 10px;
@@ -82,12 +82,14 @@ body {
   background-color: rgba(0, 0, 0, 0.6);
 }
 
-.modal-content {
-  background-color: #ffffff1c;
+.modal-content-preview {
+  background-color: #ffffff8f;
   margin: 50px auto;
   padding: 20px;
   border-radius: 10px;
   width: fit-content;
+  display: flex;
+  flex-direction: column;
 }
 
 .cerrar-modal {

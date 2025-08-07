@@ -116,7 +116,8 @@ def obtener_ranking(evento_id):
 def generar_certificados(request, evento_id, tipo, usuario):
     evento = get_object_or_404(Eventos, id=evento_id)
     certificado = get_object_or_404(Certificado, evento_fk=evento)
-    
+    print(certificado.diseño.url)
+ 
     # Obtener instancia del participante
     if tipo == 'participante':
         participante = get_object_or_404(Participantes, id=usuario)

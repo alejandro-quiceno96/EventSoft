@@ -21,16 +21,7 @@
     </div>
 
   <h2>Configuración del Certificado</h2>
-  
-  {% if certificado %}
-    <p>Configuración actual del certificado para el evento:</p>
-    <a href="{% url 'administrador:descargar_certificado_pdf' evento.id %}" class="boton-animado" target="_blank">
-  <i class="fa fa-download"></i> Ver Diseño
-</a>
-
-  {% else %}
-    <p>No se ha configurado un certificado para este evento.</p>
-  {% endif %}
+  <p>Configure los detalles del certificado que se generará para los participantes del evento.</p>
 
   <form id="formulario-certificado" class="formulario-configuracion" action="{% url 'administrador:configuracion_certificados' evento.id %}" method="post" enctype="multipart/form-data">
   {% csrf_token %}
@@ -41,19 +32,18 @@
            id="id_nombre_certificador"
            name="nombre_certificador"
            placeholder="Ej. EventSoft"
-           value="{{ certificado.certifica|default:'' }}"
            required>
   </div>
 
   <div class="form-group">
     <label for="con_diseno">¿Desea usar diseño de fondo?</label>
     <select id="con_diseno" name="con_diseno">
-      <option value="no" {% if not certificado.diseño %}selected{% endif %}>No</option>
-      <option value="si" {% if certificado.diseño %}selected{% endif %}>Sí</option>
+      <option value="no">No</option>
+      <option value="si">Sí</option>
     </select>
   </div>
 
-  <div id="grupo-diseno" class="form-group" {% if certificado.diseño %}style="display: block"{% else %}none{% endif %};>
+  <div id="grupo-diseno" style="display: none;" class="form-group">
     <label for="id_diseno">Subir diseño (imagen de fondo):</label>
     <input type="file" id="id_diseno" name="diseno" accept="image/*">
 
@@ -62,48 +52,48 @@
   <div class="form-group">
     <label for="con_firma">¿Desea incluir firma?</label>
     <select id="con_firma" name="con_firma">
-      <option value="no" {% if not certificado.firma %}selected{% endif %}>No</option>
-      <option value="si" {% if certificado.firma %}selected{% endif %}>Sí</option>
+      <option value="no" >No</option>
+      <option value="si" >Sí</option>
     </select>
   </div>
 
-  <div id="grupo-firma" style="display: {% if certificado.firma %}block{% else %}none{% endif %};">
+  <div id="grupo-firma" style="display: none;">
     <div class="form-group">
       <label for="id_firma">Imagen de la firma:</label>
       <input type="file" id="id_firma" name="firma" accept="image/*">
     </div>
     <div class="form-group">
       <label for="id_firma_nombre">Nombre del firmante:</label>
-      <input type="text" id="id_firma_nombre" name="firma_nombre" value="{{ certificado.firma_nombre|default:'' }}">
+      <input type="text" id="id_firma_nombre" name="firma_nombre" placeholder="Ej. EventSoft">
     </div>
     <div class="form-group">
       <label for="id_firma_cargo">Cargo del firmante:</label>
-      <input type="text" id="id_firma_cargo" name="firma_cargo" value="{{ certificado.firma_cargo|default:'' }}">
+      <input type="text" id="id_firma_cargo" name="firma_cargo" placeholder="Ej. Gerente General">
     </div>
   </div>
 
   <div class="form-group">
     <label for="tipografia">Tipografía del texto:</label>
     <select id="tipografia" name="tipografia">
-      <option value="'Work Sans', sans-serif" {% if certificado.tipografia == "'Work Sans', sans-serif" %}selected{% endif %}>Work Sans</option>
-      <option value="Arial, sans-serif" {% if certificado.tipografia == "Arial, sans-serif" %}selected{% endif %}>Arial</option>
-      <option value="'Times New Roman', serif" {% if certificado.tipografia == "'Times New Roman', serif" %}selected{% endif %}>Times New Roman</option>
-      <option value="Georgia, serif" {% if certificado.tipografia == "Georgia, serif" %}selected{% endif %}>Georgia</option>
-      <option value="'Courier New', monospace" {% if certificado.tipografia == "'Courier New', monospace" %}selected{% endif %}>Courier New</option>
+      <option value="'Work Sans', sans-serif" >Work Sans</option>
+      <option value="Arial, sans-serif">Arial</option>
+      <option value="'Times New Roman', serif">Times New Roman</option>
+      <option value="Georgia, serif">Georgia</option>
+      <option value="'Courier New', monospace">Courier New</option>
     </select>
   </div>
 
   <div class="form-group">
     <label for="orientacion">Orientación:</label>
     <select id="orientacion" name="orientacion">
-      <option value="vertical" {% if certificado.orientacion == 'vertical' %}selected{% endif %}>Vertical</option>
-      <option value="horizontal" {% if certificado.orientacion == 'horizontal' %}selected{% endif %}>Horizontal</option>
+      <option value="vertical">Vertical</option>
+      <option value="horizontal">Horizontal</option>
     </select>
   </div>
 
   <div class="form-group">
     <label for="lugar_expedicion">Lugar de expedición:</label>
-    <input type="text" id="lugar_expedicion" name="lugar_expedicion" placeholder="Ej. Manizales" value="{{ certificado.lugar_expedicion|default:'' }}">
+    <input type="text" id="lugar_expedicion" name="lugar_expedicion" placeholder="Ej. Manizales" required>
   </div>
 
   <div class="form-group text-center">
@@ -120,7 +110,7 @@
 
 <!-- Modal de previsualización -->
 <div class="modal" id="modal-preview" style="display: none;">
-  <div class="modal-content">
+  <div class="modal-content-preview">
     <span class="cerrar-modal" onclick="document.getElementById('modal-preview').style.display='none'">&times;</span>
     <div class="modal-body d-flex justify-content-center">
       <div class="preview-certificado" id="preview-certificado">

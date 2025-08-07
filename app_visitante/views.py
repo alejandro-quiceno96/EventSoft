@@ -367,7 +367,8 @@ def registrar_asistente(request, evento_id):
     evento = get_object_or_404(Eventos, pk=evento_id)
 
     if request.method == 'POST':
-        documento = request.FILES.get('comprobante_pago')
+        
+        soporte = request.FILES.get('comprobante_pago', None)  # Soporte opcional
 
         # Verificar si el usuario ya es un asistente registrado
         try:
@@ -408,6 +409,29 @@ def registrar_asistente(request, evento_id):
             qr_absoluta = os.path.join(settings.MEDIA_ROOT, qr)
             email.attach_file(qr_absoluta)
             email.send()
+        
+            # Crear la inscripción del asistente al evento
+            asistente_evento = AsistentesEventos(
+                asi_eve_evento_fk=evento,
+                asi_eve_asistente_fk=asistente,
+                asi_eve_estado=estado,
+                asi_eve_qr=qr,
+                asi_eve_clave=clave,
+                asi_eve_soporte=None,
+                asi_eve_fecha_hora=timezone.now(),
+            )
+        else:
+            asistente_evento = AsistentesEventos(
+                asi_eve_evento_fk=evento,
+                asi_eve_asistente_fk=asistente,
+                asi_eve_estado=estado,
+                asi_eve_qr=qr,
+                asi_eve_clave="",
+                asi_eve_soporte=soporte,
+                asi_eve_fecha_hora=timezone.now(),
+            )
+            
+        asistente_evento.save()
 
     return redirect(reverse('inicio_visitante') + '?registro=exito_asistente')
 
