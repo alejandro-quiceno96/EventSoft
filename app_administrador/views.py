@@ -190,8 +190,11 @@ def obtener_evento(request, evento_id):
     # Contar participantes y asistentes admitidos
     participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento_id, par_eve_estado='Admitido').count()
     asistentes = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_estado='Admitido').count()
-    
-    
+    certificado_existe = Certificado.objects.filter(evento_fk=evento_id).first()
+    if certificado_existe:
+        certificado = True
+    else:
+        certificado = False
 
     datos_evento = {
         'eve_id': evento.id,
@@ -210,6 +213,7 @@ def obtener_evento(request, evento_id):
         'cantidad_participantes': participantes,
         'cantidad_asistentes': asistentes,
         'memorias': evento.eve_memorias if evento.eve_memorias else "No se ha subido memorias del evento",
+        'certificado': certificado
     }
 
     return JsonResponse(datos_evento)
@@ -1111,11 +1115,14 @@ def is_default_design(path):
 @login_required(login_url='login')
 def configuracion_certificados(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
-
     try:
         certificado = Certificado.objects.get(evento_fk=evento)
+        diseño = True if certificado.diseño else False
+        firma = True if certificado.firma else False
     except Certificado.DoesNotExist:
         certificado = None
+        diseño = False
+        firma = False
 
     if request.method == 'POST':
         if not certificado:
@@ -1176,6 +1183,11 @@ def configuracion_certificados(request, evento_id):
     return render(request, 'app_administrador/configuracion_certificados.html', {
         'evento': evento,
         'guardado': guardado,
+        'certificado': certificado,
+        'con_diseno': diseño,
+        'con_firma': firma,
+        'orientacion': certificado.orientacion if certificado else 'vertical',
+        
     })
 
     
@@ -1414,4 +1426,26 @@ def habilitar_evaluadores(request, evento_id):
     
     return redirect('administrador:index_administrador')
 
+def modificar_certificados(request,evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    certificado = get_object_or_404(Certificado, evento_fk=evento_id)
 
+    # Formatear fecha actual en español
+    meses_es = {
+        'January': 'enero', 'February': 'febrero', 'March': 'marzo',
+        'April': 'abril', 'May': 'mayo', 'June': 'junio',
+        'July': 'julio', 'August': 'agosto', 'September': 'septiembre',
+        'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'
+    }
+    fecha_actual = now()
+    mes_es = meses_es[fecha_actual.strftime('%B')]
+    fecha_formateada = fecha_actual.strftime(f'%d de {mes_es} de %Y')
+
+    context = {
+        'evento': evento,
+        'certificado': certificado,
+        'fecha_actual': fecha_formateada,
+        'orientacion': certificado.orientacion,
+    }
+
+    return render(request, 'app_administrador/modificar_certificado.html', context)

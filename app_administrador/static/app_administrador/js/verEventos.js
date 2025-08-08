@@ -61,9 +61,16 @@ document.addEventListener("DOMContentLoaded", function () {
                     document
                         .getElementById("btnCriterios")
                         .setAttribute("data-url", baseCriteriosUrl + data.eve_id);
-                    document
+                    if (data.certificado){
+                        document
+                        .getElementById("btnConfigCertificados")
+                        .setAttribute("data-url", baseModificarCertificadosUrl.replace("0", data.eve_id));
+                    }else{
+                        document
                         .getElementById("btnConfigCertificados")
                         .setAttribute("data-url", baseConfigCertificadosUrl.replace("0", data.eve_id));
+                    }
+                    
                     // Mostrar el modal
                     new bootstrap.Modal(document.getElementById("eventoModal")).show();
                 })

@@ -32,16 +32,24 @@
            id="id_nombre_certificador"
            name="nombre_certificador"
            placeholder="Ej. EventSoft"
+           value="{{ certificado.certifica|default:''}}"
            required>
   </div>
 
   <div class="form-group">
-    <label for="con_diseno">¿Desea usar diseño de fondo?</label>
+    <label for="con_diseno">¿Desea usar diseño de fondo hecho por ti?</label>
     <select id="con_diseno" name="con_diseno">
-      <option value="no">No</option>
+      <option value="no" >No</option>
       <option value="si">Sí</option>
     </select>
   </div>
+
+  {%if certificado.diseño %}
+  <div class="form-group">
+    <label for="id_diseno_actual">Diseño actual:</label>
+    <img src="{{ certificado.diseño.url }}" alt="Diseño Actual" class="img-thumbnail" style="max-width: 200px;">
+  </div>
+  {%endif%}
 
   <div id="grupo-diseno" style="display: none;" class="form-group">
     <label for="id_diseno">Subir diseño (imagen de fondo):</label>
@@ -62,13 +70,19 @@
       <label for="id_firma">Imagen de la firma:</label>
       <input type="file" id="id_firma" name="firma" accept="image/*">
     </div>
+    {% if certificado.firma %}
+    <div class="form-group">
+      <label for="id_firma_actual">Firma actual:</label>
+      <img src="{{ certificado.firma.url }}" alt="Firma Actual" class="img-thumbnail" style="max-width: 200px;">
+    </div>
+    {%endif%}
     <div class="form-group">
       <label for="id_firma_nombre">Nombre del firmante:</label>
-      <input type="text" id="id_firma_nombre" name="firma_nombre" placeholder="Ej. EventSoft">
+      <input type="text" id="id_firma_nombre" name="firma_nombre" placeholder="Ej. EventSoft" value="{{ certificado.firma_nombre|default:'' }}">
     </div>
     <div class="form-group">
       <label for="id_firma_cargo">Cargo del firmante:</label>
-      <input type="text" id="id_firma_cargo" name="firma_cargo" placeholder="Ej. Gerente General">
+      <input type="text" id="id_firma_cargo" name="firma_cargo" placeholder="Ej. Gerente General" value="{{ certificado.firma_cargo|default:'' }}">
     </div>
   </div>
 
@@ -93,7 +107,7 @@
 
   <div class="form-group">
     <label for="lugar_expedicion">Lugar de expedición:</label>
-    <input type="text" id="lugar_expedicion" name="lugar_expedicion" placeholder="Ej. Manizales" required>
+    <input type="text" id="lugar_expedicion" name="lugar_expedicion" placeholder="Ej. Manizales" value="{{certificado.lugar_expedicion|default:'' }}" required>
   </div>
 
   <div class="form-group text-center">
@@ -103,6 +117,9 @@
   <div class="form-group text-center">
     <button type="submit" id="btn-guardar">Guardar configuración</button>
   </div>
+
+  <input type="hidden" id="diseñoModificar" value="{{ certificado.diseño.url|default:'' }}">
+  <input type="hidden" id="firmaModificar" value="{{ certificado.firma.url|default:'' }}">
 </form>
 
 
@@ -140,7 +157,7 @@
     <div class="modal-content text-center p-4" style="border-radius: 12px; background-color: #f9f9f9;">
       <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
       <p class="fw-bold">¡Configuración guardada con éxito!</p>
-      <button onclick="document.getElementById('modal-exito').style.display='none'" class="boton-animado">Cerrar</button>
+     <button type="button" id="cerrar-modal" class="boton-animado">Cerrar</button>
     </div>
   </div>
 </div>
@@ -148,17 +165,66 @@
 
 <script>
   window.addEventListener('DOMContentLoaded', function () {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('guardado') === '1') {
-      const modal = document.getElementById("modal-exito");
-      if (modal) {
-        modal.style.display = "flex"; // FLEX para que se centre
-      }
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('guardado') === '1') {
 
-      // Elimina el parámetro de la URL
-      const newURL = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, document.title, newURL);
+    // Quitar el parámetro primero
+    const newURL = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, newURL);
+
+    // Mostrar el modal
+    const modal = document.getElementById("modal-exito");
+    if (modal) {
+      modal.style.display = "flex";
     }
+  }
+  
+});
+document.getElementById("cerrar-modal").addEventListener("click", function() {
+    document.getElementById("modal-exito").style.display = "none";
+});
+
+
+
+
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const conDisenoSelect = document.getElementById('con_diseno');
+    const grupoDiseno = document.getElementById('grupo-diseno');
+    const conFirmaSelect = document.getElementById('con_firma');
+    const grupoFirma = document.getElementById('grupo-firma');
+    const conDiseno = "{{con_diseno }}"
+    const conFirma = "{{con_firma}}"
+    const tipografia = "{{ certificado.tipografia|default:''|escapejs }}";
+    const tipografiaSelect = document.getElementById('tipografia');
+    
+    if (tipografia !== "") {
+      tipografiaSelect.value = tipografia;
+    }
+    // Estado inicial
+    if (conDiseno === "True") {
+      grupoDiseno.style.display = 'block';
+      conDisenoSelect.value = 'si';
+    } else {
+      grupoDiseno.style.display = 'none';
+      conDisenoSelect.value = 'no';
+    }
+
+    if (conFirma === "True") {
+      grupoFirma.style.display = 'block';
+      conFirmaSelect.value = 'si';
+    } else {
+      grupoFirma.style.display = 'none';
+      conFirmaSelect.value = 'no';
+    }
+
+
+    if ("{{ certificado.orientacion }}") {
+      document.getElementById('orientacion').value = "{{ certificado.orientacion }}";
+    } else {
+      document.getElementById('orientacion').value = 'vertical';
+    }
+
   });
 </script>
 

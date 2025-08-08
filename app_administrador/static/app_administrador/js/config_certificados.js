@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const conDiseno = document.getElementById("con_diseno");
   const conFirma = document.getElementById("con_firma");
+  const inputDiseno = document.getElementById("id_diseno");
 
   const preview = document.getElementById("preview-certificado");
   const textoCert = document.getElementById("preview-texto");
@@ -12,9 +13,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const nombreFirmante = document.getElementById("preview-nombre");
   const cargoFirmante = document.getElementById("preview-cargo");
 
-const constar = document.getElementById("constar");
+  const constar = document.getElementById("constar");
 
-  const nombreGeneraCertificado = document.getElementById("nombre_genera_certificado");
+  const nombreGeneraCertificado = document.getElementById(
+    "nombre_genera_certificado"
+  );
+
+  const diseñoModificar = document.getElementById("diseñoModificar").value;
+  const firmaModificar = document.getElementById("firmaModificar").value;
 
   // Mostrar/ocultar diseño
   conDiseno.addEventListener("change", () => {
@@ -26,12 +32,16 @@ const constar = document.getElementById("constar");
     grupoFirma.style.display = conFirma.value === "si" ? "block" : "none";
   });
 
+
   // Previsualizar certificado
   document.getElementById("btn-previsualizar").addEventListener("click", () => {
+
     // Mostrar modal
     document.getElementById("modal-preview").style.display = "block";
     // Nombre del certificador
-    const nombreCertificador = document.getElementById("id_nombre_certificador").value;
+    const nombreCertificador = document.getElementById(
+      "id_nombre_certificador"
+    ).value;
     nombreGeneraCertificado.textContent = `${nombreCertificador.toUpperCase()}`;
     // Aplicar tipografía
     const tipografia = document.getElementById("tipografia").value;
@@ -53,52 +63,58 @@ const constar = document.getElementById("constar");
     }
 
     // Fondo diseño
-    const inputDiseno = document.getElementById("id_diseno");
+
     if (inputDiseno.files.length > 0) {
       const reader = new FileReader();
-        reader.onload = (e) => {
-          preview.style.backgroundImage = `url('${e.target.result}')`;
-        };
-      
+      reader.onload = (e) => {
+        preview.style.backgroundImage = `url('${e.target.result}')`;
+      };
       reader.readAsDataURL(inputDiseno.files[0]);
-    } else {
-        if (orientacion === "vertical") {
-          preview.style.backgroundImage = "url('../../../../static/image/certificado_vertical.png')";
-          document.getElementById("preview-lugar-fecha").style.right = "120px";
-        } else {
-            preview.style.backgroundImage = "url('../../../../static/image/certificado_defecto.png')"; 
-        }
-      
+    } else if (diseñoModificar != ""){
+        preview.style.backgroundImage = `url('${diseñoModificar}')`;
+    }else {
+      if (orientacion === "vertical") {
+        preview.style.backgroundImage =
+          "url('../../../../static/image/certificado_vertical.png')";
+        document.getElementById("preview-lugar-fecha").style.right = "120px";
+      } else {
+        preview.style.backgroundImage =
+          "url('../../../../static/image/certificado_defecto.png')";
+      }
     }
 
     // Agrega al final de la función del click de previsualización
 
     const lugar = document.getElementById("lugar_expedicion").value;
     const fechaHoy = new Date();
-    const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric' };
-    const fechaFormateada = fechaHoy.toLocaleDateString('es-ES', opcionesFecha);
+    const opcionesFecha = { year: "numeric", month: "long", day: "numeric" };
+    const fechaFormateada = fechaHoy.toLocaleDateString("es-ES", opcionesFecha);
 
     document.getElementById(
       "preview-lugar-fecha"
-    ).textContent = `Para constancia se expedide en ${lugar}, el día ${fechaFormateada}.`;
-
+    ).textContent = `Para constancia se expide en ${lugar}, el día ${fechaFormateada}.`;
 
     // Firma
     const firmaInput = document.getElementById("id_firma");
     if (firmaInput.files.length > 0) {
       const reader = new FileReader();
-      reader.onload = e => {
-        firmaImg.src = e.target.result;
+      reader.onload = (e) => {
+        firmaImg.src = firmaInput.files[0];
         firmaImg.style.display = "block";
         nombreFirmante.style.borderTop = "1px solid black";
       };
       reader.readAsDataURL(firmaInput.files[0]);
-    } else {
+    } else if (firmaModificar != ""){
+        firmaImg.src = firmaModificar;
+        firmaImg.style.display = "block";
+        nombreFirmante.style.borderTop = "1px solid black";
+    }else {
       firmaImg.style.display = "none";
     }
 
     // Nombre y cargo
-    nombreFirmante.textContent = document.getElementById("id_firma_nombre").value;
+    nombreFirmante.textContent =
+      document.getElementById("id_firma_nombre").value;
     cargoFirmante.textContent = document.getElementById("id_firma_cargo").value;
   });
 });
