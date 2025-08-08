@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Previsualización de Certificado</title>
+  <link rel="stylesheet" href="{% static 'app_administrador/css/certificado_preview.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans&display=swap" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="grupo centrado mb-1">
+        <a href="{% url 'administrador:index_administrador' %}" class="boton-animado">
+            <i class="fa-solid fa-house"></i> Volver al Inicio
+        </a>
+    </div>
+  <div class="certificado-container">
+    <div class="certificado-wrapper {{ certificado.orientacion }}" style="background-image: url('{{ certificado.diseño.url }}');">
+      <div class="contenido-certificado" >
+        {% if certificado.certifica %}
+            <div id="nombre_genera_certificado">{{ certificado.certifica }}</div>
+            <div id="constar" class="constar">CERTIFICA:</div>
+        
+        {% endif %}
+        <div id="preview-texto" class="preview-texto">
+          Que <strong>{{nombre_participante|default:'Nombre del participante'}}</strong> identificado(a) con el número de documento
+          <strong>{{documento_participante|default:'###########'}}</strong> estuvo como <strong>{{rol_participante|default:'rol_participante'}}</strong> en el marco del <strong>{{evento.eve_nombre|default:'nombre del evento'}}</strong> desarrollado el <strong>{{ fecha_inicio|default:'fecha del evento' }}</strong>.
+        </div>
+
+        
+
+        {% if certificado.firma %}
+          <div class="preview-firma-container">
+            <img src="{{ certificado.firma.url }}" class="preview-firma" style="display: block;">
+            <div class="preview-nombre">{{ certificado.firma_nombre }}</div>
+            <div class="preview-cargo">{{ certificado.firma_cargo }}</div>
+        </div>
+        {% endif %}
+
+
+        {% if certificado.lugar_expedicion %}
+          <div id="preview-lugar-fecha" class="preview-lugar-fecha">
+             Para constancia se expide en {{ certificado.lugar_expedicion }}, el dia {{ fecha_actual}}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="acciones">
+      <a href="{% url 'administrador:configuracion_certificados' evento.id %}" class="btn-modificar">
+        <button class="btn-modificar">Modificar información</button>
+      </a>
+    </div>
+  </div>
+  <script>
+    const containerPreview = document.querySelector('.certificado-container');
+    containerPreview.style.fontFamily = "{{certificado.tipografia}}";
+  </script>
+</body>
+</html>

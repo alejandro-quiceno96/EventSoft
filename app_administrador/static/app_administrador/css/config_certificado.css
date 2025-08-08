@@ -7,12 +7,13 @@
 
 body {
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.418), rgba(0, 88, 47, 0.712)), 
-                url("/static/app_visitante/image/fondo_login.jpg") center/cover no-repeat;
+                url("/static/image/fondo_pagina.jpg") center/cover no-repeat;
     font-family: 'Work Sans', sans-serif;
     color: black;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-attachment: fixed; 
 }
 
 .boton-animado{

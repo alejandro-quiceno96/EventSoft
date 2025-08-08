@@ -1,0 +1,197 @@
+:root {
+  --color-principal: #007832;
+  --color-secundario: #ffffff;
+  --color-principal-hover: #005f27;
+  --color-texto: #000000;
+
+  --certificado-width-vertical: 816px;
+  --certificado-height-vertical: 1056px;
+  --certificado-width-horizontal: 1056px;
+  --certificado-height-horizontal: 816px;
+
+  --font-principal: 'Work Sans', sans-serif;
+  --font-size-texto: 15px;
+  --font-size-cargo: 14px;
+  --font-size-fecha: 14px;
+
+  --btn-padding: 12px 25px;
+  --btn-radius: 8px;
+  --btn-font-size: 16px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f7f7f7;
+  font-family: var(--font-principal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.418), rgba(0, 88, 47, 0.712)), 
+                url("/static/image/fondo_pagina.jpg") center/cover no-repeat;
+  background-attachment: fixed;
+}
+
+.boton-animado{
+    background-color: var(--color-principal);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    margin: 5px;
+}
+
+.boton-animado:hover {
+    background-color: var(--color-principal-hover);
+}
+
+
+.certificado-container {
+  text-align: center;
+  max-width: 100%;
+  max-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.certificado-wrapper {
+  position: relative;
+  height: 80vh; /* 80% de la altura de la pantalla */
+  aspect-ratio: 816 / 1056; /* Vertical por defecto */
+  max-width: 100%;
+  margin: 0 auto;
+  background-color: white;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--color-principal);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  font-size: var(--font-size-texto);
+}
+
+/* Si el certificado es horizontal, cambia la proporción */
+.certificado-wrapper.horizontal {
+  aspect-ratio: 1056 / 816;
+  font-family: var(--font-size-texto);
+}
+
+
+.contenido-certificado {
+  position: absolute;
+  inset: 0;
+  padding: 60px;
+  box-sizing: border-box;
+  color: var(--color-texto);
+}
+
+#nombre_genera_certificado {
+  position: absolute;
+  top: 18%;
+  left: 10%;
+  right: 10%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 25px;
+  font-weight: bold;
+  line-height: 1.6;
+  color: #000;
+  z-index: 2;
+}
+
+.constar {
+  position: absolute;
+  top: 27%;
+  left: 10%;
+  right: 10%;
+  transform: translateY(-50%);
+  text-align: center;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #000;
+  z-index: 2;
+}
+
+.preview-texto {
+  position: absolute;
+  top: 45%;
+  left: 10%;
+  right: 10%;
+  transform: translateY(-50%);
+  text-align: justify;
+  line-height: 1.6;
+  color: #000;
+  z-index: 2;
+}
+
+.preview-firma-container {
+  position: absolute;
+  bottom: 60px;
+  left: 15px;
+  display: flex;
+  flex-direction: column;
+  text-align: justify;
+}
+
+.preview-firma {
+  position: absolute;
+  bottom: 60px;
+  left: 60px;
+  width: 200px;
+  object-fit: contain;
+  z-index: 2;
+}
+
+.preview-nombre {
+  position: absolute;
+  bottom: 50px;
+  left: 60px;
+  width: 300px;
+  font-weight: bold;
+  z-index: 2;
+  border-top: 1px solid #000;
+}
+
+.preview-cargo {
+  position: absolute;
+  width: 350px;
+  bottom: 30px;
+  left: 60px;
+  font-size: var(--font-size-cargo);
+  color: gray;
+  z-index: 2;
+  margin-bottom: 5px;
+}
+
+
+.preview-lugar-fecha {
+  position: absolute;
+  bottom: 40px;
+  right: 55px;
+  font-size: var(--font-size-fecha);
+  text-align: right;
+  color: #000;
+  z-index: 2;
+}
+
+.acciones {
+  margin-top: 20px;
+}
+
+.btn-modificar {
+  background-color: var(--color-principal);
+  color: var(--color-secundario);
+  border: none;
+  padding: var(--btn-padding);
+  font-size: var(--btn-font-size);
+  border-radius: var(--btn-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-modificar:hover {
+  background-color: #005f28;
+}
