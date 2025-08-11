@@ -1,354 +1,309 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Información del Evento</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Información del Evento</title>
 
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="{% static 'app_visitante/css/detalle_evento.css' %}"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap"
-      rel="stylesheet"
-    />
+  <!-- Font Awesome -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
-    <style>
-      .modal-compartir {
-  display: none; /* Se muestra con JS */
-  position: fixed;
-  z-index: 1050;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.6);
-  font-family: 'Work Sans', sans-serif;
-}
+  <!-- Estilos propios -->
+  <link rel="stylesheet" href="{% static 'app_visitante/css/detalle_evento.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap"
+        rel="stylesheet" />
 
-.modal-contenido {
-  background-color: #fff;
-  margin: 10% auto;
-  padding: 30px 40px;
-  border-radius: 12px;
-  max-width: 500px;
-  position: relative;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  text-align: center;
-}
+  <style>
+    /* ===== Modal Compartir ===== */
+    .modal-compartir {
+      display: none;
+      position: fixed;
+      z-index: 1050;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.6);
+      font-family: 'Work Sans', sans-serif;
+    }
 
-.cerrar {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-  font-size: 26px;
-  font-weight: bold;
-  color: #333;
-  cursor: pointer;
-}
+    .modal-contenido {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 30px 40px;
+      border-radius: 12px;
+      max-width: 500px;
+      position: relative;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
 
-.titulo-modal {
-  margin-bottom: 25px;
-  font-size: 22px;
-  color: #007832;
-}
+    .cerrar {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 26px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+    }
 
-.botones-compartir {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
+    .titulo-modal {
+      margin-bottom: 25px;
+      font-size: 22px;
+      color: #007832;
+    }
 
-.btn-compartir {
-  text-decoration: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s ease;
-}
+    .botones-compartir {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-.btn-compartir i {
-  margin-right: 8px;
-  font-size: 18px;
-}
+    .btn-compartir {
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
 
-.btn-compartir.whatsapp { background-color: #25D366; }
-.btn-compartir.correo   { background-color: #007832; }
-.btn-compartir.telegram { background-color: #0088cc; }
+    .btn-compartir i {
+      margin-right: 8px;
+      font-size: 18px;
+    }
 
-.btn-compartir:hover {
-  opacity: 0.9;
-}
+    .btn-compartir.whatsapp { background-color: #25D366; }
+    .btn-compartir.correo   { background-color: #007832; }
+    .btn-compartir.telegram { background-color: #0088cc; }
 
-.btn-copiar {
-  background-color: transparent;
-  border: 2px solid #007832;
-  color: #007832;
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+    .btn-compartir:hover { opacity: 0.9; }
 
-.btn-copiar:hover {
-  background-color: #007832;
-  color: white;
-}
+    .btn-copiar {
+      background-color: transparent;
+      border: 2px solid #007832;
+      color: #007832;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
+    .btn-copiar:hover {
+      background-color: #007832;
+      color: white;
+    }
 
-      .inscripcion-alert {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e6f4ea;
-  border-left: 5px solid #007832;
-  border-radius: 10px;
-  padding: 15px 20px;
-  font-family: 'Work Sans', sans-serif;
-  color: #2b4a2d;
-  margin: 20px auto;
-  max-width: 600px;
-  text-align: center;
-}
+    /* ===== Alertas de inscripción ===== */
+    .inscripcion-alert {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #e6f4ea;
+      border-left: 5px solid #007832;
+      border-radius: 10px;
+      padding: 15px 20px;
+      font-family: 'Work Sans', sans-serif;
+      color: #2b4a2d;
+      margin: 20px auto;
+      max-width: 600px;
+      text-align: center;
+    }
 
-.inscripcion-alert .icono-check {
-  font-size: 28px;
-  color: #007832;
-  margin-right: 15px;
-}
+    .inscripcion-alert .icono-check {
+      font-size: 28px;
+      color: #007832;
+      margin-right: 15px;
+    }
 
-.inscripcion-alert .texto-alerta {
-  font-size: 18px;
-  font-weight: 500;
-}
+    .inscripcion-alert .texto-alerta {
+      font-size: 18px;
+      font-weight: 500;
+    }
+  </style>
+</head>
 
-    </style>
-  </head>
+<body>
+  <!-- ===== Header ===== -->
+  <div class="header">
+    <a href="{% url 'inicio_visitante' %}" class="floating-home-btn" title="Inicio">
+      <i class="fas fa-home"></i> Volver al Inicio
+    </a>
+    Información del Evento
+  </div>
 
-  <body>
-    <div class="header">
-      <a
-        href="{% url 'inicio_visitante' %}"
-        class="floating-home-btn"
-        title="Inicio"
-      >
-        <i class="fas fa-home"></i>
-        Volver al Inicio
-      </a>
-      Información del Evento
-    </div>
+  <!-- ===== Contenido Principal ===== -->
+  <div class="main-container">
+    <div class="info-section">
 
-    <div class="main-container">
-      <div class="info-section">
-        <div class="info-image">
-          <img
-            src="{{ evento.eve_imagen.url }}"
-            alt="{{ evento.eve_nombre }}"
-          />
+      <!-- Imagen -->
+      <div class="info-image">
+        <img src="{{ evento.eve_imagen.url }}" alt="{{ evento.eve_nombre }}" />
+      </div>
+
+      <!-- Detalles -->
+      <div class="info-content">
+        <h2>{{ evento.eve_nombre }}</h2>
+        <p>{{ evento.eve_descripcion }}</p>
+
+        <div class="info-item">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Lugar: {{ evento.eve_lugar }}</span>
         </div>
 
-        <div class="info-content">
-          <h2>{{ evento.eve_nombre }}</h2>
-          <p>{{ evento.eve_descripcion }}</p>
+        <div class="info-item">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }}</span>
+        </div>
 
-          <div class="info-item">
-            <i class="fas fa-map-marker-alt"></i>
-            <span>Lugar: {{ evento.eve_lugar }}</span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-calendar-alt"></i>
-            <span
-              >Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin}}</span
-            >
-          </div>
+        <a href="{{ evento.eve_programacion.url }}" target="_blank" rel="noopener" class="programacion-link">
+          <i class="fas fa-file-alt"></i> Ver programación
+        </a>
 
-          <a
-            href="{{ evento.eve_programacion.url }}"
-            target="_blank"
-            rel="noopener"
-            class="programacion-link"
-          >
-            <i class="fas fa-file-alt"></i> Ver programación
-          </a>
+        <!-- ===== Acciones ===== -->
+        <div class="action-buttons">
+          {% if usuario_inscrito_asistente or usuario_inscrito_participante or usuario_inscrito_evaluador %}
+            <div class="inscripcion-alert shadow-sm">
+              <div class="icono-check">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="texto-alerta">
+                {% if usuario_inscrito_asistente %}
+                  Ya estás inscrito como <strong>asistente</strong>.
+                {% elif usuario_inscrito_participante %}
+                  Ya estás inscrito como <strong>participante</strong>.
+                {% elif usuario_inscrito_evaluador %}
+                  Ya estás inscrito como <strong>evaluador</strong>.
+                {% endif %}
+              </div>
+            </div>
+            <button class="action-btn-outline" onclick="abrirCompartir()">
+                  <i class="fas fa-share-alt"></i> Compartir Evento
+                </button>
+          {% else %}
+            {% if usuario_estuvo_inscrito %}
+              <div class="inscripcion-alert shadow-sm">
+                <div class="icono-check">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="texto-alerta">
+                  Ya estuviste inscrito en este evento.
+                </div>
+              </div>
+            {% else %}
+              <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
+                <i class="fas fa-user"></i> Preinscribirme como asistente
+              </a>
 
-         <div class="action-buttons">
-  
+              <div class="share-mas-buttons">
+                <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
+                <button class="action-btn-outline" onclick="abrirCompartir()">
+                  <i class="fas fa-share-alt"></i> Compartir Evento
+                </button>
+              </div>
 
-  {% if usuario_inscrito_asistente or usuario_inscrito_participante or usuario_inscrito_evaluador %}
-  <div class="inscripcion-alert shadow-sm">
-    <div class="icono-check">
-      <i class="fas fa-check-circle"></i>
-    </div>
-    <div class="texto-alerta">
-      {% if usuario_inscrito_asistente %}
-        Ya estás inscrito como <strong>asistente</strong>.
-      {% elif usuario_inscrito_participante %}
-        Ya estás inscrito como <strong>participante</strong>.
-      {% elif usuario_inscrito_evaluador %}
-        Ya estás inscrito como <strong>evaluador</strong>.
-      {% endif %}
+              <div id="opciones-ocultas" class="extra-buttons" style="display: none;">
+                {% if evento.eve_habilitar_participantes %}
+                  <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
+                    <i class="fas fa-pen"></i> Preinscribirme como participante
+                  </a>
+                {% else %}
+                  <button class="action-btn disabled" disabled>
+                    <i class="fas fa-pen"></i> Inscripción como participante deshabilitada
+                  </button>
+                {% endif %}
+
+                {% if evento.eve_habilitar_evaluadores %}
+                  <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
+                    <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como evaluador
+                  </a>
+                {% else %}
+                  <button class="action-btn disabled" disabled>
+                    <i class="fa-solid fa-chalkboard-user"></i> Inscripción como evaluador deshabilitada
+                  </button>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- ===== Modal Compartir ===== -->
+  <div id="modal-compartir" class="modal-compartir">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarCompartir()">&times;</span>
+      <h3 class="titulo-modal">📣 Compartir este evento</h3>
 
-  {% else %}
-    <!-- Mostrar opciones de inscripción solo si NO está inscrito en nada -->
-    
-    <div class="action-buttons">
-  {% if usuario_estuvo_inscrito %}
-    <div class="inscripcion-alert shadow-sm">
-      <div class="icono-check">
-        <i class="fas fa-check-circle"></i>
-      </div>
-      <div class="texto-alerta">
-        {% if usuario_inscrito_asistente %}
-          Ya estás inscrito como <strong>asistente</strong>.
-        {% elif usuario_inscrito_participante %}
-          Ya estás inscrito como <strong>participante</strong>.
-        {% elif usuario_inscrito_evaluador %}
-          Ya estás inscrito como <strong>evaluador</strong>.
-        {% else %}
-          Ya estuviste inscrito en este evento.
-        {% endif %}
-      </div>
-    </div>
-  {% else %}
-    <!-- Si no está inscrito en ningún rol -->
-    <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
-      <i class="fas fa-user"></i> Preinscribirme como asistente
-    </a>
-    <div class="share-mas-buttons">
-      <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
-       <!-- Botón Compartir Evento -->
-        <button class="action-btn-outline" onclick="abrirCompartir()">
-          <i class="fas fa-share-alt"></i> Compartir Evento
-        </button>
-    </div>
-
-    <div id="opciones-ocultas" class="extra-buttons" style="display: none;">
-      {% if evento.eve_habilitar_participantes %}
-        <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
-          <i class="fas fa-pen"></i> Preinscribirme como participante
+      <div class="botones-compartir">
+        <!-- WhatsApp -->
+        <a class="btn-compartir whatsapp" target="_blank"
+           href="https://wa.me/?text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
+          <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
         </a>
-      {% else %}
-        <button class="action-btn disabled" disabled>
-          <i class="fas fa-pen"></i> Inscripción como participante deshabilitada
-        </button>
-      {% endif %}
 
-      {% if evento.eve_habilitar_evaluadores %}
-        <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
-          <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como evaluador
+        <!-- Correo -->
+        <a class="btn-compartir correo"
+           href="mailto:?subject=Te invito a este evento&body=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
+          <i class="fas fa-envelope"></i> Compartir por Correo
         </a>
-      {% else %}
-        <button class="action-btn disabled" disabled>
-          <i class="fa-solid fa-chalkboard-user"></i> Inscripción como evaluador deshabilitada
-        </button>
-      {% endif %}
-    </div>
-  {% endif %}
-</div>
 
+        <!-- Telegram -->
+        <a class="btn-compartir telegram" target="_blank"
+           href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}">
+          <i class="fab fa-telegram"></i> Compartir por Telegram
+        </a>
 
-
-
-
-
-
-      
-
-    </div>
-  {% endif %}
-  
-</div>
-
-<!-- MODAL COMPARTIR -->
-<div id="modal-compartir" class="modal-compartir">
-  <div class="modal-contenido">
-    <span class="cerrar" onclick="cerrarCompartir()">&times;</span>
-    <h3 class="titulo-modal">📣 Compartir este evento</h3>
-
-    <div class="botones-compartir">
-      <a class="btn-compartir whatsapp" target="_blank"
-        href="https://wa.me/?text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
-        <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
-      </a>
-
-      <a class="btn-compartir correo"
-        href="mailto:?subject=Te invito a este evento&body=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
-        <i class="fas fa-envelope"></i> Compartir por Correo
-      </a>
-
-      <a class="btn-compartir telegram" target="_blank"
-        href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}">
-        <i class="fab fa-telegram"></i> Compartir por Telegram
-      </a>
-
-      <button onclick="copiarTexto()" class="btn-copiar">
-        📋 Copiar mensaje
-      </button>
+        <!-- Copiar mensaje -->
+        <button onclick="copiarTexto()" class="btn-copiar">📋 Copiar mensaje</button>
+      </div>
     </div>
   </div>
-</div>
 
+  <!-- ===== Scripts ===== -->
+  <script>
+    function mostrarOpciones() {
+      const opciones = document.getElementById("opciones-ocultas");
+      const btn = document.querySelector(".action-btn-outline");
 
-
-
-
-<script>
-  function mostrarOpciones() {
-    const opciones = document.getElementById("opciones-ocultas");
-    const btn = document.querySelector(".action-btn-outline");
-
-    if (
-      opciones.style.display === "none" ||
-      opciones.style.display === ""
-    ) {
-      opciones.style.display = "block";
-      btn.textContent = "Ocultar opciones";
-    } else {
-      opciones.style.display = "none";
-      btn.textContent = "Más opciones";
+      if (opciones.style.display === "none" || opciones.style.display === "") {
+        opciones.style.display = "block";
+        btn.textContent = "Ocultar opciones";
+      } else {
+        opciones.style.display = "none";
+        btn.textContent = "Más opciones";
+      }
     }
-  }
+        function abrirCompartir() {
+      document.getElementById("modal-compartir").style.display = "flex";
+    }
 
-  function abrirCompartir() {
-    document.getElementById("modal-compartir").style.display = "flex";
-  }
+    function cerrarCompartir() {
+      document.getElementById("modal-compartir").style.display = "none";
+    }
 
-  function cerrarCompartir() {
-    document.getElementById("modal-compartir").style.display = "none";
-  }
-
-  function copiarTexto() {
-    const texto = `Mira este evento en el que estoy participando:
+    function copiarTexto() {
+      const texto = `Mira este evento en el que estoy participando:
 📌 {{ evento.eve_nombre }}
 📅 Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }}
 📍 Lugar: {{ evento.eve_lugar }}
 👉 Ver más: {{ request.build_absolute_uri }}`;
 
-    navigator.clipboard.writeText(texto).then(() => {
-      alert("¡Mensaje copiado! Puedes pegarlo donde quieras.");
-    });
-  }
-
-</script>
-
-
-  </body>
+      navigator.clipboard.writeText(texto).then(() => {
+        alert("¡Mensaje copiado! Puedes pegarlo donde quieras.");
+      });
+    }
+  </script>
+</body>
 </html>

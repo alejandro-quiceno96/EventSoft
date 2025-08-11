@@ -236,7 +236,7 @@ def detalle_evento(request, evento_id):
         ).first()
         if participante_evento:
             estado_participante = participante_evento.par_eve_estado
-            usuario_inscrito_participante = estado_participante == 'activo'
+            usuario_inscrito_participante = True if estado_participante == 'Admitido' or estado_participante == 'Pendiente' else False
 
         # Estado del evaluador en el evento
         evaluador_evento = EvaluadoresEventos.objects.filter(
@@ -245,7 +245,7 @@ def detalle_evento(request, evento_id):
         ).first()
         if evaluador_evento:
             estado_evaluador = evaluador_evento.eva_estado
-            usuario_inscrito_evaluador = estado_evaluador == 'activo'
+            usuario_inscrito_evaluador = True if estado_evaluador == 'Admitido' or estado_evaluador == 'Pendiente' else False
 
         # Estado del asistente en el evento
         asistente_evento = AsistentesEventos.objects.filter(
@@ -254,19 +254,17 @@ def detalle_evento(request, evento_id):
         ).first()
         if asistente_evento:
             estado_asistente = asistente_evento.asi_eve_estado
-            usuario_inscrito_asistente = estado_asistente == 'activo'
+            usuario_inscrito_asistente = True if estado_asistente == 'Admitido' or estado_asistente == 'Pendiente' else False
 
-        estado_general_participante = participante_evento is not None
-        estado_general_evaluador = evaluador_evento is not None
-        estado_general_asistente = asistente_evento is not None
+        estado_general_participante = True if participante_evento else None
+        estado_general_evaluador = True if evaluador_evento else None
+        estado_general_asistente = True if asistente_evento else None
 
         usuario_estuvo_inscrito = (
             estado_general_participante or 
             estado_general_evaluador or 
             estado_general_asistente
         )
-
-
     context = {
         'evento': evento,
         'participantes': participantes,

@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-    let eventoIdAEliminar = null;
     console.log("ID del evento a eliminar:", eventoIdAEliminar);
     document.querySelectorAll(".btn-eliminar").forEach(button => {
         button.addEventListener("click", function () {
