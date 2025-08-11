@@ -347,7 +347,8 @@ form {
 .btn-ver_participantes,
 .btn-modificar-participante,
 .btn-cancelar,
-.btn-criterios-evaluacion, .btn-memorias, .btn-compartir {
+.btn-criterios-evaluacion, .btn-memorias, .btn-compartir,
+.btn-estadisticas{
     width: 100%;
     margin-top: 5px;
     background-color: var(--color-naranja);
@@ -495,4 +496,62 @@ form {
   font-size: 22px;
   font-weight: bold;
   cursor: pointer;
+}
+
+/* Modal específico para estadísticas */
+.modal-estadisticas-evento {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+}
+
+/* Contenido */
+.modal-estadisticas-evento-content {
+    background: white;
+    margin: auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    animation: modalEstadisticasFadeIn 0.3s ease-in-out;
+}
+
+/* Botón cerrar */
+.modal-estadisticas-evento-close {
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Tarjetas de estadísticas */
+.modal-estadisticas-evento-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(120px,1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: var(--color-naranja);
+    color: var(--color-texto);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.stat-card h3 {
+    margin: 0;
+    font-size: 1em;
+}
+
+@keyframes modalEstadisticasFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }

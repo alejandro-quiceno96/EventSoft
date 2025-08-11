@@ -213,7 +213,8 @@ def obtener_evento(request, evento_id):
         'cantidad_participantes': participantes,
         'cantidad_asistentes': asistentes,
         'memorias': evento.eve_memorias if evento.eve_memorias else False,
-        'certificado': certificado
+        'certificado': certificado,
+        'ficha_tecnica': evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else False,
     }
 
     return JsonResponse(datos_evento)

@@ -17,15 +17,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
-    const boton = document.getElementById("SubirFichaTecnica");
+    const eventoId = document.getElementById("eventoIdInput").value;
 
-    const eventoId = boton.getAttribute("data-evento-id");
     const formData = new FormData(form);
     const csrfToken = document.querySelector(
       "[name=csrfmiddlewaretoken]"
     ).value;
-    console.log("eventoId:", eventoId);
-    console.log("Url:", baseFichaTecnicaUrl);
     const url = baseFichaTecnicaUrl.replace("123", eventoId);
     const response = await fetch(url, {
       method: "POST",
