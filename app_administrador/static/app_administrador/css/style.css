@@ -347,7 +347,7 @@ form {
 .btn-ver_participantes,
 .btn-modificar-participante,
 .btn-cancelar,
-.btn-criterios-evaluacion {
+.btn-criterios-evaluacion, .btn-memorias, .btn-compartir {
     width: 100%;
     margin-top: 5px;
     background-color: var(--color-naranja);

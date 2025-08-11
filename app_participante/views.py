@@ -25,7 +25,6 @@ from django.contrib import messages
 @csrf_exempt
 @login_required(login_url='login')
 def info_participantes_eventos(request):
-
     try:
         # Buscar al participante por cédula
         participante = Participantes.objects.get(usuario=request.user.id)
@@ -71,6 +70,8 @@ def info_participantes_eventos(request):
                 "eve_memorias": evento.eve_memorias,
 
             })
+            
+        
         # Ordenar eventos por fecha de inicio
         return render(request, 'app_participantes/eventos_participante.html', {
             "eventos": eventos_data,

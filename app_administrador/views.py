@@ -212,7 +212,7 @@ def obtener_evento(request, evento_id):
         'eve_categoria': categoria_nombre,
         'cantidad_participantes': participantes,
         'cantidad_asistentes': asistentes,
-        'memorias': evento.eve_memorias if evento.eve_memorias else "No se ha subido memorias del evento",
+        'memorias': evento.eve_memorias if evento.eve_memorias else False,
         'certificado': certificado
     }
 

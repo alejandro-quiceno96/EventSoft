@@ -65,6 +65,9 @@ body {
     margin-bottom: 10px;
     border-radius: 5px;
 }
+.logo-sena {
+    width: 250px;
+}
 
 .user-msg {
     text-align: right;
@@ -129,7 +132,6 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    font-family: 'Segoe UI', sans-serif;
 }
 
 .eventsoft-text {
@@ -347,9 +349,6 @@ body {
     height: 80px;
 }
 
-.header-logo-nombre img {
-    height: 50px;
-}
 
 .user-section {
     display: flex;

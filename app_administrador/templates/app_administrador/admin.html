@@ -59,15 +59,13 @@
           <i class="fa-solid fa-upload"></i> Subir Información Técnica
         </button>
 
-
         <a href="{% url 'administrador:enviar_correo' evento.id %}" class="text-decoration-none">
           <button class="btn-ver_participantes w-100">
             <i class="fa-regular fa-envelope"></i> Enviar Correo
           </button>
         </a>
 
-        <!-- Botón Ver Estadística del Evento -->
-         
+        <!-- Botón Ver Estadística del Evento --> 
         <button class="action-btn-outline btn-estadisticas btn-ver_participantes w-100 "  type="button" data-evento-id="{{ evento.id }}"
           data-inscritos="{{ evento.total_inscritos }}" data-asistentes="{{ evento.total_asistentes }}"
           data-participantes="{{ evento.total_participantes }}" data-evaluadores="{{ evento.total_evaluadores }}"
@@ -77,9 +75,6 @@
         </button>
         
       </div>
-
-
-
     </div>
   </div>
   {% empty %}
@@ -114,9 +109,6 @@
         <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
         <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
         
-        <p><strong>Memorias:</strong>
-        <div id="modalMemorias"></div>
-        </p>
         <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid"
           style="width: 100%; height: 300px; object-fit: contain;" />
       </div>
@@ -126,8 +118,7 @@
           Evaluación</button>
         <button type="button" id="btnConfigCertificados" class="btn-eliminar" data-bs-dismiss="modal">Configuración de
           Certificados</button>
-          
-        <button type="button" class="btn-ver-mas" data-bs-toggle="modal" data-bs-target="#modalSubirMemorias">
+        <button type="button" class="btn-memorias" id="btnSubirMemorias">
           <i class="fa-solid fa-upload"></i> Subir memorias del evento
         </button>
         <button type="button" id="btnAccion" class="btn-eliminar" data-bs-dismiss="modal">Eliminar Evento</button>
@@ -411,7 +402,6 @@
 <script src="{% static 'app_administrador/js/verEventos.js' %}"></script>
 <script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>
 <script src="{% static 'app_administrador/js/Eliminar.js' %}"></script>
-<script src="{% static 'app_administrador/js/modalModificarEvento.js' %}"></script>
 <script src="{% static 'app_administrador/js/subir_ficha_tecnica.js' %}"></script>
 
 {% endblock %}

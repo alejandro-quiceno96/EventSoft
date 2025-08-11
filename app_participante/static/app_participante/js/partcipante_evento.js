@@ -70,8 +70,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  document.getElementById("btnConfirmarCancelar").addEventListener("click", function () {
+  document.getElementById("btnConfirmarCancelarInscripcion").addEventListener("click", function () {
     let url = urlEliminarInscripcion.replace('/123/', `/${eventoIdSeleccionado}/`).replace('/456', `/${participanteIdSeleccionado}`);
+    console.log(url);
     const formData = new FormData();
     fetch(url, {
       method: "POST",
@@ -88,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   document.getElementById("btnAbrirEditar").addEventListener("click", function () {
-    let url =  urlObtenerParticipante.replace('/123/', `/${participanteIdSeleccionado}/`).replace('/456', `/${eventoIdSeleccionado}`);
+    let url =  urlModificarInscripcion.replace('/123/', `/${participanteIdSeleccionado}/`).replace('/456', `/${eventoIdSeleccionado}`);
     fetch(url)
       .then(res => res.json())
       .then(data => {
@@ -98,77 +99,84 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   });
 
-  document.getElementById("formModificarInscripcion").addEventListener("submit", function (e) {
-    e.preventDefault();
+document.getElementById("formModificarInscripcion").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-    const form = this;
+  const inputDocumento = document.getElementById("inputDocumento");
 
-    // 🔓 Activar todos los inputs deshabilitados antes de enviar
-    const camposDeshabilitados = form.querySelectorAll("input:disabled");
-    camposDeshabilitados.forEach(campo => campo.disabled = false);
+  // ✅ Validar que haya un archivo seleccionado
+  if (!inputDocumento.files.length) {
+    const modalDoc = new bootstrap.Modal(document.getElementById("modalDocumentoRequerido"));
+    modalDoc.show();
+    return; // 🚫 Detener el envío
+  }
 
-    const formData = new FormData(form);
-    formData.append("participante_id", participanteIdSeleccionado);
-    let url = urlModificarParticipante.replace('/123/', `/${eventoIdSeleccionado}/`).replace('/456', `/${participanteIdSeleccionado}`);
-    fetch(url, {
-      method: "POST",
-      body: formData
+  const form = this;
+  const formData = new FormData(form);
+  formData.append("participante_id", participanteIdSeleccionado);
+
+  let url = urlModificarParticipante
+    .replace('/123/', `/${eventoIdSeleccionado}/`)
+    .replace('/456', `/${participanteIdSeleccionado}`);
+
+  fetch(url, {
+    method: "POST",
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Inscripción actualizada.");
+
+        // ✅ Cerrar el modal correctamente
+        const modal = bootstrap.Modal.getInstance(document.getElementById("modificarInscripcionModal"));
+        modal.hide();
+      } else {
+        alert("Error al actualizar.");
+      }
     })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert("Inscripción actualizada.");
+    .catch(err => {
+      alert("Error al modificar inscripción.");
+      console.error(err);
+    });
+});
 
-          // ✅ Cerrar el modal correctamente
-          const modal = bootstrap.Modal.getInstance(document.getElementById("modificarInscripcionModal"));
-          modal.hide();
 
-        } else {
-          alert("Error al actualizar.");
-        }
-      })
-      .catch(err => {
-        alert("Error al modificar inscripción.");
-        console.error(err);
-      });
-  });
 
   // 🔒 Volver a desactivar los inputs y limpiar el fondo oscuro al cerrar el modal
-  const modalModificar = document.getElementById("modificarInscripcionModal");
-  modalModificar.addEventListener("hidden.bs.modal", function () {
-    // Desactivar inputs
-    const inputs = this.querySelectorAll("input");
-    inputs.forEach(input => input.disabled = true);
+const modalModificar = document.getElementById("modificarInscripcionModal");
 
-    // Limpiar fondo oscuro (backdrop)
-    document.body.classList.remove("modal-open");
-    document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
-  });
+modalModificar.addEventListener("hidden.bs.modal", function () {
 
-  // ✏️ Activar campos cuando se hace clic en el botón de editar
-  document.querySelectorAll(".btn-editar-campo").forEach(btn => {
-    btn.addEventListener("click", function () {
-      const targetId = this.getAttribute("data-target");
-      const input = document.getElementById(targetId);
-      if (input.disabled) {
-        input.disabled = false;
-        input.focus();
-      }
-    });
-  });
+  // Limpiar fondo oscuro (backdrop)
+  document.body.classList.remove("modal-open");
+  document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+
+  // 🔹 Limpiar input de archivo
+  const inputDocumento = this.querySelector("#inputDocumento");
+  if (inputDocumento) {
+    inputDocumento.value = ""; // Vacía el archivo seleccionado
+  }
+
+  // 🔹 Restaurar texto por defecto
+  const fileNameSpan = this.querySelector(".file-name");
+  if (fileNameSpan) {
+    fileNameSpan.textContent = "No se ha seleccionado ningún archivo";
+  }
+});
+
+
 
   document.querySelectorAll(".btn-abrir-editar-externo").forEach(btn => {
     btn.addEventListener("click", function () {
       eventoIdSeleccionado = this.getAttribute("data-id");
       participanteIdSeleccionado = this.getAttribute("data-cedula")
-      let url =  urlObtenerParticipante.replace('/123/', `/${participanteIdSeleccionado}/`).replace('/456', `/${eventoIdSeleccionado}`);
-      console.log(url)
+      let url =  urlModificarInscripcion.replace('/123/', `/${participanteIdSeleccionado}/`).replace('/456', `/${eventoIdSeleccionado}`);
       fetch(url,{
       method: "POST",
     })
         .then(res => res.json())
         .then(data => {
-          console.log(data)
           document.getElementById("modalProyecto").href =data.par_eve_evento_fk;
 
           new bootstrap.Modal(document.getElementById("modificarInscripcionModal")).show();
@@ -181,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById('btnCriterios').addEventListener('click', function () {
   const eventoId = this.getAttribute('data-evento-id');
-  const url = urlPdfCriterios + eventoId;
+  const url = urlCriterios + eventoId;
 
   if (eventoId) {
     // Mostrar el modal
@@ -199,6 +207,12 @@ document.getElementById('btnCriterios').addEventListener('click', function () {
 });
 
 
-  
+document.getElementById("inputDocumento").addEventListener("change", function () {
+  const fileNameSpan = document.querySelector(".file-name");
+  fileNameSpan.textContent = this.files.length > 0
+    ? this.files[0].name
+    : "No se ha seleccionado ningún archivo";
+});
+
 
 

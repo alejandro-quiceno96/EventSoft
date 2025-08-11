@@ -71,9 +71,6 @@
     height: 80px;
 }
 
-.header-logo-nombre img {
-    height: 50px;
-}
 
 .header-logo-nombre {
     display: flex;
@@ -82,11 +79,7 @@
     padding-left: 20px;
 }
 
-.header-logo-nombre h2 {
-    font-size: 2.5rem;
-    text-decoration: none;
-    color: white;
-}
+
 
 .search-section .filter-btn {
     display: flex;
@@ -228,90 +221,6 @@
     color: #61da7d;
 }
 
-/* === MODAL COMPARTIR ESTILOS PROFESIONALES === */
-.modal-compartir {
-    display: none;
-    /* Oculto por defecto */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6);
-    /* Fondo oscuro */
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-}
-
-.modal-contenido {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    text-align: center;
-    font-family: 'Work Sans', sans-serif;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    position: relative;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-.modal-contenido h3 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    color: #222;
-}
-
-.modal-contenido a {
-    display: block;
-    margin: 10px 0;
-    color: #333;
-    text-decoration: none;
-    font-size: 1rem;
-    transition: all 0.3s;
-}
-
-.modal-contenido a:hover {
-    color: #007bff;
-    transform: scale(1.02);
-}
-
-.modal-contenido i {
-    margin-right: 8px;
-}
-
-.modal-contenido button {
-    background-color: #007bff;
-    border: none;
-    padding: 10px 20px;
-    color: white;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 15px;
-    transition: background-color 0.3s;
-}
-
-.modal-contenido button:hover {
-    background-color: #0056b3;
-}
-
-.cerrar {
-    position: absolute;
-    top: 10px;
-    right: 16px;
-    font-size: 24px;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-}
-
-.cerrar:hover {
-    color: #000;
-}
-
 
 @keyframes fadeIn {
     from {
@@ -323,4 +232,25 @@
         transform: translateY(0);
         opacity: 1;
     }
+}
+
+.file-input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.btn-descargar-calificacion{
+    width: 100%;
+    margin-top: 5px;
+    background-color: var(--color-naranja);
+    border-radius: 10px;
+    color: var(--color-texto);
+    border: none;
+    text-align: center;
+    padding: 5px;
+    text-decoration: none;
 }
