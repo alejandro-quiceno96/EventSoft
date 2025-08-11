@@ -49,15 +49,6 @@
             <i class="fa-solid fa-trophy"></i> Tabla de Posiciones
           </button>
         </a>
-        <button class="btn-ver_participantes w-100" 
-        data-evento-id="{{ evento.id }}" 
-        data-archivo-url="{% if evento.eve_informacion_tecnica %}{{ evento.eve_informacion_tecnica.url }}{% else %}{% endif %}"
-        
-        data-has-archivo="{{ evento.eve_informacion_tecnica|yesno:'1,0' }}"
-        data-bs-toggle="modal" 
-        data-bs-target="#modalSubirInfoTecnica" id="SubirFichaTecnica">
-          <i class="fa-solid fa-upload"></i> Subir Información Técnica
-        </button>
 
         <a href="{% url 'administrador:enviar_correo' evento.id %}" class="text-decoration-none">
           <button class="btn-ver_participantes w-100">
@@ -66,13 +57,20 @@
         </a>
 
         <!-- Botón Ver Estadística del Evento --> 
-        <button class="action-btn-outline btn-estadisticas btn-ver_participantes w-100 "  type="button" data-evento-id="{{ evento.id }}"
-          data-inscritos="{{ evento.total_inscritos }}" data-asistentes="{{ evento.total_asistentes }}"
-          data-participantes="{{ evento.total_participantes }}" data-evaluadores="{{ evento.total_evaluadores }}"
-          data-fecha-inicio="{{ evento.eve_fecha_inicio }}" data-fecha-fin="{{ evento.eve_fecha_fin }}"
-          data-lugar="{{ evento.eve_lugar }}" data-ciudad="{{ evento.eve_ciudad }}">
-          <i class="fa-solid fa-magnifying-glass"></i> Ver estadística del Evento
-        </button>
+       <button class="action-btn-outline btn-estadisticas btn-ver-estadisticas-evento w-100" 
+        type="button" 
+        data-evento-id="{{ evento.id }}"
+        data-evento-nombre="{{ evento.eve_nombre }}"
+        data-inscritos="{{ evento.total_inscritos }}" 
+        data-asistentes="{{ evento.total_asistentes }}"
+        data-participantes="{{ evento.total_participantes }}" 
+        data-evaluadores="{{ evento.total_evaluadores }}"
+        data-fecha-inicio="{{ evento.eve_fecha_inicio }}" 
+        data-fecha-fin="{{ evento.eve_fecha_fin }}"
+        data-lugar="{{ evento.eve_lugar }}" 
+        data-ciudad="{{ evento.eve_ciudad }}">
+    <i class="fa-solid fa-magnifying-glass"></i> Ver estadística del Evento
+</button>
         
       </div>
     </div>
@@ -120,6 +118,11 @@
           Certificados</button>
         <button type="button" class="btn-memorias" id="btnSubirMemorias">
           <i class="fa-solid fa-upload"></i> Subir memorias del evento
+        </button>
+        <button class="btn-ver_participantes w-100" 
+        data-bs-toggle="modal" 
+        data-bs-target="#modalSubirInfoTecnica" id="SubirFichaTecnica">
+          <i class="fa-solid fa-upload"></i> Subir Información Técnica
         </button>
         <button type="button" id="btnAccion" class="btn-eliminar" data-bs-dismiss="modal">Eliminar Evento</button>
       </div>
@@ -290,27 +293,49 @@
 </div>
 <!-- Modal Subir Información Técnica -->
 <div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content rounded-4 shadow">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title" id="modalSubirInfoTecnicaLabel">Subir Ficha Técnica</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 shadow border-0">
       
-      <form id="formFichaTecnica" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="modal-body">
-          <input type="file" name="eve_informacion_tecnica" accept=".pdf,.doc,.docx" class="form-control" required>
+      <!-- Header -->
+      <div class="modal-header bg-success text-white rounded-top-4">
+        <h5 class="modal-title fw-bold" id="modalSubirInfoTecnicaLabel">
+          <i class="fa-solid fa-file-upload me-2"></i> Subir Ficha Técnica
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Contenido -->
+      <div class="modal-body">
+        
+        <!-- Estado de la ficha técnica -->
+        <div id="fichaTecnicaSubida" class="mb-4">
+        </div>
+
+        <!-- Formulario -->
+        <form id="formFichaTecnica" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="inputFichaTecnica" class="form-label fw-bold">Seleccionar archivo</label>
+            <input type="file" id="inputFichaTecnica" name="eve_informacion_tecnica" accept=".pdf,.doc,.docx" class="form-control" required>
+            <div class="form-text">Formatos permitidos: PDF, DOC, DOCX</div>
+          </div>
           <input type="hidden" name="evento_id" id="eventoIdInput">
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Subir</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
-      </form>
+          
+          <div class="d-flex justify-content-end gap-2 mt-4">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fa-solid fa-xmark me-1"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-compartir">
+              <i class="fa-solid fa-cloud-arrow-up me-1"></i> Subir
+            </button>
+          </div>
+        </form>
+
+      </div>
     </div>
   </div>
 </div>
+
 
 <!-- Modal de éxito -->
 <div class="modal fade" id="modalExitoFicha" tabindex="-1" aria-labelledby="modalExitoFichaLabel" aria-hidden="true">
@@ -329,6 +354,35 @@
     </div>
   </div>
 </div>
+<!-- Modal Estadísticas -->
+<div id="modal-estadisticas-evento" class="modal-estadisticas-evento">
+    <div class="modal-estadisticas-evento-content">
+        <span class="modal-estadisticas-evento-close">&times;</span>
+        <h2 id="modal-estadisticas-evento-titulo"></h2>
+        <p><strong>📍 Lugar:</strong> <span id="modal-estadisticas-evento-lugar"></span> - <span id="modal-estadisticas-evento-ciudad"></span></p>
+        <p><strong>🗓 Fecha inicio:</strong> <span id="modal-estadisticas-evento-fecha-inicio"></span></p>
+        <p><strong>🗓 Fecha fin:</strong> <span id="modal-estadisticas-evento-fecha-fin"></span></p>
+
+        <div class="modal-estadisticas-evento-stats">
+            <div class="stat-card">
+                <h3>Inscritos</h3>
+                <p id="modal-estadisticas-evento-inscritos"></p>
+            </div>
+            <div class="stat-card">
+                <h3>Asistentes</h3>
+                <p id="modal-estadisticas-evento-asistentes"></p>
+            </div>
+            <div class="stat-card">
+                <h3>Participantes</h3>
+                <p id="modal-estadisticas-evento-participantes"></p>
+            </div>
+            <div class="stat-card">
+                <h3>Evaluadores</h3>
+                <p id="modal-estadisticas-evento-evaluadores"></p>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -341,7 +395,7 @@
   const baseModificarUrl = "{% url 'administrador:editar_evento' 0 %}".replace('0', '');
   const baseCriteriosUrl = "{% url 'administrador:criterios_evaluacion' 0 %}".replace('0', '');
   const baseConfigCertificadosUrl = "{% url 'administrador:configuracion_certificados' 0 %}";
-  const baseFichaTecnicaUrl = "{% url 'administrador:subir_info_tecnica' 123 %}".replace('123', '');
+  const baseFichaTecnicaUrl = "{% url 'administrador:subir_info_tecnica' 123 %}";
   const baseModificarCertificadosUrl = "{% url 'administrador:modificar_certificados' 0 %}";
   
 

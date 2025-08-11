@@ -3,9 +3,10 @@ document.addEventListener("DOMContentLoaded", function () {
     button.addEventListener("click", function () {
       let eventoId = this.getAttribute("data-id");
       let url = baseEventoDetalleUrl + eventoId;
-      const contenedorMemorias = document.getElementById("modalMemorias");
+      const fichaTecnicaSubida = document.getElementById('fichaTecnicaSubida');
       const linkMemorias = document.getElementById("linkMemorias");
       const inputMemorias = document.getElementById("url_memorias");
+      const btnSubirtecnica = document.getElementById("SubirFichaTecnica");
 
       fetch(url)
         .then((response) => response.json())
@@ -29,11 +30,11 @@ document.addEventListener("DOMContentLoaded", function () {
             data.cantidad_asistentes;
           document.getElementById("modalIdMemorias").value = data.eve_id;
           document.getElementById("modalImagen").src = data.eve_imagen;
-          console.log("Memorias URL:", data.memorias);
           if (data.memorias) {
 
             // En el modal, mostrar input con lápiz para editar
                 linkMemorias.innerHTML = `
+                
                 <a href="${data.memorias}" target="_blank" class="btn btn-primary mb-3">
                 <i class="fa-solid fa-file-arrow-down"></i> Ver memorias del evento
             </a>`;
@@ -66,6 +67,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 "data-url",
                 baseConfigCertificadosUrl.replace("0", data.eve_id)
               );
+          }
+          btnSubirtecnica.setAttribute("data-evento-id", data.eve_id);
+          if (data.ficha_tecnica) {
+            fichaTecnicaSubida.innerHTML = `
+            <span class="text-success">Ficha técnica subida:</span>
+                <a href="${data.ficha_tecnica}" target="_blank" class="btn-compartir mb-3">
+                <i class="fa-solid fa-file-arrow-down"></i> Ver ficha técnica subida
+            </a>`;
+          } else {
+            fichaTecnicaSubida.innerHTML = `
+                <span class="text-danger">No se ha subido una ficha técnica.</span>`;
           }
 
           // Mostrar el modal
