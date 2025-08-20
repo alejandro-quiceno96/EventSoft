@@ -133,7 +133,7 @@ def evento_detalle_participante(request, evento_id, participante_id):
         'eve_clave': clave_acceso.par_eve_clave,
         'codigo_qr': clave_acceso.par_eve_qr.url,
         'cedula': participante_id,
-        "eve_informacion_tecnica": evento.eve_informacion_tecnica.url,
+        "eve_informacion_tecnica": evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else None,
         
         
     }
