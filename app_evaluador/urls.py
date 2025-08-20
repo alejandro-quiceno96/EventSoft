@@ -12,7 +12,9 @@ urlpatterns = [
     path('evento/<int:evento_id>/criterios/', views.criterios_evaluacion, name='criterios_evaluacion'),
     path('criterios/<int:evento_id>/', views.criterios_evaluacion, name='criterios_evento'),
     # urls.py de app_evaluador
-    path('api/calificaciones/<int:evento_id>/<int:participante_id>/<int:evaluador_id>/',views.api_calificaciones,name='api_calificaciones'),
+    path('api/calificaciones/<int:evento_id>/<int:participante_id>/<int:evaluador_id>/',
+    views.api_calificaciones,
+    name='api_calificaciones'),
 
 # urls.py
     path('evaluador/<str:evaluador_cedula>/evento/<int:evento_id>/', views.detalle_evento_evaluador, name='detalle_evento_evaluador'),

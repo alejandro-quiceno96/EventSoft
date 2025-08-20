@@ -848,7 +848,7 @@ transform: scale(1.05); /* Pequeño efecto de aumento */
     }
 
     .header-logo-nombre img{
-        display: none;
+        width: 150px;
     }
 
     /* Muestra solo el botón de lupa */

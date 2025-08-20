@@ -17,6 +17,7 @@ from django.http import JsonResponse, Http404, HttpResponse
 import os
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
 
 
@@ -28,11 +29,24 @@ def principal_evaluador(request):
         evaluadores_eventos = EvaluadoresEventos.objects.filter(eva_eve_evaluador_fk=evaluador).select_related('eva_eve_evento_fk')
         request.session['evaluador_id'] = evaluador.id
         request.session['evaluador_nombre'] = evaluador.usuario.username
-
+        
+        ahora = timezone.localdate()
+        print(f"Hora actual: {ahora}")
+        for relacion in evaluadores_eventos:
+            evento = relacion.eva_eve_evento_fk
+            if evento.eve_fecha_inicio <= ahora <= evento.eve_fecha_fin:
+                relacion.estado_evento = "en_curso"
+                print(f"Evento {evento.eve_nombre} está en curso.")
+            elif ahora < evento.eve_fecha_inicio:
+                relacion.estado_evento = "no_iniciado"
+                print(f"Evento {evento.eve_nombre} no ha comenzado aún.")
+            else:
+                relacion.estado_evento = "terminado"
+                print(f"Evento {evento.eve_nombre} ha terminado.")
+        
         # Pasamos ese queryset al contexto
         return render(request, 'app_evaluador/inicio_evaluador.html', {
             'evaluador': evaluador,
-
             'evaluador_id': request.user.id,
             'eventos': evaluadores_eventos
         })
@@ -81,25 +95,26 @@ def ver_participantes(request, evento_id):
 
     return render(request, 'app_evaluador/participantes_evento.html', context)
 
-def api_calificaciones(request, evento_id, participante_id, evaluador_usuario_id):
+def api_calificaciones(request, evento_id, participante_id, evaluador_id):
     calificaciones = Calificaciones.objects.filter(
-        cal_evaluador_fk__usuario__id=evaluador_usuario_id,
-        clas_participante_fk__id=participante_id,
+        cal_evaluador_fk=evaluador_id,
+        clas_participante_fk=participante_id,
         cal_criterio_fk__cri_evento_fk__id=evento_id
     ).select_related('cal_criterio_fk')
+    print(f"Calificaciones obtenidas: {calificaciones.count()} para evento {evento_id}, participante {participante_id}, evaluador {evaluador_id}")
 
     data = {
         'calificaciones': [
             {
-                'criterio': cal.cal_criterio_fk.cri_nombre,
+                'criterio': cal.cal_criterio_fk.cri_descripcion, 
                 'peso': cal.cal_criterio_fk.cri_peso,
-                'puntaje': cal.cal_puntaje,
+                'puntaje': cal.cal_valor,
                 'comentario': cal.cal_comentario,
             }
             for cal in calificaciones
         ]
     }
-    return JsonResponse(data)
+    return JsonResponse(data, status=200)
 
 @login_required(login_url='login')
 def evaluar_participante(request, evento_id, participante_id, evaluador_id):
