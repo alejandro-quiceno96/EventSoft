@@ -15,6 +15,9 @@ urlpatterns = [
     path('estadisticas-evento/<int:evento_id>/', views.obtener_estadisticas_evento, name='estadisticas_evento'),
     path('cancelar-evento/<int:evento_id>/', views.cancelar_evento, name='cancelar_evento'),
     path('eliminar-evento/<int:evento_id>/', views.eliminar_evento, name='eliminar_evento'),
+    path("crear_area/", views.crear_area, name="crear_area"),
+    path("crear_categoria/", views.crear_categoria, name="crear_categoria"),
+
 
 
 

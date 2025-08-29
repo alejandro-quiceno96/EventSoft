@@ -86,6 +86,7 @@
 
     </style>
 </head>
+
 <body>  
     <div>
         <a href="{% url 'administrador:index_administrador' %}" class="btn-volver"><i class="fa-solid fa-arrow-left"></i> Volver</a>
@@ -172,6 +173,28 @@
         </div>
     {% endfor %}
 </div>
+
+<!-- Modal Admitir -->
+<div class="modal fade" id="modalAdmitir" tabindex="-1" aria-labelledby="modalAdmitirLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg rounded-3">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="modalAdmitirLabel">Confirmar Admisión</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p id="mensaje-admitir" class="fs-5 text-center">
+          ¿Estás seguro que deseas admitir a este participante?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="confirmarAdmitir" class="btn btn-success">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
    <!-- Modal de Confirmación para Admitir -->
 <div class="modal fade" id="modalAdmitir" tabindex="-1" aria-labelledby="modalAdmitirLabel" aria-hidden="true">
@@ -295,14 +318,36 @@
   </div>
 </div>
 
+<!-- Modal: Sin cupo disponible -->
+<div class="modal fade" id="modalSinCupo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Cupo lleno</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        Lo sentimos 😥, el evento ya alcanzó su capacidad máxima de Asistentes.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 
         <script>
+        let capacidadMax = parseInt('{{ evento.eve_capacidad }}');
+        let admitidosActuales = parseInt('{{ asistentes_admitidos }}');
+        console.log("capacidadMax:", capacidadMax);
+        console.log("admitidosActuales:", admitidosActuales);
+        </script>
+      
+        <script>
             const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00"); // solo si es DateField
             const fechaActual = new Date("{{ fecha_actual }}"); // DateTime
-            console.log("Fecha de fin del evento:", eventoFechaFin);
-            console.log("Fecha actual:", fechaActual);
         </script>
 
 
@@ -316,6 +361,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'app_administrador/js/asistentes.js' %}"></script>
+
+    
     
     </body>
 </html>

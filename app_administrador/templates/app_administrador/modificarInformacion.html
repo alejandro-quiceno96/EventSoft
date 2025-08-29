@@ -6,170 +6,231 @@
 {% endblock %}
 
 {% block content %}
-
+ <link rel="stylesheet" href="{% static 'app_administrador/css/crearEvento.css'%}">
 <div class="contenedor-principal-crear">
     <div class="contenedor-crear-evento">
-        <h2>Modificar Evento</h2>
+        <h2>Nuevo Evento</h2>
+        
+        <!-- Indicador de progreso -->
+        <div class="progreso-container">
+            <div class="progreso-barra">
+                <div class="progreso-fill" id="progreso-fill"></div>
+            </div>
+            <div class="progreso-pasos">
+                <span class="paso active" id="paso-1">1</span>
+                <span class="paso" id="paso-2">2</span>
+            </div>
+        </div>
+
         <form action="" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            
+            <input type="hidden" name="estado_evento" value="{{evento.eve_estado}}">
+            <!-- PÁGINA 1: INFORMACIÓN BÁSICA DEL EVENTO -->
             <div id="pagina1" class="pagina pagina-activa">
+                <div class="seccion-titulo">
+                    <h3>📋 Información Básica del Evento</h3>
+                </div>
 
+                <!-- Nombre del Evento -->
                 <div class="div contenedor-input-1">
                     <label for="nombre_evento">Nombre del Evento:</label>
-                    <input type="text" name="nombre_evento" id="nombre_evento" value="{{evento.eve_nombre}}" maxlength="100" oninput="actualizarContaNombre()">
-                    <small id="contador_nombre">0 / 100</small>
+                    <input type="text" name="nombre_evento" id="nombre_evento" value="{{evento.eve_nombre}}" maxlength="100" oninput="actualizarContaNombre()" required>
+                    <small id="contador_nombre" class="contador">0 / 100</small>
                 </div>
 
+                <!-- Descripción -->
                 <div class="div contenedor-input-2">
                     <label for="descripcion_evento">Descripción:</label>
-                    <textarea id="mensaje" name="descripcion_evento" placeholder="Escribe aquí..." maxlength="400" oninput="actualizarContador()"></textarea>
-                    <small id="contador">0 / 400</small>
+                    <textarea id="descripcion_evento" name="descripcion_evento" placeholder="Describe tu evento..." maxlength="400" oninput="actualizarContador()" rows="4" required></textarea>
+                    <small id="contador" class="contador">0 / 400</small>
                 </div>
-                <div class="div contenedor-input-toggle">
-  <label for="habilitar_participantes" class="form-label">Habilitar Participantes</label>
-  <label class="switch">
-    <input type="checkbox" name="habilitar_participantes" id="habilitar_participantes" {% if evento.eve_habilitar_participantes %}checked{% endif %}>
-    <span class="slider round"></span>
-  </label>
-</div>
 
-<div class="div contenedor-input-toggle">
-  <label for="habilitar_evaluadores" class="form-label">Habilitar Evaluadores</label>
-  <label class="switch">
-    <input type="checkbox" name="habilitar_evaluadores" id="habilitar_evaluadores" {% if evento.eve_habilitar_evaluadores %}checked{% endif %}>
-    <span class="slider round"></span>
-  </label>
-</div>
-
-
+                <!-- Ubicación -->
                 <div class="div contenedor-input-3">
-                    <div class="div-1">
-                        <label for="ciudad">Ciudad:</label>
-                        <input type="text" name="ciudad" value="{{evento.eve_ciudad}}">
-                    </div>
-                    <div class="div-2">
-                        <label for="lugar">Lugar:</label>
-                        <input type="text" name="lugar" value="{{evento.eve_lugar}}">
+                    <div class="fila-inputs">
+                        <div class="div-1">
+                            <label for="ciudad">Ciudad:</label>
+                            <input type="text" name="ciudad" id="ciudad" value="{{evento.eve_ciudad}}" required>
+                        </div>
+                        <div class="div-2">
+                            <label for="lugar">Lugar:</label>
+                            <input type="text" name="lugar" id="lugar" value="{{evento.eve_lugar}}" required>
+                        </div>
                     </div>
                 </div>
 
                 <div class="div contenedor-input-4">
-                    <div class="div-3">
+                    <div class="fila-inputs">
+                        <div class="div-3">
                         <label for="fecha_inicio">Fecha de inicio:</label>
-                        <input type="date" name="fecha_inicio" value="{{ evento.eve_fecha_inicio|date:'Y-m-d' }}">
-
-                    </div>
-                    <div class="div-4">
+                        <input type="date" 
+                                value="{{ evento.eve_fecha_inicio|date:'Y-m-d' }}" 
+                                name="fecha_inicio" id="fecha_inicio" required>
+                        </div>
+                        <div class="div-4">
                         <label for="fecha_fin">Fecha de fin:</label>
-                        <input type="date" name="fecha_fin" value="{{ evento.eve_fecha_fin|date:'Y-m-d' }}">
-
+                        <input type="date" 
+                                value="{{ evento.eve_fecha_fin|date:'Y-m-d' }}" 
+                                name="fecha_fin" id="fecha_fin" required>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Botón Continuar -->
                 <div class="div contenedor-input-5">
-                    <div class="boton-continuar">
-                        <input type="button" value="Continuar" onclick="siguiente(2)">
-                        <img src="{% static 'app_administrador/image/flecha-derecha.png' %}" alt="flecha-derecha" onclick="siguiente(2)">
+                    <div class="botones-navegacion">
+                        <button type="button" class="boton-continuar" onclick="siguiente(2)">
+                            Continuar
+                            <img src="{% static 'app_administrador/image/flecha-derecha.png' %}" alt="Siguiente">
+                        </button>
                     </div>
                 </div>
             </div>
-
+            
+            <!-- PÁGINA 2: CATEGORIZACIÓN Y ARCHIVOS -->
             <div id="pagina2" class="pagina pagina-inactiva">
-                <div  class="div contenedor-input-6">
-                    <div>
-                        <label for="area">Área:</label>
-                        <select id="area" name="area" required>
-                            <option value="">Seleccione un área</option>
-                            {% for area in areas %}
-                                <option value="{{ area.id }}" {% if area_seleccionada and area.id == area_seleccionada.id %}selected{% endif %}>
-                                    {{ area.are_nombre }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="categoria">Categoría:</label>
-                        <select id="categoria" name="categoria">
-                            {% for categoria in categorias %}
-                                <option value="{{ categoria.id }}" {% if categoria_seleccionada and categoria.id == categoria_seleccionada.id %}selected{% endif %}>
-                                    {{ categoria.cat_nombre }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                <div class="seccion-titulo">
+                    <h3>🏷️ Categorización y Configuración</h3>
+                </div>
+
+                <!-- Área y Categoría -->
+                <div class="div contenedor-input-6">
+                    <div class="fila-inputs">
+                        <div>
+                            <label for="area">Área:</label>
+                            <select id="area" name="area" required>
+                                <option value="area_seleccionada.id">{{area_seleccionada}}</option>
+
+                                {% for area in areas %}
+                                    <option value="{{ area.id }}">{{ area.are_nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="categoria">Categoría:</label>
+                            <select id="categoria" name="categoria" required>
+                                {% if categoria_seleccionada %}
+                                    <option value="{{ categoria_seleccionada.id }}">{{ categoria_seleccionada }}</option>
+                                {% endif %}
+                                <option value="">Seleccione una categoría</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div class="div contenedor-input-11">
-                    <label for="permitir_participantes">¿Tiene cupo límite?</label>
-                    <select id="permitir_participantes" name="permitir_participantes" onchange="toggleCantidadParticipantesModificar()">
-                        <option value="No" {% if not evento.eve_capacidad or evento.eve_capacidad == 0 %}selected{% endif %}>No</option>
-                        <option value="Si" {% if evento.eve_capacidad and evento.eve_capacidad > 0 %}selected{% endif %}>Sí</option>
-                    </select>
+                <!-- Configuración de Cupo -->
+                <!-- Configuración de Cupo -->
+<div class="div contenedor-input-11">
+    <div class="fila-inputs">
+        <div>
+            <label for="permitir_participantes">¿Tiene Cupo Límite?</label>
+            <select 
+                id="permitir_participantes_mod" 
+                name="permitir_participantes" 
+                onchange="toggleCantidadParticipantesModificar()"
+            >
+                {% if evento.eve_capacidad > 0 %}
+                    <option value="si" selected>Sí</option>
+                    <option value="no">No</option>
+                {% else %}
+                    <option value="no" selected>No</option>
+                    <option value="si">Sí</option>
+                {% endif %}
+            </select>
+        </div>
+            </select>
+        </div>
 
-
-                    <div id="cantidad_participantes_div" {% if not evento.eve_capacidad or evento.eve_capacidad == 0 %}style="display: none;"{% endif %}>
-                        <label for="cantidad_personas">Aforo Máximo:</label>
-                        <input type="number" min="0" id="cantidad_personas" name="cantidad_personas" value="{{ evento.eve_capacidad|default_if_none:'' }}">
-                    </div>
-                </div>
-
+        <div id="cantidad_participantes_div_mod" 
+             style="display: {% if evento.eve_capacidad > 0 %}block{% else %}none{% endif %};">
+            <label for="cantidad_personas">Aforo Máximo:</label>
+            <input 
+                type="number" 
+                min="1" 
+                value="{{ evento.eve_capacidad|default_if_none:'' }}" 
+                name="cantidad_personas" 
+                id="cantidad_personas_mod"
+            >
+        </div>
+    </div>
+    <!-- Costo de Inscripción -->
                 <div class="div contenedor-input-7">
                     <div>
                         <label for="inscripcion">Costo de inscripción:</label>
-                        <select class="dropdown" name="inscripcion">
-                            {% if evento.eve_tienecosto == True %}
-                                <option value="Si">Si</option>
+                        <select name="inscripcion" id="inscripcion" required>
+                            {% if evento.eve_tienecosto == 1 %}
+                                <option value="Si" selected>Sí</option>
                                 <option value="No">No</option>
                             {% else %}
-                                <option value="No">No</option>
-                                <option value="Si">Si</option>
-                            {% endif %}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="estado_evento">Estado del evento:</label>
-                        <select class="dropdown" name="estado_evento">
-                            {% if evento.eve_estado == 'activo' %}
-                                <option value="activo">Recibir Inscripciones</option>
-                                <option value="inactivo">Cancelar Incripciones</option>
-                            {% else %}
-                                <option value="inactivo">Cancelar Incripciones</option>
-                                <option value="activo">Recibir Inscripciones</option>
+                                <option value="No" selected>No</option>
+                                <option value="Si">Sí</option>
                             {% endif %}
                         </select>
                     </div>
                 </div>
 
-                <div class="div contenedor-input-8">
-                    <label for="imagen_evento">Imagen del Evento:</label>
-                    <img id="previewImagen" src="{{ evento.eve_imagen.url }}" alt="evento.eve_nombre" width="200">
-                    <input type="file" name="imagen_evento" id="imagen_evento" accept="image/*">
+
+                <div class="seccion-titulo">
+                    <h3>📁 Archivos de Información</h3>
                 </div>
 
-                <div class="div contenedor-input-10">
-                    <label for="documento_evento">Documento del Evento:</label>
-                    {% if evento.eve_programacion %}
-                        <p>Documento actual:
-                            <a href="{{evento.eve_programacion.url }}" target="_blank">Ver Documento</a>
-                            <iframe id="previewDocumento" style="display: none;" width="50%" height="300px"></iframe>
-                        </p>
-                    {% else %}
-                        <p>No hay documento disponible.</p>
-                        <iframe id="previewDocumento" style="display: none;" width="300px" height="300px"></iframe>
-                    {% endif %}
-                    <input type="file" name="documento_evento" id="documento_evento" accept=".pdf">
-                </div>
+                <!-- Archivos del Evento -->
+                <div class="archivo-item">
+    <label for="imagen_evento">Imagen del Evento:</label>
+    <div class="file-upload-area" id="imagen-upload-area">
+        <input type="file" name="imagen_evento" id="imagen_evento" accept="image/*">
+        <div class="upload-placeholder" style="{% if evento.eve_imagen %}display:none;{% endif %}">
+            <span>Haz clic o arrastra una imagen aquí</span>
+        </div>
+        <img id="previewImagen" 
+             class="preview-imagen"
+             {% if evento.eve_imagen %}
+                 src="{{ evento.eve_imagen.url }}"
+                 style="display:block;"
+             {% else %}
+                 style="display:none;"
+             {% endif %}
+             alt="Vista previa">
+    </div>
+</div>
 
+<div class="archivo-item">
+    <label for="documento_evento">Programación del Evento (PDF):</label>
+    <a class="btn-ver-doc " href="{{evento.eve_programacion.url}}" target="_blank" download="{{evento.eve_programacion.name}}">Ver PDF</a>
+    <div class="file-upload-area" id="documento-upload-area">
+        <input type="file" name="documento_evento" id="documento_evento" accept=".pdf">
+        <div class="upload-placeholder" style="{% if evento.eve_programacion %}display:none;{% endif %}">
+            <span>Haz clic o arrastra un PDF aquí</span>
+        </div>
+        <iframe id="previewDocumento" class="preview-documento"
+            {% if evento.eve_programacion %}
+                src="{{ evento.eve_programacion.url }}"
+                style="display:block;"
+            {% else %}
+                style="display:none;"
+            {% endif %}></iframe>
+    </div>
+</div>
+<!-- Botones de Navegación -->
                 <div class="div contenedor-input-9">
-                    <div class="boton-continuar">
-                        <img src="{% static 'app_administrador/image/atras.png'%}" alt="flecha-izquierda" onclick="volver(1)">
-                        <input type="button" value="Volver" onclick="volver(1)">
-                    </div>
-                    <div class="boton-continuar">
-                        <input type="submit" value="Modificar Evento">
-                        <img src="{% static 'app_administrador/image/crear-img.png' %}" alt="Crear">
+                    <div class="botones-navegacion">
+                        <button type="button" class="boton-volver" onclick="volver(1)">
+                            <img src="{% static 'app_administrador/image/atras.png' %}" alt="Volver">
+                            Volver
+                        </button>
+                        <button type="submit" class="boton-crear">
+                            Modificar Evento
+                            <img src="{% static 'app_administrador/image/crear-img.png' %}" alt="Crear">
+                        </button>
                     </div>
                 </div>
+</div>
+
+                
+
+
+                
             </div>
         </form>
     </div>
@@ -178,7 +239,7 @@
 
 
 <script>
-    document.getElementById("mensaje").value = "{{evento.eve_descripcion|default_if_none:''}}";
+    document.getElementById("descripcion_evento").value = "{{evento.eve_descripcion|default_if_none:''}}";
     const baseCategoriaUrl = "{% url 'administrador:get_categorias' 0 %}".replace('0', '');
 </script>
 <script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>

@@ -1,0 +1,141 @@
+{% extends 'app_super_admin/base.html' %}
+{% load static %}
+
+{% block title %}Áreas y Categorías{% endblock %}
+
+{% block content %}
+<div class="header"
+     style="background-color: #007832; color: white; padding: 20px; text-align: center; font-size: 28px; font-weight: bold;">
+    Gestión de Áreas y Categorías
+</div>
+
+<div class="container mt-4">
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" id="areasCategoriasTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="areas-tab" data-bs-toggle="tab" data-bs-target="#areas" type="button"
+                role="tab">Áreas</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="categorias-tab" data-bs-toggle="tab" data-bs-target="#categorias" type="button"
+                role="tab">Categorías</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3" id="areasCategoriasTabsContent">
+
+        <!-- TAB ÁREAS -->
+        <div class="tab-pane fade show active" id="areas" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Listado de Áreas</h4>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrearArea">
+                    <i class="bi bi-plus-circle"></i> Crear Área
+                </button>
+            </div>
+            <table class="table table-bordered table-hover">
+                <thead class="table-success">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Área</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for area in areas %}
+                    <tr>
+                        <td>{{ area.id }}</td>
+                        <td>{{ area.nombre }}</td>
+                        <td>
+                            <a href="{% url 'super_admin:editar_area' area.id %}" class="btn btn-warning btn-sm">Editar</a>
+                            <a href="{% url 'super_admin:eliminar_area' area.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center">No hay áreas registradas</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TAB CATEGORÍAS -->
+        <div class="tab-pane fade" id="categorias" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Listado de Categorías</h4>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrearCategoria">
+                    <i class="bi bi-plus-circle"></i> Crear Categoría
+                </button>
+            </div>
+            <table class="table table-bordered table-hover">
+                <thead class="table-success">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for categoria in categorias %}
+                    <tr>
+                        <td>{{ categoria.id }}</td>
+                        <td>{{ categoria.nombre }}</td>
+                        <td>
+                            <a href="{% url 'super_admin:editar_categoria' categoria.id %}" class="btn btn-warning btn-sm">Editar</a>
+                            <a href="{% url 'super_admin:eliminar_categoria' categoria.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center">No hay categorías registradas</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Crear Área -->
+<div class="modal fade" id="modalCrearArea" tabindex="-1" aria-labelledby="crearAreaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'super_admin:crear_area' %}">
+        {% csrf_token %}
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="crearAreaLabel">Crear Nueva Área</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label for="nombre_area" class="form-label">Nombre del Área</label>
+          <input type="text" name="nombre" id="nombre_area" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear Categoría -->
+<div class="modal fade" id="modalCrearCategoria" tabindex="-1" aria-labelledby="crearCategoriaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'super_admin:crear_categoria' %}">
+        {% csrf_token %}
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="crearCategoriaLabel">Crear Nueva Categoría</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label for="nombre_categoria" class="form-label">Nombre de la Categoría</label>
+          <input type="text" name="nombre" id="nombre_categoria" class="form-control" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

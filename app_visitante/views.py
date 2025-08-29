@@ -18,7 +18,6 @@ import json
 from django.http import JsonResponse
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import logout
-from django.contrib.auth.models import User
 from .forms import RegistroUsuarioForm
 from app_usuarios.models import Usuario
 from django.db import IntegrityError
@@ -29,6 +28,18 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 import os
+import random, datetime
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+codigo_global = {
+    "email": None,
+    "codigo": None,
+    "expira": None
+}
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -65,6 +76,77 @@ def login_view(request):
             messages.error(request, 'Contraseña incorrecta.')
     return render(request, 'app_visitante/login.html')
 
+
+def recuperar_contraseña(request):
+    global codigo_global
+    paso = 1  # Paso inicial → ingresar email
+    email = request.POST.get("email")
+
+    if request.method == "POST":
+
+        # 📌 Paso 1: Enviar código
+        if "codigo" not in request.POST and "nueva_password" not in request.POST:
+            if email:
+                user = User.objects.filter(email=email).first()
+                if not user:
+                    messages.error(request, "⚠️ El correo ingresado no está registrado.")
+                    paso = 1  # vuelve a pedir correo
+                else:
+                    codigo = str(random.randint(100000, 999999))
+                    codigo_global = {
+                        "email": email,
+                        "codigo": codigo,
+                        "expira": timezone.now() + datetime.timedelta(minutes=5)
+                    }
+
+                    # Enviar correo
+                    send_mail(
+                        "Recuperación de contraseña",
+                        f"Tu código de verificación es: {codigo}\nTienes 5 minutos para usarlo.",
+                        "tucorreo@gmail.com",  # remitente
+                        [email],
+                        fail_silently=False,
+                    )
+
+                    messages.success(request, "✅ Se envió un código a tu correo.")
+                    paso = 2
+
+        # 📌 Paso 2: verificar código ingresado
+        elif "codigo" in request.POST:
+            codigo_ingresado = request.POST.get("codigo")
+
+            if (codigo_global["email"] == email 
+                and codigo_global["codigo"] == codigo_ingresado 
+                and timezone.now() < codigo_global["expira"]):
+                paso = 3  # código válido → ingresar nueva contraseña
+            else:
+                messages.error(request, "Código inválido o expirado.")
+                paso = 2  
+
+        # 📌 Paso 3: cambiar contraseña
+        elif "nueva_password" in request.POST:
+            nueva = request.POST.get("nueva_password")
+            confirmar = request.POST.get("confirmar_password")
+
+            if nueva == confirmar:
+                user = User.objects.filter(email=email).first()
+                if user:
+                    user.set_password(nueva)  # ✅ Django encripta la contraseña
+                    user.save()
+                    messages.success(request, "Contraseña cambiada correctamente. Ya puedes iniciar sesión.")
+                    return redirect("login")
+                else:
+                    messages.error(request, "No se encontró un usuario con este correo.")
+                    paso = 1
+            else:
+                messages.error(request, "Las contraseñas no coinciden.")
+                paso = 3
+
+    return render(request, "app_visitante/recuperar_con.html", {
+        "paso": paso,
+        "email": email,
+        "mostrarmensajes": request.method == "POST"
+    })
 
 def registro_usuario_view(request):
     """
@@ -364,8 +446,17 @@ def submit_preinscripcion_participante(request):
 def registrar_asistente(request, evento_id):
     evento = get_object_or_404(Eventos, pk=evento_id)
 
+    # ✅ Validar cupos disponibles antes de registrar
+    inscritos = AsistentesEventos.objects.filter(
+        asi_eve_evento_fk=evento,
+        asi_eve_estado__in=['Admitido', 'Pendiente']
+    ).count()
+
+    if inscritos >= evento.eve_capacidad:
+        messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
+        return redirect(reverse('detalle_evento', args=[evento.id]))
+
     if request.method == 'POST':
-        
         soporte = request.FILES.get('comprobante_pago', None)  # Soporte opcional
 
         # Verificar si el usuario ya es un asistente registrado
@@ -387,7 +478,7 @@ def registrar_asistente(request, evento_id):
         # 🔹 Enviar correo solo si está admitido
         if estado == 'Admitido':
             subject = f"🎉 Confirmación de inscripción a {evento.eve_nombre}"
-            
+
             # Renderizar plantilla HTML
             html_content = render_to_string('app_visitante/correos/registro_asistente.html', {
                 'evento': evento,
@@ -395,7 +486,7 @@ def registrar_asistente(request, evento_id):
                 'clave': clave
             })
             text_content = strip_tags(html_content)  # Versión solo texto
-            
+
             email = EmailMultiAlternatives(
                 subject,
                 text_content,
@@ -403,11 +494,11 @@ def registrar_asistente(request, evento_id):
                 [request.user.email]
             )
             email.attach_alternative(html_content, "text/html")
-            
+
             qr_absoluta = os.path.join(settings.MEDIA_ROOT, qr)
             email.attach_file(qr_absoluta)
             email.send()
-        
+
             # Crear la inscripción del asistente al evento
             asistente_evento = AsistentesEventos(
                 asi_eve_evento_fk=evento,
@@ -428,10 +519,11 @@ def registrar_asistente(request, evento_id):
                 asi_eve_soporte=soporte,
                 asi_eve_fecha_hora=timezone.now(),
             )
-            
+
         asistente_evento.save()
 
     return redirect(reverse('inicio_visitante') + '?registro=exito_asistente')
+
 
 @login_required(login_url='login')
 def registrar_evaluador(request, evento_id):

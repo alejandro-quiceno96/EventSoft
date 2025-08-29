@@ -9,28 +9,80 @@ function hideLoader() {
 
 document.addEventListener('DOMContentLoaded', function () {
 
+
     let asistenteId = null;
     let eventoId = null;
     let urlBase = null;
 
-    // Abrir modal admitir
+    // Evento Admitir (abrir modal)
     document.querySelectorAll('.btn-admitir').forEach(button => {
         button.addEventListener('click', function () {
             asistenteId = this.dataset.id;
             eventoId = this.dataset.evento;
             urlBase = this.dataset.url;
 
+            // Actualizar texto del modal
             document.getElementById('mensaje-admitir').innerText =
                 `¿Estás seguro que deseas admitir a ${this.dataset.nombre}?`;
+
+            // Mostrar modal de admitir
+            const modalAdmitir = new bootstrap.Modal(document.getElementById('modalAdmitir'));
+            modalAdmitir.show();
         });
     });
 
-    // Confirmar admitir
+    // ✅ Confirmar admitir (DENTRO del DOMContentLoaded)
     document.getElementById('confirmarAdmitir').addEventListener('click', function () {
+       if (admitidosActuales >= capacidadMax) {
+    let modalCupoLleno; // declaramos aquí para usarlo en ambos bloques
+
+    // Buscar si hay algún modal abierto
+    const modalAbierto = document.querySelector('.modal.show');
+
+    if (modalAbierto) {
+        const modalInstance = bootstrap.Modal.getInstance(modalAbierto);
+
+        // Cuando termine de cerrarse, mostramos el de cupo lleno
+        modalAbierto.addEventListener('hidden.bs.modal', function handler() {
+            modalAbierto.removeEventListener('hidden.bs.modal', handler);
+
+            modalCupoLleno = new bootstrap.Modal(document.getElementById('modalSinCupo'));
+            modalCupoLleno.show();
+
+            // Recargar después de 1 segundo
+            setTimeout(() => {
+                modalCupoLleno.hide();
+                location.reload();
+            }, 1300);
+        });
+
+        // Cierra el modal actual
+        modalInstance.hide();
+
+    } else {
+        // Si no hay ninguno abierto, lo mostramos de una vez
+        modalCupoLleno = new bootstrap.Modal(document.getElementById('modalSinCupo'));
+        modalCupoLleno.show();
+
+        // Recargar después de 1 segundo
+        setTimeout(() => {
+            modalCupoLleno.hide();
+            location.reload();
+        }, 1300);
+    }
+
+    return; // 🚨 No continúa con fetch
+}
+
+
+        console.log("Hola entre en confirmarAdmitir");
         const url = urlBase.replace('0', asistenteId).replace('estado-placeholder', 'Admitido');
+
+
 
         const formData = new FormData();
         formData.append('evento_id', eventoId);
+
         showLoader();
         fetch(url, {
             method: 'POST',
@@ -40,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }).then(response => {
             if (response.redirected) {
-                window.location.href = response.url;
+                window.location.href = response.url;   // 🔥 redirige si backend devuelve redirect
             } else {
                 return response.json();
             }
@@ -64,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById('mensaje-rechazo').innerText =
                 `¿Estás seguro que deseas rechazar a ${this.dataset.nombre}?`;
-            
+
             // Limpiar el textarea del motivo
             document.getElementById('motivoRechazo').value = '';
         });
@@ -85,6 +137,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const formData = new FormData();
         formData.append('evento_id', eventoId);
         formData.append('motivo', motivo);  // Enviamos el motivo al backend
+
         showLoader();
         fetch(url, {
             method: 'POST',
@@ -95,7 +148,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }).then(response => {
             if (response.redirected) {
                 window.location.href = response.url;
-
             } else {
                 return response.json();
             }
@@ -109,7 +161,8 @@ document.addEventListener('DOMContentLoaded', function () {
             hideLoader();
         });
     });
-});
+
+}); // 👈 Aquí cierra el DOMContentLoaded
 
 // Función para obtener CSRF desde las cookies
 function getCookie(name) {
@@ -136,7 +189,7 @@ btnAbrirModal.addEventListener('click', () => {
       const modalAdvertencia = new bootstrap.Modal(document.getElementById('modalFechaNoValida'));
       modalAdvertencia.show();
     } else {
-      const modalConfirmacion = new bootstrap.Modal(document.getElementById('modalEnviarCertificados'));
+      modalConfirmacion = new bootstrap.Modal(document.getElementById('modalEnviarCertificados'));
       modalConfirmacion.show();
     }
   });

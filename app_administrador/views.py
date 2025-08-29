@@ -103,11 +103,8 @@ def crear_evento(request):
 
             # 🟩 ENVIAR CORREO A SUPERADMINISTRADORES
             superadmins =   SuperAdministradores.objects.select_related('usuario').all()
-            print("SuperAdmins encontrados:", [sa.usuario.email for sa in superadmins])
 
             for superadmin in superadmins:
-                user = superadmin.usuario
-
                 mensaje_html = render_to_string('app_administrador/correos/notificacion_evento_creado.html', {
                 "nombre": evento.eve_nombre,
                 "descripcion": evento.eve_descripcion,
@@ -309,6 +306,7 @@ def editar_evento(request, evento_id):
         categoria_evento = evento_categoria.eve_cat_categoria_fk if evento_categoria else None
         area_categoria = categoria_evento.cat_area_fk if categoria_evento else None  # Si existe ese campo
 
+        print('Capacidad del evento:', evento.eve_capacidad)
 
         contexto = {
             'evento': evento,
@@ -316,7 +314,6 @@ def editar_evento(request, evento_id):
             'area_seleccionada': area_categoria,
             'areas': obtener_areas_eventos(),
             'categorias': Categorias.objects.all(),
-            'administrador': request.session.get('admin_nombre'),
         }
 
         return render(request, 'app_administrador/modificarInformacion.html', contexto)
@@ -459,6 +456,12 @@ def ver_asistentes(request: HttpRequest, evento_id):
     
     evento = get_object_or_404(Eventos, id=evento_id)
 
+    #obtener asistentes admitidos
+    asistentes_admitidos = AsistentesEventos.objects.filter(
+        asi_eve_evento_fk=evento_id,
+        asi_eve_estado='Admitido'
+    ).count()
+    
     # Preparar los datos
     asistentes_data = []
     for ae in asistentes_evento:
@@ -480,103 +483,94 @@ def ver_asistentes(request: HttpRequest, evento_id):
         'estado': estado,
         'evento_fecha_fin': evento.eve_fecha_fin.isoformat(),
         'fecha_actual': now().isoformat(),
+        'asistentes_admitidos': asistentes_admitidos,
     })
     
 @csrf_exempt
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
-    if request.method == 'POST':
-        evento_id = request.POST.get('evento_id')
-        motivo = request.POST.get('motivo', '').strip()
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
-        if not evento_id:
-            return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
+    evento_id = request.POST.get('evento_id')
+    motivo = request.POST.get('motivo', '').strip()
 
-        # Generar PDF y clave de acceso
-        if nuevo_estado == 'Admitido':
-            qr_participante = generar_pdf(asistente_id, "Asistente", evento_id, tipo="asistente")
-            clave_acceso = generar_clave_acceso()
-        else:
-            qr_participante = None
-            clave_acceso = None
+    if not evento_id:
+        return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
 
-        # Buscar el asistente_evento
-        asistente_evento = AsistentesEventos.objects.filter(
-            asi_eve_asistente_fk=asistente_id,
-            asi_eve_evento_fk=evento_id
-        ).first()
+    # Buscar el asistente_evento
+    asistente_evento = AsistentesEventos.objects.filter(
+        asi_eve_asistente_fk=asistente_id,
+        asi_eve_evento_fk=evento_id
+    ).first()
 
-        if not asistente_evento:
-            return JsonResponse({'status': 'error', 'message': 'Asistente no encontrado en el evento'}, status=404)
+    if not asistente_evento:
+        return JsonResponse({'status': 'error', 'message': 'Asistente no encontrado en el evento'}, status=404)
 
-        # Actualizar los valores
-        asistente_evento.asi_eve_estado = nuevo_estado
-        asistente_evento.asi_eve_qr = qr_participante
-        asistente_evento.asi_eve_clave = clave_acceso if nuevo_estado == 'Admitido' else 0
-        asistente_evento.save()
-        
+    evento = asistente_evento.asi_eve_evento_fk
 
-        url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+    # ✅ Verificar límite de aforo antes de admitir
+    if nuevo_estado == 'Admitido':
+        qr_participante = generar_pdf(asistente_id, "Asistente", evento_id, tipo="asistente")
+        clave_acceso = generar_clave_acceso()
+    else:
+        qr_participante = None
+        clave_acceso = 0
 
+    # ✅ Actualizar los valores
+    asistente_evento.asi_eve_estado = nuevo_estado
+    asistente_evento.asi_eve_qr = qr_participante
+    asistente_evento.asi_eve_clave = clave_acceso
+    asistente_evento.save()
 
-        
-        if nuevo_estado == 'Admitido':
-            asistente = get_object_or_404(Asistentes, id=asistente_id)
+    asistente = get_object_or_404(Asistentes, id=asistente_id)
 
-            asistente = asistente_evento.asi_eve_asistente_fk  # debe ser ForeignKey
-            evento = asistente_evento.asi_eve_evento_fk
+    # ✅ Envío de correo si es admitido
+    if nuevo_estado == 'Admitido':
+        asunto = f"Confirmación de inscripción como asistente al evento: {evento.eve_nombre}"
+        mensaje_html = render_to_string("app_administrador/correos/notificacion_admitido_asistente.html", {
+            "nombre": asistente.usuario.first_name,
+            "evento": evento.eve_nombre,
+            "clave": clave_acceso,
+        })
 
-            asunto = f"Confirmación de inscripción como asistente al evento: {evento.eve_nombre}"
-            
-            mensaje_html = render_to_string("app_administrador/correos/notificacion_admitido_asistente.html", {
-                "nombre": asistente.usuario.first_name,
-                "evento": evento.eve_nombre,
-                "clave": clave_acceso,
-            })
+        email = EmailMultiAlternatives(
+            asunto,
+            "",  # cuerpo de texto plano (opcional)
+            settings.DEFAULT_FROM_EMAIL,
+            [asistente.usuario.email]
+        )
+        email.attach_alternative(mensaje_html, "text/html")
 
-            email = EmailMultiAlternatives(
-                asunto,
-                "",  # cuerpo de texto plano (opcional)
-                settings.DEFAULT_FROM_EMAIL,
-                [asistente.usuario.email]
-            )
-            email.attach_alternative(mensaje_html, "text/html")
+        ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))
+        if os.path.exists(ruta_pdf):
+            with open(ruta_pdf, 'rb') as f:
+                email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
 
-            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))  # ruta absoluta
+        email.send(fail_silently=True)
 
-            if os.path.exists(ruta_pdf):
-                with open(ruta_pdf, 'rb') as f:
-                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+    elif nuevo_estado == 'Rechazado':
+        asunto = f"Inscripción rechazada al evento: {evento.eve_nombre}"
+        mensaje_html = render_to_string("app_administrador/correos/correo_rechazo_asistente.html", {
+            "nombre": asistente.usuario.first_name,
+            "evento": evento.eve_nombre,
+            "motivo": motivo or "No se especificó motivo.",
+            "anio": timezone.now().year,
+        })
 
-            email.send(fail_silently=True)
-            
-        elif nuevo_estado == 'Rechazado':
-            asistente = get_object_or_404(Asistentes, id=asistente_id)
-            evento = asistente_evento.asi_eve_evento_fk
+        email = EmailMultiAlternatives(
+            asunto,
+            "",
+            settings.DEFAULT_FROM_EMAIL,
+            [asistente.usuario.email]
+        )
+        email.attach_alternative(mensaje_html, "text/html")
+        email.send(fail_silently=True)
 
-            asunto = f"Inscripción rechazada al evento: {evento.eve_nombre}"
-            
-            mensaje_html = render_to_string("app_administrador/correos/correo_rechazo_asistente.html", {
-                "nombre": asistente.usuario.first_name,
-                "evento": evento.eve_nombre,
-                "motivo": motivo,
-                "anio": timezone.now().year,
-            })
+    # ✅ Redirigir correctamente
+    url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+    return redirect(f'{url}?estado={nuevo_estado}')
 
-            email = EmailMultiAlternatives(
-                asunto,
-                "",  # cuerpo de texto plano
-                settings.DEFAULT_FROM_EMAIL,
-                [asistente.usuario.email]
-            )
-            email.attach_alternative(mensaje_html, "text/html")
-            email.send(fail_silently=True)
-
-
-        url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
-        return redirect(f'{url}?estado={nuevo_estado}')
-
-    return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
 @csrf_exempt
 def criterios_evaluacion(request, evento_id):

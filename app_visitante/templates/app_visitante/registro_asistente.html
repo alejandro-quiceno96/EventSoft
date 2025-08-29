@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -11,7 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* SOLO TEXTO */
         body,
         h1,
         h2,
@@ -28,50 +28,176 @@
         div {
             font-family: 'Work Sans', sans-serif !important;
         }
-    
-        </style>
 
+        .alert {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Botón verde */
+        .btn-guardar {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-guardar:hover {
+            background-color: #218838;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 400px;
+            margin: 10% auto;
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 10px;
+        }
+
+        .modal-content button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background: #218838;
+        }
+    </style>
 </head>
 
 <body>
     <header class="header">
         <div class="user-section">
-            <a href="{% url 'detalle_evento' evento.id %}" class="btn-volver"><i class="fas fa-arrow-left"></i> Volver</a>
+            <a href="{% url 'detalle_evento' evento.id %}" class="btn-volver">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
         </div>
         <div class="header-content">
             <h1 class="brand">Registro Asistente</h1>
-        </div>   
+        </div>
     </header>
 
     <main class="form-container">
 
+        <!-- ✅ Mostrar mensajes de Django -->
+        {% if messages %}
+        {% for message in messages %}
+        <div
+            class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
         <form action="{% url 'registrar_asistente' evento_id=evento.id %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <h2><i class="fas fa-edit"></i> Registro de Asistente</h2>
-            <p class="text-info">Para asistir a un evento, debes registrar el comprobante de pago. Ingresa el comprobante de pago para completar el registro.</p>
+            <p class="text-info">
+                Para asistir a un evento, debes registrar el comprobante de pago.
+            </p>
+
             <label for="comprobante_pago" class="file-label">
                 <i class="fas fa-file-upload"></i> Comprobante de pago:
             </label>
             <input type="file" id="comprobante_pago" name="comprobante_pago" accept=".pdf,.png,.jpg,.jpeg" required>
 
-            <button type="submit"><i class="fas fa-save"></i> Guardar Registro</button>
+            <!-- 🔹 Botón dinámico -->
+            {% if evento.asistenteseventos_set.count >= evento.eve_capacidad %}
+            <!-- Si ya no hay cupos -->
+            <button type="button" id="btn-cupos-llenos" class="btn-guardar">
+                <i class="fas fa-ban"></i> Cupos Llenos
+            </button>
+            {% else %}
+            <!-- Si hay cupos -->
+            <button type="submit" class="btn-guardar">
+                <i class="fas fa-save"></i> Guardar Registro
+            </button>
+            {% endif %}
         </form>
     </main>
-<script>
-    const comprobanteInput = document.getElementById("comprobante_pago");
 
-    if (comprobanteInput) {
-        const fileNameDisplay = document.createElement("div");
-        fileNameDisplay.className = "file-name";
-        comprobanteInput.parentNode.insertBefore(fileNameDisplay, comprobanteInput.nextSibling);
+    <!-- Modal aviso de cupos llenos -->
+    <div id="modalCupos" class="modal">
+        <div class="modal-content">
+            <h3>🚫 Cupos Llenos</h3>
+            <p>Ya no es posible inscribirse en este evento porque se alcanzó el número máximo de asistentes.</p>
+            <br>
+            <button onclick="cerrarModal()">Aceptar</button>
+        </div>
+    </div>
 
-        comprobanteInput.addEventListener("change", function () {
-            const fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
-            fileNameDisplay.textContent = `Archivo seleccionado: ${fileName}`;
-        });
-    }
+    <script>
+        const comprobanteInput = document.getElementById("comprobante_pago");
+        if (comprobanteInput) {
+            const fileNameDisplay = document.createElement("div");
+            fileNameDisplay.className = "file-name";
+            comprobanteInput.parentNode.insertBefore(fileNameDisplay, comprobanteInput.nextSibling);
 
-</script>
+            comprobanteInput.addEventListener("change", function () {
+                const fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
+                fileNameDisplay.textContent = `Archivo seleccionado: ${fileName}`;
+            });
+        }
 
+        // Modal manejo
+        const btnCupos = document.getElementById("btn-cupos-llenos");
+        const modal = document.getElementById("modalCupos");
+
+        if (btnCupos) {
+            btnCupos.addEventListener("click", function () {
+                modal.style.display = "block";
+            });
+        }
+
+        function cerrarModal() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 </body>
+
 </html>

@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar Contraseña</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'app_visitante/css/login.css' %}">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="login-wrapper">
+    <div class="login-box">
+
+      <!-- Mensajes -->
+      {% if mostrarmensajes and messages %}
+        <div class="mt-2">
+          {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-danger{% endif %}
+                {% if message.tags == 'success' %}alert-success{% endif %}
+            ">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <h2>Recuperar Contraseña</h2>
+
+      <!-- Paso 1: Ingresar correo -->
+      {% if paso == 1 %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <input type="email" name="email" placeholder="Correo electrónico" required>
+        </div>
+        <button type="submit" class="btn-login">Enviar código</button>
+      </form>
+      {% endif %}
+
+      <!-- Paso 2: Verificar código -->
+      {% if paso == 2 %}
+        <p class="text-muted">Se envió un código a <b>{{ email }}</b>. Tienes <span id="timer">05:00</span> minutos para usarlo.</p>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="email" value="{{ email }}">
+          <div class="form-group">
+            <input type="text" name="codigo" placeholder="Código de verificación" required>
+          </div>
+          <button type="submit" class="btn-login">Verificar código</button>
+        </form>
+        <p class="no-cuenta">
+          <a href="{% url 'recuperar_contraseña' %}?reenviar=1&email={{ email }}" class="btn-registro">Reenviar código</a>
+        </p>
+      {% endif %}
+
+      <!-- Paso 3: Nueva contraseña -->
+      {% if paso == 3 %}
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="email" value="{{ email }}">
+        <div class="form-group">
+          <input type="password" name="nueva_password" placeholder="Nueva contraseña" required>
+        </div>
+        <div class="form-group">
+          <input type="password" name="confirmar_password" placeholder="Confirmar contraseña" required>
+        </div>
+        <button type="submit" class="btn-login">Cambiar contraseña</button>
+      </form>
+      {% endif %}
+
+      <a href="{% url 'login' %}" class="volver-web">
+        <i class="fa-solid fa-arrow-left"></i> Volver al login
+      </a>
+    </div>
+  </div>
+
+  <!-- Temporizador -->
+  {% if paso == 2 %}
+  <script>
+    let timeLeft = 300;
+    const timerElement = document.getElementById("timer");
+
+    function updateTimer() {
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      timerElement.textContent =
+        (minutes < 10 ? "0" : "") + minutes + ":" +
+        (seconds < 10 ? "0" : "") + seconds;
+      if (timeLeft > 0) {
+        timeLeft--;
+        setTimeout(updateTimer, 1000);
+      } else {
+        timerElement.textContent = "Expirado";
+      }
+    }
+    updateTimer();
+  </script>
+  {% endif %}
+</body>
+</html>
