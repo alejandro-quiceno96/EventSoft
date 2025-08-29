@@ -38,18 +38,7 @@
     </a>
     <h2 class="mb-4">Criterios de Evaluación</h2>
      <div class="alert alert-info" role="alert">
-        <strong>Nota:</strong> Los criterios de evaluación son fundamentales para la calificación de los participantes. Asegúrate de que sean claros y justos.
-        <form id="form-criterios" method="POST">
-        {% csrf_token %}
-            <div class="mb-3">
-                <label for="nuevo_criterio" class="form-label">Nuevo Criterio:</label>
-                <div class="input-group">
-                    <input type="text" class="form-control_descripcion " name="criterio" placeholder="Descripción" required>
-                    <input type="number" class="form-control_porcentaje porcentaje-nuevo" name="porcentaje" placeholder="%" min="0" max="100" required>
-                    <button type="submit" class="btn btn-success">Agregar</button>
-                </div>
-            </div>
-        </form>
+        <strong>Nota:</strong> Evalúa con la misma energía con la que los participantes dieron todo en su proyecto. 💡🔥
     </div>
 </div>
 
@@ -78,54 +67,12 @@
                            value="{{ criterio.cri_peso }}"
                            readonly>
                 </div>
-
-                <div class="contenedor-botones">
-                    <button class="btn btn-outline-primary btn-sm btn-modificar-criterios"
-                            data-url="{% url 'administrador:modificar_criterio' criterio.id %}">
-                        <i class="fa-solid fa-pen-to-square"></i> Modificar
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm btn-eliminar-criterios"
-                            data-id="{{ criterio.id }}"
-                            data-url="{% url 'administrador:eliminar_criterio' criterio.id %}">
-                        <i class="fa-solid fa-trash"></i> Eliminar
-                    </button>
-                </div>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
 
-<!-- Modales -->
-<div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title">Éxito</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body text-center"></div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalConfirmarEliminarLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="modalConfirmarEliminarLabel">Confirmar eliminación</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        ¿Estás seguro de que deseas eliminar este criterio?
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script src="{% static 'app_administrador/js/criteriosadmin.js' %}"></script>
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

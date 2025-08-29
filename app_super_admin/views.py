@@ -15,12 +15,37 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.shortcuts import redirect
 from django.urls import reverse
+from app_areas.models import Areas
+from app_categorias.models import Categorias
 
+
+
+def crear_area(request):
+    if request.method == "POST":
+        nombre = request.POST.get("are_nombre")
+        descripcion = request.POST.get("are_descripcion")
+        Areas.objects.create(are_nombre=nombre, are_descripcion=descripcion)
+        messages.success(request, "Área creada exitosamente.")
+    return redirect("super_admin:index_super_admin")
+
+def crear_categoria(request):
+    if request.method == "POST":
+        nombre = request.POST.get("cat_nombre")
+        descripcion = request.POST.get("cat_descripcion")
+        area_id = request.POST.get("cat_area_fk")
+        area = Areas.objects.get(id=area_id)
+        Categorias.objects.create(cat_nombre=nombre, cat_descripcion=descripcion, cat_area_fk=area)
+        messages.success(request, "Categoría creada exitosamente.")
+    return redirect("super_admin:index_super_admin")
 
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def index(request):
     eventos = Eventos.objects.all().select_related('eve_administrador_fk')
     eventos_por_estado = defaultdict(list)
+    areas = Areas.objects.all()
+
+    # Traer eventos (ejemplo, adáptalo a tu lógica)
+    eventos = Eventos.objects.all()
     for evento in eventos:
         # Normaliza el estado
         estado = evento.eve_estado.capitalize()
@@ -33,6 +58,7 @@ def index(request):
         'eventos': eventos,
         'eventos_por_estado': eventos_por_estado,
         'pendientes_count': pendientes_count,
+        'areas': areas, 
     }
     return render(request, 'app_super_admin/inicio_super_admin.html', context)
 

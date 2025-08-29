@@ -12,15 +12,13 @@ class Eventos(models.Model):
     eve_imagen = models.ImageField(upload_to='image/')
     eve_capacidad = models.IntegerField()
     eve_tienecosto = models.BooleanField(default=False)
-    eve_programacion = models.FileField(upload_to='pdf/programacion/')
+    eve_programacion = models.FileField(upload_to='pdf/programacion/', blank=True, null=True)
     eve_administrador_fk = models.ForeignKey('app_administrador.Administradores', on_delete=models.CASCADE)
     eve_informacion_tecnica = models.FileField(upload_to='pdf/info_tecnica/', blank=True, null=True)
     eve_memorias = models.URLField(max_length=200, blank=True, null=True)
     
     eve_habilitar_participantes = models.BooleanField(default=True)
     eve_habilitar_evaluadores = models.BooleanField(default=True)
-
-
 
 
 class EventosCategorias(models.Model):

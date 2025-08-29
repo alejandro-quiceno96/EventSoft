@@ -21,20 +21,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 function toggleCantidadParticipantesModificar() {
-    const select = document.getElementById("permitir_participantes");
-    const divCantidad = document.getElementById("cantidad_participantes_div");
-    const inputCantidad = document.getElementById("cantidad_personas");
+    const select = document.getElementById("permitir_participantes_mod");
+    const divCantidad = document.getElementById("cantidad_participantes_div_mod");
+    const inputCantidad = document.getElementById("cantidad_personas_mod");
 
-    const valor = select.value.trim().toLowerCase(); // normaliza
-
+    const valor = select.value.trim();
     if (valor === "si") {
         divCantidad.style.display = "block";
     } else {
-        console.log("No se permite la cantidad de participantes");
         divCantidad.style.display = "none";
         inputCantidad.value = "";
     }
 }
+
 
 // Abre el modal cuando la página cargue si el evento fue modificado correctamente
 window.addEventListener("DOMContentLoaded", toggleCantidadParticipantesModificar);

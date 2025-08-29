@@ -4,130 +4,229 @@
 {% block title %}
     {{ administrador|default:'Administrador' }}
 {% endblock %}
+
 {% block content %}
+ <link rel="stylesheet" href="{% static 'app_administrador/css/crearEvento.css'%}">
 <div class="contenedor-principal-crear">
     <div class="contenedor-crear-evento">
         <h2>Nuevo Evento</h2>
+        
+        <!-- Indicador de progreso -->
+        <div class="progreso-container">
+            <div class="progreso-barra">
+                <div class="progreso-fill" id="progreso-fill"></div>
+            </div>
+            <div class="progreso-pasos">
+                <span class="paso active" id="paso-1">1</span>
+                <span class="paso" id="paso-2">2</span>
+            </div>
+        </div>
 
         <form action="{% url 'administrador:crear_evento' %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            
+            <!-- PÁGINA 1: INFORMACIÓN BÁSICA DEL EVENTO -->
             <div id="pagina1" class="pagina pagina-activa">
-                
+                <div class="seccion-titulo">
+                    <h3>📋 Información Básica del Evento</h3>
+                </div>
+
+                <!-- Nombre del Evento -->
                 <div class="div contenedor-input-1">
                     <label for="nombre_evento">Nombre del Evento:</label>
-                    <input type="text" name="nombre_evento" id="nombre_evento" maxlength="100" oninput="actualizarContaNombre()">
-                    <small id="contador_nombre">0 / 100</small>
+                    <input type="text" name="nombre_evento" id="nombre_evento" maxlength="100" oninput="actualizarContaNombre()" required>
+                    <small id="contador_nombre" class="contador">0 / 100</small>
                 </div>
+
+                <!-- Descripción -->
                 <div class="div contenedor-input-2">
                     <label for="descripcion_evento">Descripción:</label>
-                    <textarea id="mensaje" name="descripcion_evento" placeholder="Escribe aquí..." maxlength="400" oninput="actualizarContador()"></textarea>
-                    <small id="contador">0 / 400</small>
+                    <textarea id="descripcion_evento" name="descripcion_evento" placeholder="Describe tu evento..." maxlength="400" oninput="actualizarContador()" rows="4" required></textarea>
+                    <small id="contador" class="contador">0 / 400</small>
                 </div>
-                <div  class="div contenedor-input-3">
-                    <div class="div-1">
-                        <label for="ciudad">Ciudad:</label>
-                        <input type="text" name="ciudad">
-                    </div>
-                    <div class="div-2">
-                        <label for="lugar">Lugar:</label>
-                        <input type="text" name="lugar">
+
+                <!-- Ubicación -->
+                <div class="div contenedor-input-3">
+                    <div class="fila-inputs">
+                        <div class="div-1">
+                            <label for="ciudad">Ciudad:</label>
+                            <input type="text" name="ciudad" id="ciudad" required>
+                        </div>
+                        <div class="div-2">
+                            <label for="lugar">Lugar:</label>
+                            <input type="text" name="lugar" id="lugar" required>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Fechas -->
                 <div class="div contenedor-input-4">
-                    <div class="div-3">
-                        <label for="fecha_inicio">Fecha de inicio:</label>
-                        <input type="date" name="fecha_inicio">
+                    <div class="fila-inputs">
+                        <div class="div-3">
+                            <label for="fecha_inicio">Fecha de inicio:</label>
+                            <input type="date" name="fecha_inicio" id="fecha_inicio" required>
+                        </div>
+                        <div class="div-4">
+                            <label for="fecha_fin">Fecha de fin:</label>
+                            <input type="date" name="fecha_fin" id="fecha_fin" required>
+                        </div>
                     </div>
-                    <div class="div-4">
-                        <label for="fecha_fin">Fecha de fin:</label>
-                        <input type="date" name="fecha_fin">
-                    </div>
-                    
                 </div>
-                <div  class="div contenedor-input-5">
-                    <div class="boton-continuar">
-                        <input type="button" value="Continuar" onclick="siguiente(2)">
-                        <img src="{% static 'app_administrador/image/flecha-derecha.png' %}" alt="flecha-derecha" onclick="siguiente(2)">
+
+                <!-- Botón Continuar -->
+                <div class="div contenedor-input-5">
+                    <div class="botones-navegacion">
+                        <button type="button" class="boton-continuar" onclick="siguiente(2)">
+                            Continuar
+                            <img src="{% static 'app_administrador/image/flecha-derecha.png' %}" alt="Siguiente">
+                        </button>
                     </div>
                 </div>
             </div>
             
+            <!-- PÁGINA 2: CATEGORIZACIÓN Y ARCHIVOS -->
             <div id="pagina2" class="pagina pagina-inactiva">
-
-                <div  class="div contenedor-input-6">
-                    <div>
-                        <label  for="area">Area:</label>
-                        <select id="area" required >
-                            <option value="">Seleccione un área</option>
-                            {% for area in areas %}
-                                <option value="{{ area.id }}">{{ area.are_nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label  for="categoria" >Categoría:</label>
-                        <select id="categoria" required name="categoria">
-                            <option value="">Seleccione una categoría</option>
-                        </select>
-
-                    </div>
-                    
-                    
+                <div class="seccion-titulo">
+                    <h3>🏷️ Categorización y Configuración</h3>
                 </div>
+
+                <!-- Área y Categoría -->
+                <div class="div contenedor-input-6">
+                    <div class="fila-inputs">
+                        <div>
+                            <label for="area">Área:</label>
+                            <select id="area" name="area" required>
+                                <option value="">Seleccione un área</option>
+                                {% for area in areas %}
+                                    <option value="{{ area.id }}">{{ area.are_nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="categoria">Categoría:</label>
+                            <select id="categoria" name="categoria" required>
+                                <option value="">Seleccione una categoría</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración de Cupo -->
                 <div class="div contenedor-input-11">
-                    <div >
-                        <label for="permitir_participantes">¿Tiene Cupo limite?</label>
-                        <select id="permitir_participantes" name="permitir_participantes" onchange="toggleCantidadParticipantes()">
-                          <option value="0">No</option>
-                          <option value="1">Sí</option>
-                        </select>
-                      </div>
-                    <div id="cantidad_participantes_div">
-                        <label for="">Aforo Máximo:</label>
-                        <input type="number" min="0" value="1" name="cantidad_personas">
+                    <div class="fila-inputs">
+                        <div>
+                            <label for="permitir_participantes">¿Tiene Cupo Límite?</label>
+                            <select id="permitir_participantes" name="permitir_participantes" onchange="toggleCantidadParticipantes()">
+                                <option value="0">No</option>
+                                <option value="1">Sí</option>
+                            </select>
+                        </div>
+                        <div id="cantidad_participantes_div" style="display: none;">
+                            <label for="cantidad_personas">Aforo Máximo:</label>
+                            <input type="number" min="1" value="1" name="cantidad_personas" id="cantidad_personas">
+                        </div>
                     </div>
                 </div>
-                <div  class="div contenedor-input-7">
+
+                <!-- Costo de Inscripción -->
+                <div class="div contenedor-input-7">
                     <div>
-                        <label  for="inscripcion">Costo de inscripción:</label>
-                        <select class="dropdown" name="inscripcion" id="">
+                        <label for="inscripcion">Costo de inscripción:</label>
+                        <select name="inscripcion" id="inscripcion" required>
                             <option value="">Seleccionar una opción</option>
-                            <option value="Si">Si</option>
+                            <option value="Si">Sí</option>
                             <option value="No">No</option>
                         </select>
                     </div>
                 </div>
+
+                <!-- Configuración de evento -->
+                <div class="div contenedor-input-12">
+                <div>
+                    <label for="tipo_evento">Tipo de evento:</label>
+                    <select name="tipo_evento" id="tipo_evento" required>
+                    <option value="">Seleccionar una opción</option>
+                    <option value="exposicion">Exposición de proyectos</option>
+                    <option value="competencia">Competencia</option>
+                    </select>
+                </div>
+                </div>
+
+                <!-- Modalidad (aparece solo si es competencia) -->
+                <div class="div contenedor-input-12" id="campo-participacion" style="display: none;">
+                <div>
+                    <label for="tipo_participacion">Modalidad de competencia:</label>
+                    <select name="tipo_participacion" id="tipo_participacion">
+                    <option value="">Seleccionar una opción</option>
+                    <option value="individual">Individual</option>
+                    <option value="grupal">Grupal</option>
+                    </select>
+                </div>
+                </div>
+
+                <!-- Máximo integrantes (aparece solo si es grupal) -->
+                <div class="div contenedor-input-12" id="campo-maximo" style="display: none;">
+                <div>
+                    <label for="max_integrantes">Máximo de integrantes:</label>
+                    <input type="number" name="max_integrantes" id="max_integrantes" min="2" placeholder="Ej: 5">
+                </div>
+                </div>
+
+                <div class="seccion-titulo">
+                    <h3>📁 Archivos de Información</h3>
+                </div>
+
+                <!-- Archivos del Evento -->
                 <div class="div contenedor-input-10">
-                    <div class="mb-3">
-                        <label for="imagen_evento">Imagen del Evento:</label>
-                        <img id="previewImagen" src="" alt="Imagen del evento" width="200">
-                        <!-- Input para subir una nueva imagen -->
-                        <input type="file" name="imagen_evento" id="imagen_evento" accept="image/*" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="formFileMultiple" class="form-label">Subir Programación del Evento </label>
-                        <iframe id="previewDocumento" style="display: none;" width="50%" height="300px"></iframe>
-                        <input type="file" name="documento_evento" id="documento_evento" accept=".pdf" required>
+                    <div class="archivo-container">
+                        <div class="archivo-item">
+                            <label for="imagen_evento">Imagen del Evento:</label>
+                            <div class="file-upload-area" id="imagen-upload-area">
+                                <input type="file" name="imagen_evento" id="imagen_evento" accept="image/*" required>
+                                <div class="upload-placeholder">
+                                    <img src="{% static 'app_administrador/image/upload-icon.png' %}" alt="Upload" class="upload-icon">
+                                    <span>Haz clic o arrastra una imagen aquí</span>
+                                </div>
+                                <img id="previewImagen" class="preview-imagen" style="display: none;" alt="Vista previa">
+                            </div>
+                        </div>
+                        
+                        <div class="archivo-item">
+                            <label for="documento_evento">Programación del Evento (PDF):</label>
+                            <div class="file-upload-area" id="documento-upload-area">
+                                <input type="file" name="documento_evento" id="documento_evento" accept=".pdf" required>
+                                <div class="upload-placeholder">
+                                    <img src="{% static 'app_administrador/image/pdf-icon.png' %}" alt="PDF" class="upload-icon">
+                                    <span>Haz clic o arrastra un PDF aquí</span>
+                                </div>
+                                <iframe id="previewDocumento" class="preview-documento" style="display: none;"></iframe>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div  class="div contenedor-input-9">
-                    <div class="boton-continuar">
-                        <img src="{% static 'app_administrador/image/atras.png'%}" alt="flecha-izquierda" onclick="volver(1)">
-                        <input type="button" value="Volver" onclick="volver(1)">
-                    </div>
-                    <div class="boton-continuar">
-                        <input type="submit" value="Crear Evento">
-                        <img src="{% static 'app_administrador/image/crear-img.png' %}" alt="Crear">
+
+                <!-- Botones de Navegación -->
+                <div class="div contenedor-input-9">
+                    <div class="botones-navegacion">
+                        <button type="button" class="boton-volver" onclick="volver(1)">
+                            <img src="{% static 'app_administrador/image/atras.png' %}" alt="Volver">
+                            Volver
+                        </button>
+                        <button type="submit" class="boton-crear">
+                            Crear Evento
+                            <img src="{% static 'app_administrador/image/crear-img.png' %}" alt="Crear">
+                        </button>
                     </div>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<!-- Scripts -->
 <script>
     const baseCategoriaUrl = "{% url 'administrador:get_categorias' 0 %}".replace('0', '');
 </script>
-
 <script src="{% static 'app_administrador/js/crearEvento.js' %}"></script>
 <script src="{% static 'app_administrador/js/previaImagen.js' %}"></script>
 {% endblock %}

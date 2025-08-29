@@ -18,6 +18,9 @@ body, html {
     overflow-x: hidden;
     font-family: "Noto Sans", sans-serif;
     background-image: url(/static/app_administrador/image/fondo_admin.png);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     background-repeat: no-repeat;
 }
 
@@ -176,153 +179,7 @@ h6 {
     margin-left: 250px;
 }
 
-/* ===== CREAR EVENTO ===== */
-.contenedor-principal-crear {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
 
-.contenedor-crear-evento {
-    width: 80%;
-    margin: 20px 0;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.5);
-}
-
-.contenedor-crear-evento h2 {
-    text-align: center;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.pagina {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
-    align-items: center;
-}
-
-.pagina-activa {
-    display: flex;
-}
-
-.pagina-inactiva {
-    display: none;
-}
-
-.div {
-    margin-top: 20px;
-    width: 80%;
-}
-
-.div input {
-    border-radius: 5px;
-    border: .5px solid black;
-}
-
-.div label {
-    font-weight: bold;
-}
-
-/* Agrupados por campos */
-.contenedor-input-1 input { width: 70%; }
-.contenedor-input-2 { display: flex; align-items: center; gap: 60px; }
-.contenedor-input-2 textarea { width: 80%; height: 80px; }
-
-.div-1, .div-2, .div-3, .div-4 {
-    display: flex;
-    width: 50%;
-}
-
-.div-1 { gap: 95px; }
-.div-2 { gap: 20px; width: 60%; }
-.div-3 { gap: 35px; }
-.div-4 { gap: 10px; }
-
-.div-1 input, .div-2 input { width: 60%; }
-
-.contenedor-input-3 { display: flex; gap: 70px; }
-.contenedor-input-4 { display: flex; flex-wrap: wrap; align-items: center; }
-.contenedor-input-5 { display: flex; justify-content: end; }
-
-.contenedor-input-6, .contenedor-input-7 {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px;
-}
-
-.contenedor-input-6 select,
-.contenedor-input-7 select,
-.contenedor-input-11 select {
-    border-radius: 10px;
-    background-color: var(--color-naranja);
-    color: var(--color-texto);
-}
-
-.contenedor-input-6 option,
-.contenedor-input-7 option,
-.contenedor-input-11 option {
-    background-color: white;
-    color: #000000;
-}
-
-.contenedor-input-8,
-.mb-3 {
-    display: flex;
-    flex-direction: column;
-    margin-top: 15px;
-}
-
-.contenedor-input-8 input {
-    margin-top: 10px;
-}
-
-.contenedor-input-9 {
-    display: flex;
-    justify-content: space-between;
-}
-
-.contenedor-input-11 {
-    display: flex;
-    gap: 10px;
-}
-
-/* ===== BOTONES ===== */
-.boton-continuar,
-.boton-modificar {
-    background-color: var(--color-naranja);
-    padding: 5px;
-    border-radius: 20px;
-    text-align: center;
-}
-
-.boton-continuar:hover,
-.boton-modificar:hover {
-    background-color: #007832;
-    cursor: pointer;
-}
-
-.boton-continuar img,
-.boton-modificar img {
-    width: 30px;
-}
-
-.boton-continuar input,
-.boton-modificar input {
-    background-color: transparent;
-    border: none;
-    color: var(--color-texto);
-}
 
 /* ===== ADMINISTRAR EVENTOS ===== */
 .contenedor-principal-de-eventos {

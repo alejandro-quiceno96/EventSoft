@@ -23,5 +23,6 @@ urlpatterns = [
     path('inicio_evaluado/', views.inicio_evaluador, name='inicio_sesion_evaluador'),
     path("chatbot/", views.chatbot, name="chatbot"),
     path('validar-clave-admin/', views.validar_clave_admin, name='validar_clave_admin'),
+    path('Recuperar-contraseña', views.recuperar_contraseña, name='recuperar_contraseña')
 
 ]

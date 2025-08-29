@@ -50,6 +50,21 @@
 </header>
 
 <main class="text-center">
+    <hr class="my-4">
+
+<h2 class="p-2 rounded">Gestión de Áreas y Categorías</h2>
+<div class="d-flex gap-2 justify-content-center">
+  <!-- Botón crear Área -->
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCrearArea">
+      <i class="bi bi-plus-circle"></i> Crear Área
+  </button>
+
+  <!-- Botón crear Categoría -->
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearCategoria">
+      <i class="bi bi-tags-fill"></i> Crear Categoría
+  </button>
+</div>
+
   <h2 class="p-2 rounded">Eventos Activos</h2>
   <div class="d-flex flex-wrap justify-content-center gap-3 p-3">
     {% for evento in eventos %}
@@ -85,6 +100,7 @@
     <p>No hay eventos activos disponibles.</p>
     {% endfor %}
   </div>
+  
 </main>
 
 
@@ -122,6 +138,63 @@
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="modalCrearArea" tabindex="-1" aria-labelledby="crearAreaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'super_admin:crear_area' %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="crearAreaLabel">Crear Área</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Nombre del Área</label>
+          <input type="text" name="are_nombre" class="form-control" required>
+          <label class="form-label mt-2">Descripción</label>
+          <textarea name="are_descripcion" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Guardar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="modalCrearCategoria" tabindex="-1" aria-labelledby="crearCategoriaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="post" action="{% url 'super_admin:crear_categoria' %}">
+      {% csrf_token %}
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="crearCategoriaLabel">Crear Categoría</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label">Nombre de la Categoría</label>
+          <input type="text" name="cat_nombre" class="form-control" required>
+          
+          <label class="form-label mt-2">Descripción</label>
+          <textarea name="cat_descripcion" class="form-control" rows="3" required></textarea>
+
+          <label class="form-label mt-2">Área</label>
+          <select name="cat_area_fk" class="form-control" required>
+            {% for area in areas %}
+              <option value="{{ area.id }}">{{ area.are_nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 
 
 
