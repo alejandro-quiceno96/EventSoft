@@ -394,7 +394,8 @@ def preinscripcion_asistente(request, evento_id):
 @login_required(login_url='login')
 def preinscripcion_evaluador(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
-    return render(request, 'app_visitante/preinscripcion_evaluador.html', {'evento': evento})
+    areas = Areas.objects.all()
+    return render(request, 'app_visitante/preinscripcion_evaluador.html', {'evento': evento, 'areas': areas})
 
 def modificar_participante(request):
     return render(request, 'app_visitante/modificar_participante.html')
@@ -565,6 +566,7 @@ def registrar_evaluador(request, evento_id):
     """
     if request.method == 'POST':
         documento = request.FILES.get('documento')
+        area = request.POST.get('area')
         
         try:
             # Obtener o crear el evaluador
@@ -596,6 +598,7 @@ def registrar_evaluador(request, evento_id):
             EvaluadoresEventos.objects.create(
                 eva_eve_evaluador_fk=evaluador,
                 eva_eve_evento_fk=evento,
+                eva_eve_areas_interes=area,
                 eva_eve_fecha_hora=timezone.now(),
                 eva_eve_documentos=documento,
                 eva_estado='Pendiente',

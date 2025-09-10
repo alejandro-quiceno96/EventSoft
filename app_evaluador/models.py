@@ -1,5 +1,6 @@
 from django.db import models
 from app_usuarios.models import Usuario
+from app_eventos.models import Proyecto
 class Evaluadores(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='evaluador')
     
@@ -13,3 +14,7 @@ class Calificaciones(models.Model):
     clas_participante_fk = models.ForeignKey('app_participante.Participantes', on_delete=models.CASCADE, related_name='participante_calificaciones')
     cal_valor = models.DecimalField(max_digits=5, decimal_places=2)
     cal_comentario = models.TextField(null=True, blank=True)
+
+class EvaluadorProyecto(models.Model):
+    eva_pro_evaluador_fk = models.ForeignKey(Evaluadores, on_delete=models.CASCADE, related_name='evaluador')
+    eva_pro_proyecto_fk = models.ForeignKey(Proyecto, on_delete=models.CASCADE, related_name='proyecto')
