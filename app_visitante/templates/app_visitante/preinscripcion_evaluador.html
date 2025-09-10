@@ -27,24 +27,46 @@
   </div>
 
   <div class="form-container">
-    <form class="form-card" action="{% url 'registrar_evaluador' evento.id %}" method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
-      <h2><i class="fas fa-user-edit"></i> Registro de Evaluador</h2>
+  <form class="form-card" action="{% url 'registrar_evaluador' evento.id %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <h2><i class="fas fa-user-edit"></i> Registro de Evaluador</h2>
 
+    <!-- Mensaje explicativo -->
+    <p class="info-text">
+      📄 Sube tus <strong>títulos profesionales</strong>, 
+      <strong>experiencia en el área</strong> que deseas evaluar 
+      o <strong>certificados de evaluaciones</strong> en otros eventos.
+    </p>
 
-      <!-- Nuevo input para documentos -->
-      <div class="form-group">
-        <label for="documento"><i class="fas fa-file-upload"></i> Subir Documento</label>
-        <label for="documento" class="custom-file-upload">
-          <i class="fas fa-upload"></i> Seleccionar archivo
-        </label>
-        <input type="file" id="documento" name="documento" accept=".pdf,.png,.jpg" />
-        <div id="filename" class="filename-preview">Ningún archivo seleccionado</div>
-      </div>
-
-      <button type="submit" class="action-btn"><i class="fas fa-paper-plane"></i> Enviar</button>
-    </form>
+    <!-- Select de áreas -->
+    <div class="form-group">
+  <label for="area"><i class="fas fa-layer-group"></i> Área de Evaluación</label>
+  <div class="custom-select-container">
+    <select id="area" name="area" class="custom-select" required>
+      <option value="">-- Selecciona un área --</option>
+      {% for area in areas %}
+        <option value="{{ area.are_nombre }}">{{ area.are_nombre }}</option>
+      {% endfor %}
+    </select>
+    <i class="fas fa-chevron-down select-arrow"></i>
   </div>
+</div>
+
+
+    <!-- Input para documentos -->
+    <div class="form-group">
+      <label for="documento"><i class="fas fa-file-upload"></i> Subir Documento</label>
+      <label for="documento" class="custom-file-upload">
+        <i class="fas fa-upload"></i> Seleccionar archivo
+      </label>
+      <input type="file" id="documento" name="documento" accept=".pdf,.png,.jpg" required />
+      <div id="filename" class="filename-preview">Ningún archivo seleccionado</div>
+    </div>
+
+    <button type="submit" class="action-btn"><i class="fas fa-paper-plane"></i> Enviar</button>
+  </form>
+</div>
+
 
   <script>
     document.getElementById('documento').addEventListener('change', function () {

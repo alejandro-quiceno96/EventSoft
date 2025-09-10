@@ -22,23 +22,19 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
 import locale
 from django.utils.timezone import now
-from django.core.exceptions import ObjectDoesNotExist
+
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos, Proyecto
 from app_areas.models import Areas
 from app_categorias.models import Categorias
 from app_administrador.models import Administradores
 from app_criterios.models import Criterios
-from app_evaluador.models import Calificaciones
+from app_evaluador.models import Calificaciones, EvaluadorProyecto
 from app_participante.models import Participantes
 from app_evaluador.models import Evaluadores
 from app_certificados.models import Certificado
 
 from app_super_admin.models import SuperAdministradores
-from io import BytesIO
-from reportlab.pdfgen import canvas
-from twilio.rest import Client
-
 
 
 # Obtener áreas disponibles
@@ -811,6 +807,7 @@ def ver_evaluadores(request: HttpRequest, evento_id):
             'eva_telefono': e.usuario.telefono if e.usuario.telefono else 'No registrado',  # Cambiado de asi_telefono a eva_telefono
             'estado': ee.eva_estado,
             'documento': ee.eva_eve_documentos,
+            'area_evaluar': ee.eva_eve_areas_interes,
             'hora_inscripcion': ee.eva_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ee.eva_eve_fecha_hora else 'No registrada',
         })
 
@@ -1458,3 +1455,63 @@ def modificar_certificados(request,evento_id):
     }
 
     return render(request, 'app_administrador/modificar_certificado.html', context)
+
+@login_required(login_url='login')
+def listar_evaluadores_ajax(request, evento_id, proyecto_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+
+    evaluadores = EvaluadoresEventos.objects.filter(
+        eva_eve_evento_fk=evento,
+        eva_estado='Admitido'
+    ).select_related('eva_eve_evaluador_fk')
+
+    data = []
+    for ev in evaluadores:
+        # Ahora usamos el evaluador real
+        asignado = EvaluadorProyecto.objects.filter(
+            eva_pro_proyecto_fk=proyecto,
+            eva_pro_evaluador_fk=ev.eva_eve_evaluador_fk  # 👈 cambio clave
+        ).exists()
+
+        data.append({
+            "id": ev.eva_eve_evaluador_fk.id,  # id del evaluador
+            "nombre": f"{ev.eva_eve_evaluador_fk.usuario.first_name} {ev.eva_eve_evaluador_fk.usuario.last_name}",
+            "area": ev.eva_eve_areas_interes,
+            "asignado": asignado
+        })
+
+    return JsonResponse({"evaluadores": data})
+
+@login_required(login_url='login')
+def asignar_evaluador_ajax(request, evento_id, proyecto_id, evaluador_id):
+    if request.method == 'POST':
+
+        if not evaluador_id:
+            return JsonResponse({"success": False, "message": "No se recibió el evaluador."}, status=400)
+
+        # Obtener evento y proyecto
+        evento = get_object_or_404(Eventos, id=evento_id)
+        proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+
+        # Obtener el evaluador (ojo: desde Evaluadores, no EvaluadoresEventos)
+        evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+
+        # Verificar si ya está asignado
+        existe = EvaluadorProyecto.objects.filter(
+            eva_pro_proyecto_fk=proyecto,
+            eva_pro_evaluador_fk=evaluador
+        ).exists()
+
+        if existe:
+            return JsonResponse({"success": False, "message": "Este evaluador ya está asignado al proyecto."})
+
+        # Crear asignación
+        EvaluadorProyecto.objects.create(
+            eva_pro_proyecto_fk=proyecto,
+            eva_pro_evaluador_fk=evaluador
+        )
+
+        return JsonResponse({"success": True, "message": "Evaluador asignado correctamente."})
+
+    return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)

@@ -46,29 +46,148 @@
             margin: 5px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            padding: 10px;
-            text-align: center;
-            border: 0.5px solid black;
-        }
-
-        th {
-            background-color: #007832;
-            color: white;
-        }
-
+      
         .container-titulos {
             text-align: center;
             margin-top: 50px;
             color: #007832;
         }
+        /* Modal */
+/* ---------------- Botón Asignar Evaluadores ---------------- */
+.btn-asignar {
+  background-color: #007832; /* color institucional */
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Work Sans', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-asignar:hover {
+  background-color: #005a27;
+  transform: translateY(-2px);
+}
+
+.btn-asignar:active {
+  transform: translateY(0);
+}
+
+/* ---------------- Modal ---------------- */
+.modal {
+  display: none; /* oculto por defecto */
+  position: fixed;
+  z-index: 1050;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* fondo oscuro */
+  overflow: auto;
+}
+
+.modal-dialog {
+  margin: 5% auto;
+  max-width: 900px;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+  background-color: #007832;
+  color: #fff;
+  padding: 15px 20px;
+  font-family: 'Work Sans', sans-serif;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header .modal-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal-header .btn-close {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  background: #f9f9f9;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-10px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* ---------------- Tabla ---------------- */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Work Sans', sans-serif;
+  margin-bottom: 0;
+}
+
+.table th {
+  background-color: #007832;
+  color: #fff;
+  padding: 12px;
+  text-align: left;
+  font-size: 15px;
+}
+
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 14px;
+}
+
+.table tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Botón dentro de la tabla */
+.btn-tabla {
+  background-color: #007832;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-tabla:hover {
+  background-color: #005a27;
+}
+
     </style>
 </head>
 
@@ -126,6 +245,7 @@
                         <p class="text-muted small text-center">Sin documento</p>
                         {% endif %}
 
+                        
 
                         <!-- Botones -->
                         <div class="d-flex justify-content-end gap-2 mt-4">
@@ -138,6 +258,17 @@
                             {% endif %}
 
                             {% if proyecto.estado == 'Pendiente' or proyecto.estado == 'Admitido' %}
+                            {% if proyecto.estado == 'Admitido' %}
+                        <!-- Botón que abre el modal -->
+                        <button 
+                            class="btn btn-success btn-abrir-evaluadores"
+                            data-evento-id="{{ evento.id }}"
+                            data-proyecto-id="{{ proyecto.pro_id }}">
+                            Asignar Evaluadores
+                        </button>
+
+                        {% endif %}
+
                             <button class="btn btn-danger btn-sm px-3 btn-rechazar"
                                 data-participante-id="{{ proyecto.pro_id }}" data-evento-id="{{ evento.id }}"
                                 data-url="{% url 'administrador:actualizar_estado' 0 'estado-placeholder' %}">
@@ -274,19 +405,57 @@
   </div>
 </div>
 
+<!-- Modal Evaluadores -->
+<div id="modalEvaluadores" class="modal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      
+      <!-- Header -->
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-user-check"></i> Asignar Evaluadores</h5>
+        <button type="button" class="btn-close" aria-label="Cerrar" onclick="cerrarModalAsignar()"></button>
+      </div>
 
+      <!-- Body -->
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Nombre</th>
+                <th>Área</th>
+                <th class="text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tablaEvaluadores">
+              <!-- 🔹 Aquí se insertan las filas dinámicamente desde JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="cerrarModalAsignar()">
+          <i class="fas fa-times"></i> Cerrar
+        </button>
+      </div>
 
-        <script>
-            const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00"); // solo si es DateField
-            const fechaActual = new Date("{{ fecha_actual }}"); // DateTime
-        </script>
+    </div>
+  </div>
+</div>
+
 
 
 
         <script src="{% static 'app_administrador/js/aceptar_participante.js'%}"></script>
+        <script src="{% static 'app_administrador/js/traer_evaluadores.js'%}"></script>
         <script>
             const UrlEnvioCertificados = "{% url 'administrador:enviar_certificado_participantes' evento.id %}";
+            const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00"); // solo si es DateField
+            const fechaActual = new Date("{{ fecha_actual }}"); // DateTime
+            const urlListarEvaluadores = "{% url 'administrador:listar_evaluadores' 123 456 %}";
+            const urlAsignarEvaluador = "{% url 'administrador:asignar_evaluador' 123 456 789 %}";
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -23,6 +23,9 @@ urlpatterns=[
     path('evento/<int:evento_id>/evaluadores/', views.ver_evaluadores, name='ver_evaluadores'),
     path('evaluador/<int:evaluador_id>/estado/<str:nuevo_estado>/', views.actualizar_estado_evaluador, name='actualizar_estado_evaluador'),
     
+    #Asignar evaluadores
+    path('evaluadores/listar/<int:evento_id>/<int:proyecto_id>/', views.listar_evaluadores_ajax, name='listar_evaluadores'),
+    path('evaluador/asignar/<int:evento_id>/<int:proyecto_id>/<int:evaluador_id>/', views.asignar_evaluador_ajax, name='asignar_evaluador'),
 
     #criterios de evaluacion
     path('criterios_evaluacion/<int:evento_id>', views.criterios_evaluacion, name='criterios_evaluacion'),
