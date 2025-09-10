@@ -181,7 +181,7 @@
                 {% if usuario_inscrito_asistente %}
                   Ya estás inscrito como <strong>asistente</strong>.
                 {% elif usuario_inscrito_participante %}
-                  Ya estás inscrito como <strong>participante</strong>.
+                  Ya estás inscrito como <strong>Expositor</strong>.
                 {% elif usuario_inscrito_evaluador %}
                   Ya estás inscrito como <strong>evaluador</strong>.
                 {% endif %}
@@ -204,22 +204,14 @@
               <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
                 <i class="fas fa-user"></i> Preinscribirme como asistente
               </a>
-
-              <div class="share-mas-buttons">
-                <button class="action-btn-outline" onclick="mostrarOpciones()">Más opciones</button>
-                <button class="action-btn-outline" onclick="abrirCompartir()">
-                  <i class="fas fa-share-alt"></i> Compartir Evento
-                </button>
-              </div>
-
-              <div id="opciones-ocultas" class="extra-buttons" style="display: none;">
+              <div id="opciones-ocultas" class="extra-buttons">
                 {% if evento.eve_habilitar_participantes %}
                   <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
-                    <i class="fas fa-pen"></i> Preinscribirme como participante
+                    <i class="fas fa-pen"></i> Preinscribirme como Expositor
                   </a>
                 {% else %}
                   <button class="action-btn disabled" disabled>
-                    <i class="fas fa-pen"></i> Inscripción como participante deshabilitada
+                    <i class="fas fa-pen"></i> Inscripción como Expositordeshabilitada
                   </button>
                 {% endif %}
 
@@ -233,6 +225,14 @@
                   </button>
                 {% endif %}
               </div>
+
+              <div class="share-mas-buttons">
+                <button class="action-btn-outline" onclick="abrirCompartir()">
+                  <i class="fas fa-share-alt"></i> Compartir Evento
+                </button>
+              </div>
+
+              
             {% endif %}
           {% endif %}
         </div>
@@ -253,12 +253,6 @@
           <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
         </a>
 
-        <!-- Correo -->
-        <a class="btn-compartir correo"
-           href="mailto:?subject=Te invito a este evento&body=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A👉%20Ver%20más:%20{{ request.build_absolute_uri }}">
-          <i class="fas fa-envelope"></i> Compartir por Correo
-        </a>
-
         <!-- Telegram -->
         <a class="btn-compartir telegram" target="_blank"
            href="https://t.me/share/url?url={{ request.build_absolute_uri }}&text=Mira%20este%20evento%20en%20el%20que%20estoy%20participando:%0A📌%20{{ evento.eve_nombre }}%0A📅%20Fecha:%20{{ evento.eve_fecha_inicio }}%20al%20{{ evento.eve_fecha_fin }}%0A📍%20Lugar:%20{{ evento.eve_lugar }}%0A📝%20Descripción:%20{{ evento.eve_descripcion }}">
@@ -273,18 +267,6 @@
 
   <!-- ===== Scripts ===== -->
   <script>
-    function mostrarOpciones() {
-      const opciones = document.getElementById("opciones-ocultas");
-      const btn = document.querySelector(".action-btn-outline");
-
-      if (opciones.style.display === "none" || opciones.style.display === "") {
-        opciones.style.display = "block";
-        btn.textContent = "Ocultar opciones";
-      } else {
-        opciones.style.display = "none";
-        btn.textContent = "Más opciones";
-      }
-    }
         function abrirCompartir() {
       document.getElementById("modal-compartir").style.display = "flex";
     }

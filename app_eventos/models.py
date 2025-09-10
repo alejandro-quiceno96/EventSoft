@@ -16,7 +16,6 @@ class Eventos(models.Model):
     eve_administrador_fk = models.ForeignKey('app_administrador.Administradores', on_delete=models.CASCADE)
     eve_informacion_tecnica = models.FileField(upload_to='pdf/info_tecnica/', blank=True, null=True)
     eve_memorias = models.URLField(max_length=200, blank=True, null=True)
-    
     eve_habilitar_participantes = models.BooleanField(default=True)
     eve_habilitar_evaluadores = models.BooleanField(default=True)
 
@@ -43,6 +42,7 @@ class ParticipantesEventos(models.Model):
     par_eve_qr = models.FileField(upload_to='pdf/qr_participante/')
     par_eve_clave = models.CharField(max_length=45)
     par_eve_calificacion_final = models.FloatField(null=True, blank=True)
+    par_eve_proyecto = models.ForeignKey('Proyecto', on_delete=models.CASCADE, null=True, blank=True)
     habilitado = models.BooleanField(default=True)
     
 class EvaluadoresEventos(models.Model):
@@ -54,3 +54,13 @@ class EvaluadoresEventos(models.Model):
     eva_eve_qr = models.FileField(upload_to='pdf/qr_evaluador/',null=True, blank=True)
     eva_clave_acceso = models.CharField(max_length=45, null=True, blank=True)
     habilitado = models.BooleanField(default=True)
+    
+class Proyecto(models.Model):
+    pro_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)
+    pro_codigo = models.CharField(max_length=8)
+    pro_nombre = models.CharField(max_length=100)
+    pro_descripcion = models.TextField(max_length=400)
+    pro_documentos = models.FileField(upload_to='pdf/proyectos/')
+    pro_fecha_hora = models.DateTimeField(auto_now_add=True)
+    pro_estado = models.CharField(max_length=45)
+    pro_calificación_final = models.FloatField(null=True, blank=True)

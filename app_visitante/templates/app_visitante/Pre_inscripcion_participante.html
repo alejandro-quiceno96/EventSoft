@@ -3,80 +3,116 @@
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Preinscripción Participante</title>
-    <link rel="stylesheet" href="{% static 'app_visitante/css/styles_parti.css' %}" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-    <style>
-      /* Aplica Work Sans solo a texto real, no a íconos */
-      body,
-      h1,
-      h2,
-      h3,
-      h4,
-      h5,
-      h6,
-      p,
-      a,
-      button,
-      input,
-      label,
-      span,
-      div {
-        font-family: 'Work Sans', sans-serif !important;
-      }
-    
-      </style>
-
-
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preinscripción Participante</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'app_visitante/css/styles_parti.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
 </head>
 
 <body>
-    <header class="header">
-        <div class="user-section">
-            <a href="{% url 'detalle_evento' evento.id %}" class="btn-volver"><i class="fas fa-arrow-left"></i> Volver</a>
-        </div>
-        <div class="header-content">
-            <h1 class="brand">Registro Participante</h1>
-        </div>   
-    </header>
+  <header class="header">
+    <h1 class="brand">Registro Participante</h1>
+  </header>
 
-    <main class="form-container">
-  <form id="preinscripcion-form" action="{% url 'submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
+<main class="form-container">
+  <a href="{% url 'detalle_evento' evento.id %}" class="btn-volver">
+    <i class="fa-solid fa-arrow-left"></i> Volver
+  </a>
+
+  <h2>Formulario de Preinscripción</h2>
+  <p class="text-info">Seleccione una opción para continuar.</p>
+
+  <div class="radio-options">
+  <label>
+    <input type="radio" name="opcion" value="asociar" required onchange="mostrarFormulario(this.value)">
+    <span>Asociar a un Proyecto Existente</span>
+  </label>
+  <label>
+    <input type="radio" name="opcion" value="inscribir" onchange="mostrarFormulario(this.value)">
+    <span>Inscribir un Nuevo Proyecto</span>
+  </label>
+</div>
+
+  <!-- 🔹 Formulario: Asociar Proyecto -->
+  <form id="form-asociar" class="hidden" action="{% url 'submit_preinscripcion_participante' %}" method="post">
     {% csrf_token %}
-    <h1>Formulario de Preinscripción</h1>
-    <Por class="text-info">Por favor, suba el proyecto que desea presentar.</p>
+    <input type="hidden" name="evento_id" value="{{ evento_id|default:evento.id }}">
+    <input type="hidden" name="proyecto_id" id="proyecto_id">
+    <input type="hidden" name="opcion" value="asociar">
 
+    <h3>Asociar a un Proyecto Existente</h3>
 
-    <input type="hidden" id="evento_id" name="evento_id" value="{{ evento_id|default:evento.id }}" />
+    <label for="codigo_proyecto">Código del Proyecto</label>
+    <div class="codigo-proyecto-group">
+      <input type="text" id="codigo_proyectos" name="codigo_proyecto" maxlength="50" placeholder="Ej. PROY-12345" required>
+      <button type="button" id="btn-buscar-proyecto" class="btn-buscar">Buscar</button>
+    </div>
 
-    <label for="comprobante_pago" class="file-label">
-            <i class="fas fa-file-upload"></i> Subir Proyecto:
+    <button id="btnAsociar" type="submit" class="btn-submit" disabled style="opacity: 0.5; cursor: not-allowed;">Asociar Proyecto</button>
+  </form>
+
+  <!-- 🔹 Formulario: Inscribir Proyecto -->
+  <form id="form-inscribir" class="hidden" action="{% url 'submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="evento_id" value="{{ evento_id|default:evento.id }}">
+    <input type="hidden" name="opcion" value="inscribir">
+
+    <h3>Inscribir un Nuevo Proyecto</h3>
+
+    <label for="pro_nombre_nuevo">Nombre del Proyecto</label>
+    <input type="text" id="pro_nombre_nuevo" name="pro_nombre" maxlength="100" placeholder="Ej. Innovación Verde" required>
+
+    <label for="pro_descripcion_nuevo">Descripción</label>
+    <textarea id="pro_descripcion_nuevo" name="pro_descripcion" maxlength="400" rows="4" placeholder="Describe brevemente tu proyecto..." required></textarea>
+
+    <label for="pro_documentos" class="file-label">
+      <i class="fas fa-file-upload"></i> Subir Documentos (PDF)
     </label>
-    <input type="file" id="comprobante_pago" name="par_eve_documentos" accept=".pdf" required>
-    <button type="submit">Enviar Preinscripción</button>
+    <input type="file" id="pro_documentos" name="pro_documentos" accept=".pdf">
+    <div class="file-name">Ningún archivo seleccionado</div>
+
+    <button type="submit" class="btn-submit">Inscribir Proyecto</button>
   </form>
 </main>
-<script>
-    const comprobanteInput = document.getElementById("comprobante_pago");
 
-    if (comprobanteInput) {
-        const fileNameDisplay = document.createElement("div");
-        fileNameDisplay.className = "file-name";
-        comprobanteInput.parentNode.insertBefore(fileNameDisplay, comprobanteInput.nextSibling);
 
-        comprobanteInput.addEventListener("change", function () {
-            const fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
-            fileNameDisplay.textContent = `Archivo seleccionado: ${fileName}`;
-        });
-    }
 
-</script>
+  <!-- Modal encontrado -->
+<div id="modalEncontrado" class="modal hidden">
+  <div class="modal-content modal-exito">
+    <h2 class="modal-title">✅ Proyecto Encontrado</h2>
 
+    <div class="modal-detalles">
+      <p><strong>Nombre:</strong> <span id="nombre_proyecto"></span></p>
+      <p><strong>Descripción:</strong> <span id="descripcion_proyecto"></span></p>
+      <p><strong>Código:</strong> <span id="codigo_proyecto"></span></p>
+      <p><strong>Expositores:</strong> <span id="expositores_proyecto"></span></p>
+    </div>
+
+    <div class="modal-footer">
+      <button id="btnCerrarEncontrado" data-modal="modalEncontrado" class="btn-cerrar">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal no encontrado -->
+<div id="modalNoEncontrado" class="modal hidden">
+  <div class="modal-content">
+    <h2>No Encontrado ❌</h2>
+    <p>El código ingresado no corresponde a ningún proyecto.</p>
+    <button class="btn-cerrar" id="btnCerrarNo" data-modal="modalNoEncontrado">Cerrar</button>
+  </div>
+</div>
+  <script src="{% static 'app_visitante/js/form_parti.js' %}" defer></script>
+  <script>
+    const urlBuscarProyecto = "{% url 'buscar_proyecto' 'CODIGO_TEMPORAL' %}";
+  </script>
 </body>
 
 </html>

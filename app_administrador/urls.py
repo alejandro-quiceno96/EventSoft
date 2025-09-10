@@ -14,8 +14,8 @@ urlpatterns=[
     path('eliminar/<int:evento_id>', views.eliminar_evento, name='eliminar_evento'),
     path('editar_evento/<int:evento_id>', views.editar_evento, name='editar_evento'),
     
-    path('evento/<int:evento_id>/participantes/', views.ver_participantes, name='ver_participantes'),
-    path('actualizar_estado_participante/<int:participante_id>/<str:nuevo_estado>/', views.actualizar_estado, name='actualizar_estado'),
+    path('evento/<int:evento_id>/participantes/', views.ver_proyectos, name='ver_participantes'),
+    path('actualizar_estado_proyecto/<int:proyecto_id>/<str:nuevo_estado>/', views.actualizar_estado_proyecto, name='actualizar_estado'),
     
     path('evento/<int:evento_id>/asistentes/', views.ver_asistentes, name='ver_asistentes'),
     path('actualizar_estado_asistente/<int:asistente_id>/<str:nuevo_estado>/', views.actualizar_estado_asistente, name='actualizar_estado_asistente'),

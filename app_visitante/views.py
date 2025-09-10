@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from app_eventos.models import Eventos, AsistentesEventos
 from app_categorias.models import Categorias
 from app_areas.models import Areas  # O Area si renombraste la clase
-from app_eventos.models import Eventos,  ParticipantesEventos, EvaluadoresEventos
+from app_eventos.models import Eventos,  ParticipantesEventos, EvaluadoresEventos, Proyecto
 from django.views.decorators.csrf import csrf_exempt
 from app_participante.models import Participantes
 from app_asistente.models import Asistentes
@@ -404,41 +404,73 @@ def modificar_participante(request):
 
 @login_required(login_url='login')
 def submit_preinscripcion_participante(request):
-    if request.method == 'POST':
-        evento_id = request.POST.get('evento_id')
-        documento = request.FILES.get('par_eve_documentos')
-        # Verificar si el participante ya existe
-        try:
-            participante = Participantes.objects.get(usuario = request.user)
-        except Participantes.DoesNotExist:
-            # Si no existe, crear un nuevo participante
-            participante = Participantes.objects.create(
-                usuario = request.user,
-            )
+    if request.method != 'POST':
+        return redirect('inicio_visitante')
 
-        # Obtener el evento
-        try:
-            evento = Eventos.objects.get(pk=evento_id)
-        except Eventos.DoesNotExist:
-            # Si el evento no existe, redirigir a una página de error o inicio
-            return redirect('inicio_visitante')
+    evento_id = request.POST.get('evento_id')
+    opcion = request.POST.get('opcion')  # asociar o inscribir
 
-        # Crear la inscripción del participante al evento
+    # Obtener o crear el participante
+    participante, _ = Participantes.objects.get_or_create(usuario=request.user)
+
+    # Verificar si el evento existe
+    evento = get_object_or_404(Eventos, pk=evento_id)
+
+    if opcion == "inscribir":
+        pro_nombre = request.POST.get('pro_nombre')
+        pro_descripcion = request.POST.get('pro_descripcion')
+        pro_documentos = request.FILES.get('pro_documentos')
+
+        # Crear el proyecto nuevo
+        proyecto = Proyecto.objects.create(
+            pro_evento_fk = evento,
+            pro_codigo = generar_clave_acceso(),
+            pro_nombre=pro_nombre,
+            pro_descripcion=pro_descripcion,
+            pro_documentos=pro_documentos,
+            pro_estado='Pendiente'
+        )
+
+        # Crear inscripción con nuevo proyecto
         ParticipantesEventos.objects.create(
             par_eve_participante_fk=participante,
             par_eve_evento_fk=evento,
             par_eve_fecha_hora=timezone.now(),
-            par_eve_documentos=documento,
-            par_eve_estado='Pendiente',  # Puedes cambiar este valor según tu lógica
-            par_eve_qr='',  # Debes subir o generar uno real
-            par_eve_clave=''  # Idealmente deberías generar una clave segura
+            par_eve_estado='Pendiente',
+            par_eve_qr='',
+            par_eve_clave='',
+            par_eve_proyecto=proyecto
         )
+    elif opcion == "asociar":
+        proyecto_id = request.POST.get('proyecto_id')
+        proyecto = get_object_or_404(Proyecto, pk=proyecto_id)
 
-        # Redirigir a la página de inicio del visitante
-        return redirect(reverse('inicio_visitante') + '?registro=exito_participante')
+        # Validar que el proyecto pertenece al mismo evento
+        if proyecto.pro_evento_fk != evento:
+            return redirect(reverse('detalle_evento', args=[evento.id]) + '?error=proyecto_no_valido')
 
-    # Si no es POST, redirigir a la página de inicio del visitante
-    return redirect('inicio_visitante')
+        # Validar que el participante no esté ya inscrito en este evento
+        if ParticipantesEventos.objects.filter(par_eve_participante_fk=participante, par_eve_evento_fk=evento).exists():
+            return redirect(reverse('detalle_evento', args=[evento.id]) + '?error=ya_inscrito')
+
+        # Crear inscripción asociando el proyecto existente
+        ParticipantesEventos.objects.create(
+            par_eve_participante_fk=participante,
+            par_eve_evento_fk=evento,
+            par_eve_fecha_hora=timezone.now(),
+            par_eve_estado='Pendiente',
+            par_eve_qr='',
+            par_eve_clave='',
+            par_eve_proyecto=proyecto
+        )
+        
+    else:
+        # Si no seleccionó opción válida
+        return redirect(reverse('detalle_evento', args=[evento.id]) + '?error=opcion_invalida')
+
+    # Redirigir a inicio con mensaje de éxito
+    return redirect(reverse('inicio_visitante') + '?registro=exito_participante')
+
 
 
 
@@ -664,3 +696,20 @@ def editar_perfil(request):
         return redirect('inicio_visitante')  # Redirige a la página de inicio del visitante
 
     return redirect('inicio_visitante')  # Redirige a la página de inicio si no es POST
+
+def buscar_proyecto(request, codigo):
+    try:
+        proyecto = Proyecto.objects.get(pro_codigo=codigo)
+        proyecto_participante = ParticipantesEventos.objects.filter(par_eve_proyecto=proyecto, par_eve_evento_fk = proyecto.pro_evento_fk)
+        return JsonResponse({
+            'existe': True,
+            'proyecto': {
+                'id': proyecto.id,
+                'nombre': proyecto.pro_nombre,
+                'descripcion': proyecto.pro_descripcion,
+                'estado': proyecto.pro_estado,
+                'expositores': f"{proyecto_participante.count()} Expositor(es)"
+            }
+        })
+    except Proyecto.DoesNotExist:
+        return JsonResponse({'existe': False})

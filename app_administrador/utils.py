@@ -22,7 +22,7 @@ from datetime import datetime
 import locale
 
 
-def generar_pdf(id_participante, usuario, id_evento, tipo="participante"):
+def generar_pdf(id_participante, usuario, id_evento, tipo="expositor"):
     qr_data = f"{id_participante}{id_evento}"
     qr_img = qrcode.make(qr_data)
 
@@ -52,7 +52,7 @@ def generar_pdf(id_participante, usuario, id_evento, tipo="participante"):
 
     if tipo == "asistente":
         subcarpeta = "pdf/qr_asistentes"
-    elif tipo == "participante":
+    elif tipo == "expositor":
         subcarpeta = "pdf/qr_participantes"
     else:
         subcarpeta = "pdf/qr_evaluador"

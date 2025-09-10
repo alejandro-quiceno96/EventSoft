@@ -93,7 +93,13 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch(url)
       .then(res => res.json())
       .then(data => {
-          document.getElementById("modalProyecto").href =data.par_eve_evento_fk;
+           document.getElementById("inputNombre").value = data.nombre;
+            document.getElementById("inputDescripcion").value = data.descripcion;
+            if (data.documento) {
+                document.getElementById("modalProyecto").href = data.documento;
+            } else {
+                document.getElementById("modalProyecto").style.display = "none";
+            }
 
         new bootstrap.Modal(document.getElementById("modificarInscripcionModal")).show();
       });
@@ -101,15 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById("formModificarInscripcion").addEventListener("submit", function (e) {
   e.preventDefault();
-
-  const inputDocumento = document.getElementById("inputDocumento");
-
-  // ✅ Validar que haya un archivo seleccionado
-  if (!inputDocumento.files.length) {
-    const modalDoc = new bootstrap.Modal(document.getElementById("modalDocumentoRequerido"));
-    modalDoc.show();
-    return; // 🚫 Detener el envío
-  }
 
   const form = this;
   const formData = new FormData(form);
@@ -132,7 +129,7 @@ document.getElementById("formModificarInscripcion").addEventListener("submit", f
         const modal = bootstrap.Modal.getInstance(document.getElementById("modificarInscripcionModal"));
         modal.hide();
       } else {
-        alert("Error al actualizar.");
+        alert(data.error || "Error al actualizar.");
       }
     })
     .catch(err => {
@@ -140,6 +137,7 @@ document.getElementById("formModificarInscripcion").addEventListener("submit", f
       console.error(err);
     });
 });
+
 
 
 

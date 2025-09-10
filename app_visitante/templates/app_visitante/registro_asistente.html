@@ -118,16 +118,6 @@
 
     <main class="form-container">
 
-        <!-- ✅ Mostrar mensajes de Django -->
-        {% if messages %}
-        {% for message in messages %}
-        <div
-            class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-error{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
-
         <form action="{% url 'registrar_asistente' evento_id=evento.id %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <h2><i class="fas fa-edit"></i> Registro de Asistente</h2>

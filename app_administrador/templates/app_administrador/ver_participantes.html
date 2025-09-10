@@ -75,7 +75,7 @@
 <body>
     <a href="{%url 'administrador:index_administrador'%}" class="btn btn-volver">Volver</a>
     <div class="container-titulos">
-        <h1>Participantes del Evento</h1>
+        <h1>Expositores del Evento</h1>
         <h4>{{ evento_nombre }}</h4>
     </div>
 
@@ -94,14 +94,14 @@
     </div>
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            {% for participante in participantes %}
+            {% for proyecto in proyectos %}
             <div class="col">
                 <div class="card h-100 border-0 shadow-lg rounded-4 bg-light position-relative overflow-hidden">
                     <!-- Estado en la esquina superior -->
                     <div class="position-absolute top-0 end-0 p-2">
-                        {% if participante.estado == 'Admitido' %}
+                        {% if proyecto.estado == 'Admitido' %}
                         <span class="badge bg-success rounded-pill px-3 py-2 fs-6 shadow-sm">Admitido</span>
-                        {% elif participante.estado == 'Pendiente' %}
+                        {% elif proyecto.estado == 'Pendiente' %}
                         <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fs-6 shadow-sm">Pendiente</span>
                         {% else %}
                         <span class="badge bg-danger rounded-pill px-3 py-2 fs-6 shadow-sm">Rechazado</span>
@@ -109,16 +109,16 @@
                     </div>
 
                     <div class="card-body">
-                        <h5 class="card-title  fw-bold mb-3">
-                            <i class="fa-solid fa-id-badge me-2"></i>{{ participante.par_nombre }}
+                        <h5 class="card-title fw-bold mb-3">
+                          <i class="fa-solid fa-id-badge me-2 mt-4"></i>{{ proyecto.pro_nombre }}
                         </h5>
-                        <p><strong><i class="fa-solid fa-id-card"></i> Numero de documento: </strong> {{participante.par_cedula }}</p>
-                        <p><i class="fa-solid fa-envelope me-2 text-secondary"></i><strong>Correo:</strong> {{participante.par_correo }}</p>
-                        <p><i class="fa-solid fa-phone me-2 text-secondary"></i><strong>Teléfono:</strong> {{participante.par_telefono }}</p>
-                        <p><i class="fa-solid fa-clock me-2 text-secondary"></i><strong>Hora de inscripción:</strong> {{participante.hora_inscripcion }}</p>
 
-                        {% if participante.documentos %}
-                        <a href="{{ participante.documentos.url }}" class="btn btn-outline-secondary w-100 mb-3"
+                        <p><strong><i class="fa-regular fa-file-lines"></i> Descripción:</strong> {{proyecto.pro_descripcion}}</p>
+                        <p><i class="fa-solid fa-users"></i><strong> Expositores:</strong> {{ proyecto.expositores|join:", " }}</p>
+                        <p><i class="fa-solid fa-clock me-2 text-secondary"></i><strong>Hora de inscripción:</strong> {{proyecto.hora_inscripcion }}</p>
+
+                        {% if proyecto.documentos %}
+                        <a href="{{ proyecto.documentos.url }}" class="btn btn-outline-secondary w-100 mb-3"
                             target="_blank">
                             <i class="fa-solid fa-file me-2"></i> Ver Documento
                         </a>
@@ -129,17 +129,17 @@
 
                         <!-- Botones -->
                         <div class="d-flex justify-content-end gap-2 mt-4">
-                            {% if participante.estado == 'Pendiente' or participante.estado == 'Rechazado' %}
+                            {% if proyecto.estado == 'Pendiente' or proyecto.estado == 'Rechazado' %}
                             <button class="btn btn-success btn-sm px-3 btn-admitir"
-                                data-participante-id="{{ participante.par_id }}" data-evento-id="{{ evento.id }}"
+                                data-participante-id="{{ proyecto.pro_id}}" data-evento-id="{{ evento.id }}"
                                 data-url="{% url 'administrador:actualizar_estado' 0 'estado-placeholder' %}">
                                 <i class="fa-solid fa-check me-1"></i> Admitir
                             </button>
                             {% endif %}
 
-                            {% if participante.estado == 'Pendiente' or participante.estado == 'Admitido' %}
+                            {% if proyecto.estado == 'Pendiente' or proyecto.estado == 'Admitido' %}
                             <button class="btn btn-danger btn-sm px-3 btn-rechazar"
-                                data-participante-id="{{ participante.par_id }}" data-evento="{{ evento.id }}"
+                                data-participante-id="{{ proyecto.pro_id }}" data-evento-id="{{ evento.id }}"
                                 data-url="{% url 'administrador:actualizar_estado' 0 'estado-placeholder' %}">
                                 <i class="fa-solid fa-xmark me-1"></i> Rechazar
                             </button>
@@ -280,8 +280,6 @@
         <script>
             const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00"); // solo si es DateField
             const fechaActual = new Date("{{ fecha_actual }}"); // DateTime
-            console.log("Fecha de fin del evento:", eventoFechaFin);
-            console.log("Fecha actual:", fechaActual);
         </script>
 
 
