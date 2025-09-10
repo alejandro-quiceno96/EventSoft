@@ -195,7 +195,7 @@
   aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-      <div class="modal-header  text-white">
+      <div class="modal-header text-white bg-primary">
         <h5 class="modal-title" id="modificarInscripcionModalLabel">Modificar Inscripción</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
@@ -203,34 +203,42 @@
         <form id="formModificarInscripcion" enctype="multipart/form-data" method="POST">
           {% csrf_token %}
 
-          <!-- Proyecto -->
+          <!-- Nombre del proyecto -->
           <div class="mb-3">
-            <p><strong><i class="fa-solid fa-file-pdf me-2"></i> Proyecto:</strong></p>
+            <label for="inputNombre" class="form-label">Nombre del Proyecto</label>
+            <input type="text" class="form-control" id="inputNombre" name="pro_nombre">
+          </div>
+
+          <!-- Descripción del proyecto -->
+          <div class="mb-3">
+            <label for="inputDescripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="inputDescripcion" name="pro_descripcion" rows="3"></textarea>
+          </div>
+
+          <!-- Proyecto actual -->
+          <div class="mb-3">
+            <p><strong><i class="fa-solid fa-file-pdf me-2"></i> Documento actual:</strong></p>
             <a id="modalProyecto" href="#" target="_blank" class="btn btn-ver-documento">
               <i class="fa-solid fa-eye"></i> Ver documento
             </a>
           </div>
-          
 
           <!-- Subir nuevo documento -->
-         <div class="mb-3">
-          <label for="inputDocumento" class="form-label">Subir nuevo documento:</label>
-          <div class="custom-file-upload position-relative">
-            <input type="file" class="form-control file-input" id="inputDocumento" name="par_eve_documentos">
-            <label for="inputDocumento" class="btn btn-file btn-ver-documento">
-              <i class="fa-solid fa-upload me-2"></i> Seleccionar archivo
-            </label>
-            <span class="file-name text-muted ms-2">No se ha seleccionado ningún archivo</span>
+          <div class="mb-3">
+            <label for="inputDocumento" class="form-label">Subir nuevo documento:</label>
+            <input type="file" class="form-control" id="inputDocumento" name="par_eve_documentos">
           </div>
-        </div>
 
-      <div class="modal-footer">
-        <button type="submit" form="formModificarInscripcion" class="btn btn-guardar-usuario">Guardar cambios</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-guardar-usuario">Guardar cambios</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 </div>
+
 
 <!-- Modal de carga -->
 <div class="modal fade" id="modalCargaPDF" tabindex="-1" aria-hidden="true">

@@ -158,21 +158,23 @@ def generar_pdf_criterios(request, evento_id):
 
 @csrf_exempt
 @login_required(login_url='login')
-def obtener_datos_participante(request, participante_id,evento_id, ):
-
+def obtener_datos_participante(request, participante_id, evento_id):
     try:
         if participante_id is None:
             return JsonResponse({"error": "Falta el parámetro 'participante_id'"}, status=400)
 
-        # Buscar la relación del participante en el evento
+        # Relación participante-evento
         participante_evento = ParticipantesEventos.objects.filter(
-            par_eve_participante_fk=participante_id, par_eve_evento_fk=evento_id
-        ).select_related('par_eve_participante_fk').first()
+            par_eve_participante_fk=participante_id, 
+            par_eve_evento_fk=evento_id
+        ).select_related('par_eve_proyecto').first()
 
         if participante_evento:
-            # Obtener los datos del participante relacionados
+            proyecto = participante_evento.par_eve_proyecto
             datos = {
-                "par_eve_evento_fk": participante_evento.par_eve_documentos.url
+                "nombre": proyecto.pro_nombre,
+                "descripcion": proyecto.pro_descripcion,
+                "documento": proyecto.pro_documentos.url if proyecto.pro_documentos else None
             }
             return JsonResponse(datos)
         else:
@@ -180,46 +182,57 @@ def obtener_datos_participante(request, participante_id,evento_id, ):
 
     except Exception as e:
         return JsonResponse({"error": f"Error en el servidor: {str(e)}"}, status=500)
+
     
 @csrf_exempt
 def modificar_inscripcion(request, evento_id, participante_id):
     if request.method == 'POST':
-        documento = request.FILES.get("par_eve_documentos")
-
         try:
-            # 1. Obtener el participante utilizando ORM
-            participante = Participantes.objects.filter(usuario = request.user).first()
-
+            # 1. Obtener participante desde el usuario logueado
+            participante = Participantes.objects.filter(usuario=request.user).first()
             if not participante:
                 return JsonResponse({"success": False, "error": "Participante no encontrado"})
 
-            # 2. Actualizar los datos del participante
-            participante.save()
+            # 2. Obtener inscripción en el evento
+            participante_evento = ParticipantesEventos.objects.filter(
+                par_eve_participante_fk=participante_id,
+                par_eve_evento_fk=evento_id
+            ).first()
 
-            # 3. Si se sube un documento, actualizarlo en 'ParticipanteEvento'
+            if not participante_evento:
+                return JsonResponse({"success": False, "error": "Inscripción al evento no encontrada"})
+
+            # 3. Obtener el proyecto relacionado
+            proyecto = participante_evento.par_eve_proyecto
+            if not proyecto:
+                return JsonResponse({"success": False, "error": "El participante no tiene proyecto asociado"})
+
+            # 4. Si se sube un nuevo documento, reemplazar
+            documento = request.FILES.get("par_eve_documentos")
             if documento:
-                participante_evento = ParticipantesEventos.objects.filter(par_eve_participante_fk=participante_id, par_eve_evento_fk=evento_id).first()
-                
-                if participante_evento:
-                    # Eliminar el documento anterior si existe
-                    if participante_evento.par_eve_documentos:
-                        default_storage.delete(participante_evento.par_eve_documentos.path)
-                        participante_evento.par_eve_documentos.delete(save=False)
+                if proyecto.pro_documentos:
+                    proyecto.pro_documentos.delete(save=False)  # Elimina archivo viejo
+                proyecto.pro_documentos = documento
 
-                    # Actualizar el campo de documentos en el modelo ParticipanteEvento
-                    participante_evento.par_eve_documentos = documento
-                    participante_evento.save()
-                else:
-                    return JsonResponse({"success": False, "error": "Inscripción al evento no encontrada"})
+            # 5. Actualizar otros datos
+            nombre = request.POST.get("pro_nombre")
+            descripcion = request.POST.get("pro_descripcion")
 
+            if nombre:
+                proyecto.pro_nombre = nombre
+            if descripcion:
+                proyecto.pro_descripcion = descripcion
+
+            proyecto.save()
 
             return JsonResponse({"success": True})
 
         except Exception as e:
             print("Error al modificar inscripción:", e)
             return JsonResponse({"success": False, "error": str(e)})
-    else:
-        return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
+
+    return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
+
     
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 @csrf_exempt 

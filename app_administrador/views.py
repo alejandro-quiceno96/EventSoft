@@ -24,7 +24,7 @@ import locale
 from django.utils.timezone import now
 from django.core.exceptions import ObjectDoesNotExist
 
-from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos
+from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos, Proyecto
 from app_areas.models import Areas
 from app_categorias.models import Categorias
 from app_administrador.models import Administradores
@@ -320,34 +320,38 @@ def editar_evento(request, evento_id):
     
 @require_http_methods(["GET", "POST"])
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
-def ver_participantes(request: HttpRequest ,evento_id):
+def ver_proyectos(request: HttpRequest, evento_id):
     estado = request.GET.get('estado')
-    
+
+    # Obtener el evento
     evento = get_object_or_404(Eventos, pk=evento_id)
-    # Filtrar participantes_eventos según evento y estado
-    participantes_eventos = ParticipantesEventos.objects.select_related('par_eve_participante_fk').filter(
-       par_eve_evento_fk=evento_id,
-        par_eve_estado=estado
+
+    # Filtrar proyectos según evento y estado
+    proyectos_eventos = Proyecto.objects.filter(
+        pro_evento_fk=evento,
+        pro_estado=estado
     )
-    evento = get_object_or_404(Eventos, id=evento_id)
     # Construir lista de diccionarios con datos para la plantilla
-    participantes = []
-    for pe in participantes_eventos:
-        p = pe.par_eve_participante_fk
-        participantes.append({
-            'par_id': p.id,
-            'par_cedula': p.usuario.documento_identidad,
-            'par_nombre': p.usuario.first_name + ' ' + p.usuario.last_name,
-            'par_correo': p.usuario.email,
-            'par_telefono': p.usuario.telefono,
-            'documentos': pe.par_eve_documentos,
-            'estado': pe.par_eve_estado,
-            'hora_inscripcion': pe.par_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if pe.par_eve_fecha_hora else None,
-        })
-
-
+    proyectos = []
+    for p in proyectos_eventos:
+        expositores = ParticipantesEventos.objects.filter(par_eve_proyecto=p)
+        nombres_expositores = [
+            f"{exp.par_eve_participante_fk.usuario.first_name} {exp.par_eve_participante_fk.usuario.last_name}"
+            for exp in expositores
+        ]
+        proyectos.append({
+        'pro_id': p.id,
+        'pro_codigo': p.pro_codigo,
+        'pro_nombre': p.pro_nombre,
+        'pro_descripcion': p.pro_descripcion,
+        'documentos': p.pro_documentos,
+        'estado': p.pro_estado,
+        'hora_inscripcion': p.pro_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if p.pro_fecha_hora else None,
+        'calificacion_final': p.pro_calificación_final,
+        'expositores': nombres_expositores,  # 👈 aquí guardamos la lista de nombres
+    })
     return render(request, 'app_administrador/ver_participantes.html', {
-        'participantes': participantes,
+        'proyectos': proyectos,
         'evento': evento,
         'evento_nombre': evento.eve_nombre,
         'estado': estado,
@@ -358,7 +362,7 @@ def ver_participantes(request: HttpRequest ,evento_id):
 
 @csrf_exempt
 @login_required(login_url='login')
-def actualizar_estado(request, participante_id, nuevo_estado):
+def actualizar_estado_proyecto(request, proyecto_id, nuevo_estado):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
@@ -369,81 +373,91 @@ def actualizar_estado(request, participante_id, nuevo_estado):
         return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
 
     try:
-        participante_evento = ParticipantesEventos.objects.get(
-            par_eve_participante_fk=participante_id,
-            par_eve_evento_fk=evento_id
-        )
-    except ParticipantesEventos.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Participante no encontrado en el evento'}, status=404)
+        proyecto = Proyecto.objects.get(id=proyecto_id, pro_evento_fk=evento_id)
+    except Proyecto.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Proyecto no encontrado en el evento'}, status=404)
 
-    # Preparar campos comunes
-    qr_participante = None
-    clave_acceso = None
+    evento = proyecto.pro_evento_fk
 
+    # Actualizar estado del proyecto
+    proyecto.pro_estado = nuevo_estado
+    proyecto.save()
+
+    # Buscar todos los expositores del proyecto
+    expositores = ParticipantesEventos.objects.filter(par_eve_proyecto=proyecto)
+
+    # ADMISIONES
     if nuevo_estado == 'Admitido':
-        qr_participante = generar_pdf(participante_id, "Participante", evento_id, tipo="participante")
-        clave_acceso = generar_clave_acceso()
-    elif nuevo_estado == 'Rechazado':
-        clave_acceso = 0  # en caso de rechazo, sin clave
+        for expositor in expositores:
+            participante = expositor.par_eve_participante_fk
 
-    # Actualizar la base de datos
-    participante_evento.par_eve_estado = nuevo_estado
-    participante_evento.par_eve_qr = qr_participante
-    participante_evento.par_eve_clave = clave_acceso
-    participante_evento.save()
+            # Generar QR y clave por expositor
+            qr_expositor = generar_pdf(participante.id, "expositor", evento_id, tipo="expositor")
+            clave_acceso = generar_clave_acceso()
 
-    participante = get_object_or_404(Participantes, id=participante_id)
-    evento = participante_evento.par_eve_evento_fk
+            expositor.par_eve_estado = "Admitido"
+            expositor.par_eve_qr = qr_expositor
+            expositor.par_eve_clave = clave_acceso
+            expositor.save()
 
-    # Envío de correo si es admitido
-    if nuevo_estado == 'Admitido':
-        asunto = f"Confirmación de inscripción como participante al evento: {evento.eve_nombre}"
-        mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
-            "nombre": participante.usuario.first_name,
-            "evento": evento.eve_nombre,
-            "clave": clave_acceso,
-        })
+            # Enviar correo individual
+            asunto = f"Confirmación de inscripción como expositor al evento: {evento.eve_nombre}"
+            mensaje_html = render_to_string("app_administrador/correos/comprobante_inscripcion.html", {
+                "nombre": participante.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "clave": clave_acceso,
+            })
 
-        email = EmailMultiAlternatives(
-            asunto,
-            "",  # cuerpo de texto plano opcional
-            settings.DEFAULT_FROM_EMAIL,
-            [participante.usuario.email]
-        )
-        email.attach_alternative(mensaje_html, "text/html")
+            email = EmailMultiAlternatives(
+                asunto,
+                "",
+                settings.DEFAULT_FROM_EMAIL,
+                [participante.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
 
-        # Adjuntar PDF
-        ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))
-        if os.path.exists(ruta_pdf):
-            with open(ruta_pdf, 'rb') as f:
-                email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+            # Adjuntar PDF QR
+            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_expositor))
+            if os.path.exists(ruta_pdf):
+                with open(ruta_pdf, 'rb') as f:
+                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
 
-        email.send(fail_silently=True)
+            email.send(fail_silently=True)
 
-    # Envío de correo si es rechazado
+    # RECHAZOS
     elif nuevo_estado == 'Rechazado':
         if not razon_rechazo:
             razon_rechazo = "No se especificó el motivo del rechazo."
 
-        asunto = f"Notificación de rechazo - {evento.eve_nombre}"
-        mensaje_html = render_to_string("app_administrador/correos/rechazo_participantes.html", {
-            "nombre": participante.usuario.first_name,
-            "evento": evento.eve_nombre,
-            "razon": razon_rechazo
-        })
+        for expositor in expositores:
+            participante = expositor.par_eve_participante_fk
 
-        email = EmailMultiAlternatives(
-            asunto,
-            "",  # cuerpo de texto plano opcional
-            settings.DEFAULT_FROM_EMAIL,
-            [participante.usuario.email]
-        )
-        email.attach_alternative(mensaje_html, "text/html")
-        email.send(fail_silently=True)
+            expositor.par_eve_estado = "Rechazado"
+            expositor.par_eve_clave = ""
+            expositor.par_eve_qr = ""
+            expositor.save()
+
+            # Enviar correo individual
+            asunto = f"Notificación de rechazo - {evento.eve_nombre}"
+            mensaje_html = render_to_string("app_administrador/correos/rechazo_participantes.html", {
+                "nombre": participante.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "razon": razon_rechazo
+            })
+
+            email = EmailMultiAlternatives(
+                asunto,
+                "",
+                settings.DEFAULT_FROM_EMAIL,
+                [participante.usuario.email]
+            )
+            email.attach_alternative(mensaje_html, "text/html")
+            email.send(fail_silently=True)
 
     # Redirigir correctamente
     url = reverse('administrador:ver_participantes', kwargs={'evento_id': evento_id})
     return redirect(f'{url}?estado={nuevo_estado}')
+
 
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_asistentes(request: HttpRequest, evento_id):

@@ -13,21 +13,6 @@
 <body>
   <div class="login-wrapper">
     <div class="login-box">
-
-      <!-- Mensajes -->
-      {% if mostrarmensajes and messages %}
-        <div class="mt-2">
-          {% for message in messages %}
-            <div class="alert 
-                {% if message.tags == 'error' %}alert-danger{% endif %}
-                {% if message.tags == 'success' %}alert-success{% endif %}
-            ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
       <h2>Recuperar Contraseña</h2>
 
       <!-- Paso 1: Ingresar correo -->

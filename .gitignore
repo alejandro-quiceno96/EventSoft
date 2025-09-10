@@ -169,3 +169,23 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+### Docker ###
+# Archivos de configuración generados en tiempo de ejecución
+*.pid
+*.seed
+*.pid.lock
+
+# Archivos de logs de contenedores
+*.log
+
+# Archivos de Docker
+docker-compose.override.yml
+docker-compose.override.yaml
+.docker/
+.dockerignore
+
+# Directorio de volúmenes montados (por ejemplo, para la base de datos)
+data/
+volumes/
+db_data/

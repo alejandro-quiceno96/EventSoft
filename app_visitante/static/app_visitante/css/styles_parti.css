@@ -1,25 +1,26 @@
 :root {
-    --primary-color: #007832;
-    --secondary-color: #ffffff;
-    --text-color: #333;
-    --header-height: 70px;
-    --border-radius: 8px;
-    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --primary-color: #007832;
+  --secondary-color: #ffffff;
+  --font-family: 'Work Sans', sans-serif;
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
 }
 
 body {
-    font-family: 'Work Sans';
-    background-color: #f9f9f9;
-    color: var(--text-color);
-    min-height: 100vh;
+  background: #f7f7f7;
+  color: #333;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
+/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -38,7 +39,6 @@ body {
 }
 
 .btn-volver {
-    background-color: white;
     color: var(--primary-color);
     padding: 8px 15px;
     border-radius: var(--border-radius);
@@ -48,260 +48,286 @@ body {
 }
 
 .btn-volver:hover {
-    background-color: #ffe0cc;
+    background-color: #ffffff;
 }
 
+/* Formulario */
 .form-container {
-    max-width: 500px;
-    margin: 2rem auto;
-    background-color: white;
-    padding: 2rem;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-    animation: fadeIn 0.6s ease;
+  flex: 1;
+  display: flex;
+flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+form {
+  background: var(--secondary-color);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
 }
 
 form h2 {
-    text-align: center;
-    color: var(--primary-color);
-    margin-bottom: 1rem;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  text-align: center;
 }
 
-form label {
-    display: block;
-    margin-top: 1rem;
-    font-weight: 500;
+.text-info {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
 }
 
-form input[type="text"],
-form input[type="email"],
-form input[type="file"] {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: var(--border-radius);
-    margin-top: 5px;
-    transition: border-color 0.3s;
+/* Inputs */
+label {
+  display: block;
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
 }
 
-form input:focus {
-    border-color: var(--primary-color);
-    outline: none;
+input[type="text"],
+textarea,
+input[type="file"] {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
 }
 
-button[type="submit"] {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 12px;
-    margin-top: 1.5rem;
-    border-radius: var(--border-radius);
-    width: 100%;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s ease;
+textarea {
+  resize: none;
 }
 
-button[type="submit"]:hover {
-    background-color: #007832;
-}
-
-.alert {
-    background-color: #fce4d6;
-    color: #8a3700;
-    padding: 10px;
-    border-left: 5px solid var(--primary-color);
-    margin-bottom: 1rem;
-    border-radius: var(--border-radius);
-    animation: slideIn 0.5s ease;
-}
-
-/* Animaciones */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-    .form-container {
-        margin: 1rem;
-        padding: 1.5rem;
-    }
-
-    .header {
-        flex-direction: column;
-        height: auto;
-        padding: 1rem;
-        text-align: center;
-    }
-
-    .user-section {
-        margin-top: 0.5rem;
-    }
-
-    .btn-volver {
-        padding: 6px 12px;
-        font-size: 0.9rem;
-    }
-}
-
-/* Contenedor y etiqueta */
+/* File input */
 .file-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-top: 1rem;
-    cursor: pointer;
-    user-select: none;
-    transition: color 0.3s ease;
+  display: inline-block;
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s;
 }
 
 .file-label:hover {
-    color: #007832; /* tono más oscuro para hover */
+  background: #005a25;
 }
 
-/* Ocultamos el input nativo */
 input[type="file"] {
-    display: none;
+  display: none;
 }
 
-/* Creamos un botón personalizado para el input */
-.file-label::after {
-    content: "Seleccionar archivo";
-    display: inline-block;
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
-    padding: 6px 14px;
-    margin-left: auto;
-    border-radius: var(--border-radius);
-    font-weight: 600;
-    font-size: 0.9rem;
-    box-shadow: var(--shadow);
-    transition: background-color 0.3s ease;
-}
-
-.file-label:hover::after {
-    background-color: #007832;
-}
-
-/* Mostrar nombre del archivo seleccionado */
-#comprobante_pago + .file-name {
-    margin-top: 0.5rem;
-    font-style: italic;
-    font-size: 0.9rem;
-    color: #555;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-    .file-label::after {
-        padding: 5px 10px;
-        font-size: 0.85rem;
-    }
-}
-
-/* Input Group */
-.input-group {
-  position: relative;
-  display: flex;
-  align-items: center;
+.file-name {
   margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
 }
 
-.input-group i {
-  position: absolute;
-  left: 12px;
-  color: var(--primary-color);
-  font-size: 1.1rem;
-  pointer-events: none;
-  transition: color 0.3s ease;
-}
-
-.input-group input[type="text"],
-.input-group input[type="email"],
-.input-group input[type="tel"],
-.input-group input[type="file"] {
-  width: 100%;
-  padding: 0.6rem 0.8rem 0.6rem 2.5rem; /* espacio para icono */
-  border-radius: 5px;
-  border: 1.8px solid var(--input-border);
-  font-size: 1rem;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  background-color: var(--input-bg);
-}
-
-/* Archivo tiene padding distinto */
-.input-group.file-group input[type="file"] {
-  padding-left: 2.5rem;
-}
-
-/* Focus */
-.input-group input:focus {
-  outline: none;
-  border-color: var(--input-border-focus);
-  box-shadow: 0 0 6px var(--primary-color);
-}
-
-.input-group input:focus + i,
-.input-group input:focus ~ i {
-  color: var(--primary-color-dark);
-}
-
-/* Animación: cambia color del icono cuando el input está enfocado */
-.input-group input:focus ~ i {
-  color: var(--primary-color-dark);
-}
-
-/* Botón enviar */
-button[type="submit"] {
+/* Botón */
+.btn-submit {
   margin-top: 2rem;
   width: 100%;
-  background-color: var(--primary-color);
-  color: white;
-  font-weight: 700;
-  font-size: 1.1rem;
-  padding: 0.75rem;
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  padding: 1rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.7rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  transition: background 0.3s ease;
 }
 
-button[type="submit"]:hover {
-  background-color: var(--primary-color-dark);
+.btn-submit:hover {
+  background: #005a25;
 }
 
 /* Responsive */
 @media (max-width: 600px) {
-  main.form-container {
-    margin: 1rem;
+  form {
     padding: 1.5rem;
   }
+}
+.hidden {
+  display: none;
+}
 
-  form h1 {
-    font-size: 1.5rem;
+.radio-options {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.radio-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Work Sans", sans-serif;
+  font-size: 1rem;
+  color: #333;
+  background: #f5f5f5;
+  padding: 0.8rem 1.2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+/* Hover */
+.radio-options label:hover {
+  background: #e9f6ef;
+  border-color: #007832;
+  color: #007832;
+}
+
+/* Ocultamos el input original */
+.radio-options input[type="radio"] {
+  display: none;
+}
+
+/* Círculo antes del texto */
+.radio-options label span::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border: 2px solid #007832;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+/* Cuando está seleccionado */
+.radio-options input[type="radio"]:checked + span::before {
+  background: #007832;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+
+
+.codigo-proyecto-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.codigo-proyecto-group input {
+  flex: 1;
+}
+
+.btn-buscar {
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.btn-buscar:hover {
+  background: #005a25;
+}
+
+
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+/* Contenedor del contenido del modal */
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 25px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  text-align: center;
+  animation: slideDown 0.4s ease;
+  border: 3px solid transparent; /* base */
+}
+
+
+/* Estilo de éxito */
+.modal-exito {
+  border: 3px solid var(--primary-color);
+}
+
+/* Título */
+.modal-title {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+/* Contenido */
+.modal-detalles p {
+  margin: 8px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.modal-detalles strong {
+  color: #111;
+}
+
+/* Footer */
+.modal-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Botón */
+.btn-cerrar {
+  padding: 8px 18px;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s ease-in-out;
+}
+
+.btn-cerrar:hover {
+  background: #218838;
+}
+
+/* Animación */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+
 
