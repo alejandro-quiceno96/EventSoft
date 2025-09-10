@@ -184,10 +184,10 @@
             {% endif %}
 
             <div class="info-item" style="grid-column: 1 / -1;">
-                <div class="info-label">Participantes</div>
+                <div class="info-label">Proyectos</div>
                 <div class="info-value">
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalParticipantes">
-                        <i class="fa-solid fa-users"></i> Ver participantes ({{ participantes_evento|length }})
+                        <i class="fa-solid fa-users"></i> Ver proyectos a evaluar ({{ proyectos|length }})
                     </button>
                 </div>
             </div>
@@ -215,30 +215,24 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
-                {% if participantes_evento %}
+                {% if proyectos %}
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped">
                         <thead class="table-dark">
                             <tr>
                                 <th>#</th>
-                                <th>Cédula</th>
-                                <th>Nombre</th>
-                                <th>Correo</th>
-                                <th>Teléfono</th>
-                                <th>Proyecto</th>
-                                <th>Estado</th>
+                                <th>Nombre del proyecto</th>
+                                <th>Expositores</th>
+                                <th>Documento proyecto</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for participante in participantes_evento %}
+                            {% for proyecto in proyectos %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ participante.par_eve_participante_fk.usuario.documento_identidad }}</td>
-                                <td>{{ participante.par_eve_participante_fk.usuario.first_name }}</td>
-                                <td>{{ participante.par_eve_participante_fk.usuario.email }}</td>
-                                <td>{{ participante.par_eve_participante_fk.usuario.telefono|default:"No disponible" }}</td>
-                                <td><a href="{{ participante.par_eve_documentos.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Proyecto</a></td>
-                                <td><span class="badge {% if participante.par_eve_estado == 'Inscrito' %}bg-success{% elif participante.par_eve_estado == 'Pendiente' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ participante.par_eve_estado }}</span></td>
+                                <td>{{ proyecto.pro_nombre }}</td>
+                                <td>{{ proyecto.expositores|join:", " }}</td>
+                                <td><a href="{{ proyecto.pro_documentos.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Proyecto</a></td>
                             </tr>
                             {% endfor %}
                         </tbody>

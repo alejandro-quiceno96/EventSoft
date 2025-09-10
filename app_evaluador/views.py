@@ -5,7 +5,7 @@ from app_participante.models import Participantes
 from .models import Evaluadores
 from django.contrib import messages
 from app_eventos.models import ParticipantesEventos, EvaluadoresEventos,Eventos
-from .models import Calificaciones
+from .models import Calificaciones, EvaluadorProyecto
 from django.db.models import Avg,F
 from django.urls import reverse
 from app_eventos.models import EventosCategorias
@@ -370,6 +370,28 @@ def detalle_evento(request, cedula, evento_id):
         raise Http404("Evento no encontrado")
     evento = get_object_or_404(Eventos, id=evento_id)
     participantes_evento = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento)
+    proyectos_eventos = EvaluadorProyecto.objects.filter(eva_pro_evaluador_fk=cedula)
+    
+    proyectos = []
+    for proyecto in proyectos_eventos:
+        # Todos los expositores del proyecto
+        expositores = ParticipantesEventos.objects.filter(
+            par_eve_evento_fk=evento,
+            par_eve_proyecto=proyecto.eva_pro_proyecto_fk
+        )
+
+        # Lista de nombres de los expositores
+        nombres_expositores = [
+            f"{exp.par_eve_participante_fk.usuario.first_name} {exp.par_eve_participante_fk.usuario.last_name}"
+            for exp in expositores
+        ]
+
+        proyectos.append({
+            "pro_nombre": proyecto.eva_pro_proyecto_fk.pro_nombre,
+            "pro_documentos": proyecto.eva_pro_proyecto_fk.pro_documentos,
+            "expositores": nombres_expositores,  # 👈 aquí guardas los nombres
+        })
+        
 
 
     # Obtener la categoría relacionada
@@ -414,11 +436,12 @@ def detalle_evento(request, cedula, evento_id):
         'documento': clave_acceso.eva_eve_documentos.url if clave_acceso and clave_acceso.eva_eve_documentos else None,
         'informacion_tecnica': evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else None,
     }
+    print(proyectos)
 
     return render(request, 'app_evaluador/detalle_evento.html', {
     'evento': datos_evento,
     'evaluador': evaluador,
-    'participantes_evento': participantes_evento,
+    'proyectos': proyectos,
     'evento_obj': evento, 
 })
 
