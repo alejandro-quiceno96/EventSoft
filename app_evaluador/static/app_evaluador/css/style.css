@@ -275,4 +275,53 @@
     color: #333;
 }
 
+/* Card de proyecto */
+.proyecto-card {
+  border-radius: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.proyecto-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 120, 50, 0.15);
+}
+
+/* Títulos */
+.proyecto-card .card-title {
+  font-size: 1.2rem;
+  color: #007832;
+}
+
+/* Botón Evaluar */
+.btn-evaluar {
+  background-color: #007832;
+  border: none;
+  display: flex;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  color: var(--color-texto);
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+    border-radius: 5px;
+}
+
+.btn-evaluar:hover {
+  background-color: #005a27;
+}
+
+/* Botón Ver Calificaciones */
+.btn-calificaciones {
+  border: 2px solid #007832;
+  color: #007832;
+  font-weight: 600;
+  background-color: transparent;
+  border-radius: 5px;
+}
+
+.btn-calificaciones:hover {
+  background-color: #007832;
+  color: #fff;
+}
 

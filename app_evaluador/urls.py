@@ -8,11 +8,11 @@ urlpatterns = [
     path('ver_participantes/<int:evento_id>/', views.ver_participantes, name='ver_participantes'),
     
     # ✅ Parámetros con nombres correctos
-    path('evaluar_participante/<int:evento_id>/<int:participante_id>/<int:evaluador_id>/', views.evaluar_participante, name='evaluar_participante'),
+    path('evaluar_participante/<int:evento_id>/<int:proyecto_id>/<int:evaluador_id>/', views.evaluar_participante, name='evaluar_participante'),
     path('evento/<int:evento_id>/criterios/', views.criterios_evaluacion, name='criterios_evaluacion'),
     path('criterios/<int:evento_id>/', views.criterios_evaluacion, name='criterios_evento'),
     # urls.py de app_evaluador
-    path('api/calificaciones/<int:evento_id>/<int:participante_id>/<int:evaluador_id>/',
+    path('api/calificaciones/<int:evento_id>/<int:proyecto_id>/<int:evaluador_id>/',
     views.api_calificaciones,
     name='api_calificaciones'),
 

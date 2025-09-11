@@ -7,42 +7,64 @@
 
 
 {% block content %}
+
 <link rel="stylesheet" href="{% static 'app_administrador/css/criteriosadmin.css' %}">
 <a href="{% url 'app_evaluador:principal_evaluador' %}" class="btn btn-detalle-calificacion mb-2">
             <i class="fa-solid fa-arrow-left"></i></i> Volver al panel principal
     </a>
-<h2 class="text-center my-4 text-orange">Participantes admitidos del evento: {{ evento.eve_nombre }}</h2>
+<h2 class="text-center my-4 text-orange">Proyectos admitidos del evento: {{ evento.eve_nombre }}</h2>
 
 <div class="row g-4 justify-content-center">
-    {% for participante in participantes %}
-    <div class="col-lg-4 col-md-6 col-sm-12">
-        <div class="card participante-card shadow-sm h-100">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <h5 class="card-title text-center text-dark">{{ participante.par_eve_participante_fk.usuario.first_name }} {{ participante.par_eve_participante_fk.usuario.last_name }}</h5>
-                <div class="d-grid gap-2 mt-3">
-                   {% if participante.par_eve_participante_fk.id in evaluados_dict %}
-                        <!-- Mostrar botón si este evaluador ya calificó -->
-                        <button
-    class="btn-orange btn-ver-calificaciones"
-    data-url="{% url 'app_evaluador:api_calificaciones' evento.id participante.par_eve_participante_fk.id evaluador_id %}"
-  data-bs-toggle="modal"
-    data-bs-target="#modalCalificaciones"
->
-    Ver Calificaciones
-</button>
+    {% for proyecto in proyectos %}
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+  <div class="card proyecto-card shadow-lg border-0 h-100">
+    <div class="card-body d-flex flex-column justify-content-between">
+      
+      <!-- Nombre del proyecto -->
+      <h5 class="card-title text-center fw-bold mb-3">
+        <i class="fas fa-lightbulb me-2"></i>{{ proyecto.pro_nombre }}
+      </h5>
 
-                   {% else %}
-                        <!-- Botón para evaluar si aún no ha sido calificado por este evaluador -->
-                        <a href="{% url 'app_evaluador:evaluar_participante' evento.id participante.par_eve_participante_fk.id evaluador_id %}" 
-   class="btn-orange">Evaluar</a>
+      <!-- Expositores -->
+      <p class="mb-2 text-muted">
+        <i class="fas fa-users me-2"></i>
+        <strong>Expositores:</strong>
+        <span class="text-dark">{{ proyecto.expositores|join:", " }}</span>
+      </p>
 
-                   {% endif %}
-                </div>
-            </div>
-        </div>
+      <!-- Código del proyecto -->
+      <p class="mb-3 text-muted">
+        <i class="fas fa-barcode me-2"></i>
+        <strong>Código:</strong>
+        <span class="text-dark">{{ proyecto.pro_codigo }}</span>
+      </p>
+
+      <!-- Botones de acción -->
+      <div class="d-grid gap-2 mt-3">
+        {% if proyecto.pro_id in evaluados_dict %}
+          <!-- Si ya calificó -->
+          <button
+            class=" btn-calificaciones"
+            data-url="{% url 'app_evaluador:api_calificaciones' evento.id proyecto.pro_id evaluador_id %}"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCalificaciones"
+          >
+            <i class="fas fa-eye me-2"></i> Ver Calificaciones
+          </button>
+        {% else %}
+          <!-- Si no ha calificado -->
+          <a href="{% url 'app_evaluador:evaluar_participante' evento.id proyecto.pro_id evaluador_id %}" 
+             class="btn-evaluar">
+            <i class="fas fa-check-circle me-2"></i> Evaluar
+          </a>
+        {% endif %}
+      </div>
     </div>
+  </div>
+</div>
+
     {% empty %}
-    <p class="text-center text-muted">No hay participantes admitidos en este evento.</p>
+    <p class="text-center text-muted">No se te ha asignado proyectos para evaluar</p>
     {% endfor %}
 </div>
 
@@ -54,18 +76,20 @@
             <i class="fa-solid fa-file-pdf"></i> Descargar Ranking (PDF)
         </a>
     </div>
-    <h3 class="text-orange"><span class="ranking-icon">🏆</span> Ranking de Promedios</h3>
+    <h3 class="text-orange"><span class="ranking-icon">🏆</span> Ranking de Proyectos</h3>
     <div class="table-responsive">
         <table class="table table-bordered table-striped mt-3">
             <thead class="table-orange text-white text-center">
                 <tr>
                     <th>Posición</th>
-                    <th>Nombre</th>
-                    <th>Promedio</th>
+                    <th>Código</th>
+                    <th>Nombre del proyecto</th>
+                    <th>Expositores</th>
+                    <th>Calificacion</th>
                 </tr>
             </thead>
             <tbody>
-                {% for participante in ranking %}
+                {% for proyecto in ranking %}
                 <tr>
                     <td class="text-center">
                         {% if forloop.counter == 1 %}
@@ -78,8 +102,10 @@
                             {{ forloop.counter }}
                         {% endif %}
                     </td>
-                    <td>{{ participante.par_eve_participante_fk.usuario.first_name }} {{ participante.par_eve_participante_fk.usuario.last_name }}</td>
-                    <td class="text-center">{{ participante.par_eve_calificacion_final|floatformat:2 }}</td>
+                    <td>{{proyecto.pro_codigo }}</td>
+                    <td class="text-center">{{ proyecto.pro_nombre}}</td>
+                    <td>{{ proyecto.expositores|join:", " }}</td>
+                    <td class="text-center">{{ proyecto.pro_calificacion_final }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -133,7 +159,7 @@
             switch (tipoRegistro) {
                 case 'realizada':
                     titulo = '<i class="fas fa-check-circle"></i> ¡Calificación Registrada!';
-                    mensaje = 'Participante Evaluado correctamente';
+                    mensaje = 'Proyecto Evaluado correctamente';
                     break;
                 default:
                     return;
@@ -160,12 +186,12 @@
             };
         }
 
-        document.querySelectorAll('.btn-ver-calificaciones').forEach(btn => {
+        document.querySelectorAll('.btn-calificaciones').forEach(btn => {
     btn.addEventListener('click', () => {
         const url = btn.getAttribute('data-url');
         const modalBody = document.getElementById('modal-calificaciones-body');
         modalBody.innerHTML = '<div class="text-center text-muted">Cargando calificaciones...</div>';
-
+        console.log('Fetching calificaciones from:', url);
         fetch(url)
             .then(response => response.json())
             .then(data => {

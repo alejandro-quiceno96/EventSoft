@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404,  redirect
 from app_participante.models import Participantes
 from .models import Evaluadores
 from django.contrib import messages
-from app_eventos.models import ParticipantesEventos, EvaluadoresEventos,Eventos
+from app_eventos.models import ParticipantesEventos, EvaluadoresEventos,Eventos, Proyecto
 from .models import Calificaciones, EvaluadorProyecto
 from django.db.models import Avg,F
 from django.urls import reverse
@@ -64,10 +64,31 @@ def principal_evaluador(request):
 @login_required(login_url='login')
 def ver_participantes(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
-    participantes_evento = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento)
     evaluador = get_object_or_404(Evaluadores, usuario=request.user)
+    proyectos_calificar = EvaluadorProyecto.objects.filter(eva_pro_evaluador_fk=evaluador)
     evaluadores_eventos = EvaluadoresEventos.objects.filter(eva_eve_evaluador_fk=evaluador).select_related('eva_eve_evento_fk')
 
+    proyectos = []
+    for proyecto in proyectos_calificar:
+        # Todos los expositores del proyecto
+        expositores = ParticipantesEventos.objects.filter(
+            par_eve_evento_fk=evento,
+            par_eve_proyecto=proyecto.eva_pro_proyecto_fk
+        )
+
+        # Lista de nombres de los expositores
+        nombres_expositores = [
+            f"{exp.par_eve_participante_fk.usuario.first_name} {exp.par_eve_participante_fk.usuario.last_name}"
+            for exp in expositores
+        ]
+
+        proyectos.append({
+            "expositores": nombres_expositores,
+            "pro_nombre": proyecto.eva_pro_proyecto_fk.pro_nombre,
+            "pro_codigo": proyecto.eva_pro_proyecto_fk.pro_codigo,
+            "pro_id": proyecto.eva_pro_proyecto_fk.id,
+        })
+    
     # Guardamos el ID en sesión
     request.session['evaluador_id'] = evaluador.id
     request.session['evaluador_nombre'] = evaluador.usuario.username
@@ -76,18 +97,37 @@ def ver_participantes(request, evento_id):
     calificados_ids = Calificaciones.objects.filter(
         cal_evaluador_fk_id=evaluador.id,
         cal_criterio_fk__cri_evento_fk=evento
-    ).values_list('clas_participante_fk_id', flat=True).distinct()
+    ).values_list('clas_proyecto_fk_id', flat=True).distinct()
 
     evaluados_dict = {pid: True for pid in calificados_ids}
+    
 
     # Ranking
-    ranking = participantes_evento.filter(par_eve_calificacion_final__isnull=False).order_by('-par_eve_calificacion_final')
+    ranking = []
+    proyectos_ranking =  Proyecto.objects.filter(pro_evento_fk=evento).order_by('-pro_calificación_final')
+    for proyecto in proyectos_ranking:
+        # Todos los expositores del proyecto
+        expositores = ParticipantesEventos.objects.filter(
+            par_eve_evento_fk=evento,
+            par_eve_proyecto=proyecto
+        )
+
+        # Lista de nombres de los expositores
+        nombres_expositores = [
+            f"{exp.par_eve_participante_fk.usuario.first_name} {exp.par_eve_participante_fk.usuario.last_name}"
+            for exp in expositores
+        ]
+
+        ranking.append({
+            "expositores": nombres_expositores,
+            "pro_nombre": proyecto.pro_nombre,
+            "pro_codigo": proyecto.pro_codigo,
+            "pro_calificacion_final": proyecto.pro_calificación_final if proyecto.pro_calificación_final is not None else 0,
+        })
 
     context = {
         'evento': evento,
-        'participantes': participantes_evento,
-        'evaluador_nombre': request.session.get('evaluador_nombre'),
-        'evaluador_id': request.session.get('evaluador_id'),
+        'proyectos': proyectos,
         'evaluador_id': evaluador.id,
         'ranking': ranking,
         'evaluados_dict': evaluados_dict,
@@ -95,13 +135,12 @@ def ver_participantes(request, evento_id):
 
     return render(request, 'app_evaluador/participantes_evento.html', context)
 
-def api_calificaciones(request, evento_id, participante_id, evaluador_id):
+def api_calificaciones(request, evento_id, proyecto_id, evaluador_id):
     calificaciones = Calificaciones.objects.filter(
         cal_evaluador_fk=evaluador_id,
-        clas_participante_fk=participante_id,
+        clas_proyecto_fk=proyecto_id,
         cal_criterio_fk__cri_evento_fk__id=evento_id
     ).select_related('cal_criterio_fk')
-    print(f"Calificaciones obtenidas: {calificaciones.count()} para evento {evento_id}, participante {participante_id}, evaluador {evaluador_id}")
 
     data = {
         'calificaciones': [
@@ -117,14 +156,17 @@ def api_calificaciones(request, evento_id, participante_id, evaluador_id):
     return JsonResponse(data, status=200)
 
 @login_required(login_url='login')
-def evaluar_participante(request, evento_id, participante_id, evaluador_id):
-    participante = get_object_or_404(Participantes, id=participante_id)
+def evaluar_participante(request, evento_id, proyecto_id, evaluador_id):
+    # --- Obtener instancias ---
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     evento = get_object_or_404(Eventos, id=evento_id)
     evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
     criterios = Criterios.objects.filter(cri_evento_fk=evento)
 
     if request.method == 'POST':
         nuevas_calificaciones = []
+
+        # --- Recorremos criterios y guardamos calificaciones ---
         for criterio in criterios:
             puntaje_str = request.POST.get(f'puntaje_{criterio.id}')
             comentario = request.POST.get(f'comentario_{criterio.id}', '').strip()
@@ -137,49 +179,60 @@ def evaluar_participante(request, evento_id, participante_id, evaluador_id):
                             cal_valor=puntaje,
                             cal_comentario=comentario,
                             cal_criterio_fk=criterio,
-                            clas_participante_fk=participante,
+                            clas_proyecto_fk=proyecto,   # Proyecto evaluado
                             cal_evaluador_fk=evaluador
                         )
                         nuevas_calificaciones.append(calificacion)
                 except ValueError:
                     continue
 
-        Calificaciones.objects.bulk_create(nuevas_calificaciones)
+        # Guardar en lote
+        if nuevas_calificaciones:
+            Calificaciones.objects.bulk_create(nuevas_calificaciones)
 
-        # --- Cálculo del promedio ponderado con subconsulta y diccionario ---
+        # --- Cálculo del promedio ponderado ---
         subquery = (
             Calificaciones.objects
-            .filter(clas_participante_fk=participante)
-            .values('clas_participante_fk', 'cal_criterio_fk')
+            .filter(clas_proyecto_fk=proyecto)
+            .values('clas_proyecto_fk', 'cal_criterio_fk')
             .annotate(promedio_criterio=Avg('cal_valor'))
         )
 
-        ranking_dict = {}
-
+        promedio_final = 0
         for row in subquery:
-            criterio = Criterios.objects.filter(id=row['cal_criterio_fk'], cri_evento_fk=evento).first()
+            criterio = Criterios.objects.filter(
+                id=row['cal_criterio_fk'],
+                cri_evento_fk=evento
+            ).first()
+
             if criterio:
-                # promedio ponderado para ese criterio
                 ponderado = row['promedio_criterio'] * (criterio.cri_peso / 100)
-                ranking_dict[participante.id] = ranking_dict.get(participante.id, 0) + ponderado
+                promedio_final += ponderado
 
-        promedio_final = ranking_dict.get(participante.id, 0)
+        promedio_final = round(promedio_final, 2)
 
-        # Actualizar ParticipantesEventos
-        participante_evento = ParticipantesEventos.objects.filter(
-            par_eve_participante_fk=participante,
+        # --- Actualizar TODOS los expositores de ese proyecto ---
+        expositores = ParticipantesEventos.objects.filter(
+            par_eve_proyecto=proyecto,
             par_eve_evento_fk=evento
-        ).first()
+        )
 
-        if participante_evento:
-            participante_evento.par_eve_calificacion_final = round(promedio_final, 2)
-            participante_evento.save()
+        for expositor in expositores:
+            expositor.par_eve_calificacion_final = promedio_final
+            expositor.save()
 
-        messages.success(request, "Evaluación guardada correctamente.")
-        return redirect(reverse('app_evaluador:ver_participantes', kwargs={'evento_id': evento.id}) + '?calificacion=realizada')
+        # --- También actualizar el proyecto ---
+        proyecto.pro_calificación_final = promedio_final
+        proyecto.save()
 
+        messages.success(request, "✅ Evaluación guardada correctamente.")
+        return redirect(
+            reverse('app_evaluador:ver_participantes', kwargs={'evento_id': evento.id}) + '?calificacion=realizada'
+        )
+
+    # --- Contexto para renderizar ---
     context = {
-        'participante': participante,
+        'proyecto': proyecto,
         'evento': evento,
         'evaluador': evaluador,
         'evaluador_nombre': request.session.get('evaluador_nombre'),
@@ -189,11 +242,12 @@ def evaluar_participante(request, evento_id, participante_id, evaluador_id):
 
 
 
+
 @login_required(login_url='login') 
 def obtener_calificaciones(request, evento_id, participante_id, evaluador_id):
     calificaciones = Calificaciones.objects.filter(
         cal_criterio_fk__cri_evento_fk__id=evento_id,
-        clas_participante_fk__id=participante_id,
+        clas_proyecto_fk__id=participante_id,
         cal_evaluador_fk__id=evaluador_id
     ).select_related('cal_criterio_fk')
 
@@ -271,17 +325,17 @@ def generar_reporte_evaluador(request, cedula):
         # CORRECCIÓN: Usar select_related de forma segura
         calificaciones = Calificaciones.objects.filter(
             cal_evaluador_fk=evaluador
-        ).select_related('clas_participante_fk')
+        ).select_related('clas_proyecto_fk')
         
         # Obtener eventos únicos donde ha evaluado
         eventos_evaluados = set()
         for cal in calificaciones:
-            if hasattr(cal, 'clas_participante_fk') and cal.clas_participante_fk:
+            if hasattr(cal, 'clas_proyecto_fk') and cal.clas_proyecto_fk:
                 # Ajustar según la estructura real de tu modelo
-                if hasattr(cal.clas_participante_fk, 'par_eve_evento_fk'):
-                    eventos_evaluados.add(cal.clas_participante_fk.par_eve_evento_fk)
-                elif hasattr(cal.clas_participante_fk, 'evento'):
-                    eventos_evaluados.add(cal.clas_participante_fk.evento)
+                if hasattr(cal.clas_proyecto_fk, 'par_eve_evento_fk'):
+                    eventos_evaluados.add(cal.clas_proyecto_fk.par_eve_evento_fk)
+                elif hasattr(cal.clas_proyecto_fk, 'evento'):
+                    eventos_evaluados.add(cal.clas_proyecto_fk.evento)
         
         # Estadísticas - CORRECCIÓN: Cambiar cal_calificacion por cal_valor
         total_evaluaciones = calificaciones.count()
@@ -327,11 +381,11 @@ def participantes_por_evaluar(request, evaluador_cedula, evento_id):  # CORRECCI
         # Crear un set con los IDs de participantes ya evaluados
         participantes_evaluados = set()
         for cal in calificaciones_realizadas:
-            if hasattr(cal, 'clas_participante_fk') and cal.clas_participante_fk:
+            if hasattr(cal, 'clas_proyecto_fk') and cal.clas_proyecto_fk:
                 # Ajustar según la estructura real de tu modelo
-                if hasattr(cal.clas_participante_fk, 'par_eve_evento_fk'):
-                    if cal.clas_participante_fk.par_eve_evento_fk == evento:
-                        participantes_evaluados.add(cal.clas_participante_fk.id)
+                if hasattr(cal.clas_proyecto_fk, 'par_eve_evento_fk'):
+                    if cal.clas_proyecto_fk.par_eve_evento_fk == evento:
+                        participantes_evaluados.add(cal.clas_proyecto_fk.id)
         
         participantes_data = []
         for par_evento in participantes_evento:
