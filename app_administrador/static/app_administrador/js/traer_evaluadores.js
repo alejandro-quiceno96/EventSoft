@@ -34,7 +34,12 @@ function abrirModalAsignar(eventoId, proyectoId) {
                     <td class="text-center">
                         ${
                             evaluador.asignado
-                            ? `<span class="badge bg-success">Asignado</span>`
+                            ? `<button class="btn btn-outline-danger btn-designar"
+                                        data-evaluador-id="${evaluador.id}"
+                                        data-evento-id="${eventoId}"
+                                        data-proyecto-id="${proyectoId}">
+                                    Cancelar Asiganción
+                                </button>`
                             : `<button class="btn btn-primary btn-asignar"
                                         data-evaluador-id="${evaluador.id}"
                                         data-evento-id="${eventoId}"
@@ -45,6 +50,13 @@ function abrirModalAsignar(eventoId, proyectoId) {
                     </td>
                 `;
                 tbody.appendChild(row);
+            });
+
+            // Eventos para los botones de asignar
+            document.querySelectorAll(".btn-designar").forEach(btn => {
+                btn.addEventListener("click", function () {
+                    designarEvaluador(this.dataset.evaluadorId, this.dataset.eventoId, this.dataset.proyectoId);
+                });
             });
 
             // Eventos para los botones de asignar
@@ -74,6 +86,27 @@ function asignarEvaluador(evaluadorId, eventoId, proyectoId) {
     .then(data => {
         if (data.success) {
             alert("✅ Evaluador asignado correctamente");
+            abrirModalAsignar(eventoId, proyectoId); // recargar tabla
+        } else {
+            alert("⚠️ " + data.message);
+        }
+    });
+}
+
+function designarEvaluador(evaluadorId, eventoId, proyectoId) {
+    urlFinal = urlDesignarEvaluador.replace('123', eventoId).replace('456', proyectoId).replace('789', evaluadorId);
+    fetch(urlFinal, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Asignación cancelada correctamente");
             abrirModalAsignar(eventoId, proyectoId); // recargar tabla
         } else {
             alert("⚠️ " + data.message);

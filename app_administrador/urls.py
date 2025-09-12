@@ -26,6 +26,7 @@ urlpatterns=[
     #Asignar evaluadores
     path('evaluadores/listar/<int:evento_id>/<int:proyecto_id>/', views.listar_evaluadores_ajax, name='listar_evaluadores'),
     path('evaluador/asignar/<int:evento_id>/<int:proyecto_id>/<int:evaluador_id>/', views.asignar_evaluador_ajax, name='asignar_evaluador'),
+    path('evaluador/designar/<int:evento_id>/<int:proyecto_id>/<int:evaluador_id>/', views.designar_evaluador_ajax, name='designar_evaluador'),
 
     #criterios de evaluacion
     path('criterios_evaluacion/<int:evento_id>', views.criterios_evaluacion, name='criterios_evaluacion'),
@@ -35,8 +36,8 @@ urlpatterns=[
     #calificaciones
     path('tabla_calificaciones/<int:evento_id>', views.tabla_calificaciones, name='tabla_calificaciones'),
     path('descargar_raking/<int:evento_id>', views.descargar_ranking_pdf, name = "descargar_ranking_pdf" ),
-    path('evento/<int:evento_id>/participante/<int:participante_id>/detalles/', views.detalles_calificaciones, name='detalle_calificaciones'),
-    path('detalle_calificacion/evaluador/<int:evaluador_id>/partcipante/<int:participante_id>/evento/<int:evento_id>/', views.detalle_calificacion, name= "detalle_calificacion"),
+    path('evento/<int:evento_id>/proyecto/<int:proyecto_id>/detalles/', views.detalles_calificaciones, name='detalle_calificaciones'),
+    path('detalle_calificacion/evaluador/<int:evaluador_id>/proyecto/<int:proyecto_id>/evento/<int:evento_id>/', views.detalle_calificacion, name= "detalle_calificacion"),
 
     #correos
     path('enviar_correo/<int:evento_id>', views.enviar_correo, name='enviar_correo'),

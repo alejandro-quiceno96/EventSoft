@@ -648,37 +648,50 @@ def eliminar_criterio(request, criterio_id):
 def tabla_calificaciones(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
 
-    # Subconsulta: promedio por criterio y participante
+    # Subconsulta: promedio por criterio y proyecto
     subquery = (
         Calificaciones.objects
-        .values('clas_participante_fk', 'cal_criterio_fk')
+        .values('clas_proyecto_fk', 'cal_criterio_fk')
         .annotate(promedio_criterio=Avg('cal_valor'))
     )
 
-    # Diccionario temporal para almacenar acumulados
+    # Diccionario para acumular los promedios ponderados por proyecto
     ranking_dict = {}
 
     for row in subquery:
         criterio = Criterios.objects.filter(id=row['cal_criterio_fk'], cri_evento_fk=evento_id).first()
         if criterio:
-            participante_id = row['clas_participante_fk']
+            proyecto_id = row['clas_proyecto_fk']
             ponderado = row['promedio_criterio'] * criterio.cri_peso / 100
 
-            if participante_id not in ranking_dict:
-                ranking_dict[participante_id] = 0
-            ranking_dict[participante_id] += ponderado
+            if proyecto_id not in ranking_dict:
+                ranking_dict[proyecto_id] = 0
+            ranking_dict[proyecto_id] += ponderado
 
-    # Ordenar por promedio ponderado descendente
+    # Ordenar por puntaje final descendente
     ranking_ordenado = sorted(ranking_dict.items(), key=lambda x: x[1], reverse=True)
 
-    # Construir lista para el template
+    # Construir lista final para el template
     ranking = []
-    for participante_id, promedio in ranking_ordenado:
-        participante = Participantes.objects.get(id=participante_id)
+    for proyecto_id, puntaje in ranking_ordenado:
+        proyecto = Proyecto.objects.get(id=proyecto_id)
+
+        # Obtener expositores vinculados al proyecto en este evento
+        expositores = ParticipantesEventos.objects.filter(
+            par_eve_proyecto=proyecto,
+            par_eve_evento_fk=evento
+        )
+
+        lista_expositores = [
+            f"{e.par_eve_participante_fk.usuario.first_name} {e.par_eve_participante_fk.usuario.last_name}"
+            for e in expositores
+        ]
+
         ranking.append({
-            'id': participante.id,
-            'nombre': participante.usuario.first_name + ' ' + participante.usuario.last_name,
-            'promedio': round(promedio, 2)
+            'id': proyecto.id,
+            'proyecto': proyecto.pro_nombre,
+            'expositores': lista_expositores,
+            'puntaje_final': round(puntaje, 2)
         })
 
     return render(request, 'app_administrador/posiciones.html', {
@@ -686,10 +699,10 @@ def tabla_calificaciones(request, evento_id):
         'evento': evento,
         'administrador': request.session.get('admin_nombre'),
     })
-    
+
 def descargar_ranking_pdf(request, evento_id):
     evento = Eventos.objects.get(id=evento_id)
-    ranking = obtener_ranking(evento_id)  # debe devolver lista de diccionarios con nombre y promedio
+    ranking = obtener_ranking(evento_id)  
 
     html_string = render_to_string('app_administrador/ranking_pdf.html', {
         'evento': evento,
@@ -699,27 +712,38 @@ def descargar_ranking_pdf(request, evento_id):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="ranking_evento_{evento_id}.pdf"'
 
-
     HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(response)
     return response
 
 
 
-def detalles_calificaciones(request, evento_id, participante_id):
-    participante = get_object_or_404(Participantes, id=participante_id)
+def detalles_calificaciones(request, evento_id, proyecto_id):
+    """
+    Muestra las calificaciones detalladas de un proyecto en un evento,
+    agrupadas por evaluador y con cálculo de puntajes ponderados.
+    """
+
+    # Obtener proyecto y evento
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
     evento = get_object_or_404(Eventos, id=evento_id)
 
-    # Traer todas las calificaciones del participante en ese evento
-    calificaciones = Calificaciones.objects.filter(
-        clas_participante_fk=participante,
-        cal_criterio_fk__cri_evento_fk=evento
-    ).select_related('cal_evaluador_fk', 'cal_criterio_fk')
+    # Traer todas las calificaciones del proyecto en ese evento
+    calificaciones = (
+        Calificaciones.objects.filter(
+            clas_proyecto_fk=proyecto,
+            cal_criterio_fk__cri_evento_fk=evento
+        )
+        .select_related('cal_evaluador_fk', 'cal_criterio_fk')
+    )
 
-    # Agrupar por evaluador
+    # Estructura para agrupar por evaluador
     evaluadores_data = {}
+
     for cal in calificaciones:
         evaluador = cal.cal_evaluador_fk
         criterio = cal.cal_criterio_fk
+
+        # Inicializar datos de evaluador si no existe en el diccionario
         if evaluador.id not in evaluadores_data:
             evaluadores_data[evaluador.id] = {
                 'evaluador': evaluador,
@@ -730,6 +754,7 @@ def detalles_calificaciones(request, evento_id, participante_id):
         # Calcular puntaje ponderado para este criterio
         ponderado = float(cal.cal_valor) * float(criterio.cri_peso) / 100
 
+        # Agregar detalle de calificación
         evaluadores_data[evaluador.id]['calificaciones'].append({
             'criterio': criterio.cri_descripcion,
             'peso': criterio.cri_peso,
@@ -737,53 +762,69 @@ def detalles_calificaciones(request, evento_id, participante_id):
             'ponderado': round(ponderado, 2),
         })
 
-        # Sumar al total ponderado de ese evaluador
+        # Sumar al total ponderado del evaluador
         evaluadores_data[evaluador.id]['puntaje_total'] += ponderado
 
-    # Redondear puntajes totales
+    # Redondear totales de cada evaluador
     for data in evaluadores_data.values():
         data['puntaje_total'] = round(data['puntaje_total'], 2)
 
+    # Renderizar plantilla
     return render(request, 'app_administrador/detalle_calificaciones.html', {
-        'participante': participante,
+        'proyecto': proyecto,
         'evento': evento,
         'evaluadores_data': evaluadores_data.values(),
         'administrador': request.session.get('admin_nombre'),
     })
 
 
-def detalle_calificacion(request, participante_id, evaluador_id, evento_id):
-    participante = get_object_or_404(Participantes, id=participante_id)
-    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+# Vista: Detalle de calificación de un proyecto por un evaluador
+@login_required(login_url='login')
+def detalle_calificacion(request, proyecto_id, evaluador_id, evento_id):
+    """
+    Muestra el detalle de calificaciones de un evaluador hacia un proyecto específico
+    en un evento, incluyendo criterios, puntajes ponderados y comentarios.
+    """
 
-    # Obtener todas las calificaciones de ese evaluador a ese participante
-    calificaciones = Calificaciones.objects.filter(
-        clas_participante_fk=participante,
-        cal_evaluador_fk=evaluador
-    ).select_related('cal_criterio_fk')
+    proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+    evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Obtener todas las calificaciones de ese evaluador a ese proyecto
+    calificaciones = (
+        Calificaciones.objects.filter(
+            clas_proyecto_fk=proyecto,
+            cal_evaluador_fk=evaluador,
+            cal_criterio_fk__cri_evento_fk=evento
+        )
+        .select_related('cal_criterio_fk')
+    )
 
     calificaciones_info = []
-    puntaje_total = 0
+    puntaje_total = 0.0
 
     for cal in calificaciones:
         criterio = cal.cal_criterio_fk
         ponderado = float(cal.cal_valor) * float(criterio.cri_peso) / 100
         puntaje_total += ponderado
+
         calificaciones_info.append({
             'criterio': criterio.cri_descripcion,
             'peso': float(criterio.cri_peso),
             'valor': float(cal.cal_valor),
-            'ponderado': round(ponderado, 2)
+            'ponderado': round(ponderado, 2),
+            'comentario': cal.cal_comentario if hasattr(cal, 'cal_comentario') else ""
         })
 
     return render(request, 'app_administrador/detalle_calificacion_participante.html', {
-        'participante': participante,
+        'proyecto': proyecto,
         'evaluador': evaluador,
+        'evento': evento,
         'calificaciones_info': calificaciones_info,
         'puntaje_total': round(puntaje_total, 2),
         'administrador': request.session.get('admin_nombre'),
-        'evento': get_object_or_404(Eventos, id=evento_id)
     })
+
 @login_required(login_url='login')
 def ver_evaluadores(request: HttpRequest, evento_id):
     estado = request.GET.get('estado')
@@ -1513,5 +1554,29 @@ def asignar_evaluador_ajax(request, evento_id, proyecto_id, evaluador_id):
         )
 
         return JsonResponse({"success": True, "message": "Evaluador asignado correctamente."})
+
+    return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
+
+@login_required(login_url='login')
+def designar_evaluador_ajax(request, evento_id, proyecto_id, evaluador_id):
+    if request.method == 'POST':
+
+        if not evaluador_id:
+            return JsonResponse({"success": False, "message": "No se recibió el evaluador."}, status=400)
+
+        # Obtener evento y proyecto
+        evento = get_object_or_404(Eventos, id=evento_id)
+        proyecto = get_object_or_404(Proyecto, id=proyecto_id)
+
+        # Obtener el evaluador (ojo: desde Evaluadores, no EvaluadoresEventos)
+        evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
+        
+        #Eliminar Asignación
+        EvaluadorProyecto.objects.filter(
+            eva_pro_proyecto_fk=proyecto,
+            eva_pro_evaluador_fk=evaluador
+        ).delete()
+
+        return JsonResponse({"success": True, "message": "Asignaciónn cancelada correctamente."})
 
     return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)

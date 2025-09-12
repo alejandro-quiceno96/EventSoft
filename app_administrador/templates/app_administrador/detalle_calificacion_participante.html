@@ -4,12 +4,12 @@
 {% block title %}
     {{ administrador|default:'Administrador' }}
 {% endblock %}
+
 {% block content %}
 <link rel="stylesheet" href="{% static 'app_administrador/css/posicionesadmin.css' %}">
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
-    /* SOLO TEXTO */
     body,
     h1,
     h2,
@@ -27,53 +27,88 @@
         font-family: 'Work Sans', sans-serif !important;
     }
 
-    </style>
+    .btn-detalle-calificacion {
+        background-color: #007832;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 8px;
+        padding: 8px 14px;
+        transition: 0.3s ease;
+        text-decoration: none;
+    }
+    .btn-detalle-calificacion:hover {
+        background-color: #005f27;
+        color: #fff;
+    }
+
+    .header h1 {
+        font-weight: 700;
+        color: #007832;
+    }
+    .header p {
+        color: #555;
+    }
+
+    .table thead {
+        background-color: #007832;
+        color: #fff;
+    }
+    .table-primary {
+        background-color: #e6f4ec !important;
+        color: #007832 !important;
+    }
+    .fw-semibold.text-primary {
+        color: #007832 !important;
+        font-weight: 600;
+    }
+</style>
 
 <div class="container">
-        <div class="header">
-            <a href="{% url 'administrador:detalle_calificaciones' evento.id participante.id %}" class="btn btn-detalle-calificacion mb-2 mt-3">
-                <i class="fa-solid fa-arrow-left"></i></i> Volver a califiaciones
-            </a>
-            <h1>Detalle de Calificación</h1>
-            <p>Información detallada de la calificación del participante</p>
-        </div>
+    <div class="header mt-3 mb-4">
+        <a href="{% url 'administrador:detalle_calificaciones' evento.id proyecto.id %}" class="btn btn-detalle-calificacion mb-2">
+            <i class="fa-solid fa-arrow-left"></i> Volver a calificaciones
+        </a>
+        <h1>Detalle de Calificación</h1>
+        <p>Información detallada de la calificación del proyecto en este evento</p>
+    </div>
 
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong>Participante:</strong> {{ participante.par_nombre }}</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Evaluador:</strong> {{ evaluador.eva_nombre }}</p>
-            </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <p><strong>Proyecto:</strong> {{ proyecto.pro_nombre }}</p>
         </div>
+        <div class="col-md-6">
+            <p><strong>Evaluador:</strong> {{ evaluador.usuario.first_name }} {{ evaluador.usuario.last_name }}</p>
+        </div>
+    </div>
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0">
-                <thead class="table-dark text-center">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="text-center">
                 <tr>
                     <th scope="col">Criterio</th>
-                    <th scope="col">Peso</th>
+                    <th scope="col">Peso (%)</th>
                     <th scope="col">Calificación</th>
                     <th scope="col">Puntaje Ponderado</th>
+                    <th scope="col">Comentario</th>
                 </tr>
-                </thead>
-                <tbody>
+            </thead>
+            <tbody>
                 {% for cal in calificaciones_info %}
                 <tr>
                     <td>{{ cal.criterio }}</td>
-                    <td class="text-center">{{ cal.peso|floatformat:"-2" }}%</td>
+                    <td class="text-center">{{ cal.peso|floatformat:"-2" }}</td>
                     <td class="text-center">{{ cal.valor }}</td>
                     <td class="text-center fw-semibold text-primary">{{ cal.ponderado }}</td>
+                    <td>{{ cal.comentario }}</td>
                 </tr>
                 {% endfor %}
                 <tr class="table-primary fw-bold">
                     <td colspan="3" class="text-end">Total</td>
                     <td class="text-center">{{ puntaje_total }}</td>
+                    <td></td>
                 </tr>
-                </tbody>
-            </table>
-        </div>
-
-        </div>
+            </tbody>
+        </table>
     </div>
+</div>
 {% endblock %}
