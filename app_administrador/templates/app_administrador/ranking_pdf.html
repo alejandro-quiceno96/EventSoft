@@ -1,107 +1,139 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Ranking - {{ evento.eve_nombre }}</title>
     <style>
-        @page {
-            size: A4;
-            margin: 2cm;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700&display=swap');
 
         body {
-            font-size: 12pt;
-            color: #2c3e50;
+            font-family: "Work Sans", Arial, sans-serif;
+            margin: 40px;
+            color: #333;
+            font-size: 14px;
         }
-
-        .header {
-            text-align: center;
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 30px;
+            border-bottom: 2px solid #007832;
+            padding-bottom: 10px;
         }
-
-        .header h1 {
+        header img {
+            height: 60px;
+        }
+        header .titulo {
+            flex-grow: 1;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 22px;
+            color: #007832;
             margin: 0;
-            font-size: 22pt;
-            color: #1abc9c;
         }
-
-        .header small {
-            font-size: 12pt;
-            color: #7f8c8d;
+        header p {
+            margin: 2px 0;
+            font-size: 13px;
+            color: #666;
         }
-
-        .logo {
-            width: 80px;
-            margin-bottom: 10px;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 25px;
         }
-
-        th {
-            background-color: #34495e;
-            color: white;
+        th, td {
+            border: 1px solid #ddd;
             padding: 10px;
+            font-size: 13px;
+        }
+        th {
+            background-color: #007832;
+            color: #fff;
             text-align: center;
         }
-
-        td {
-            padding: 8px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-
         tr:nth-child(even) {
-            background-color: #f4f6f7;
+            background-color: #f8f8f8;
         }
-
-        .footer {
-            position: fixed;
-            bottom: 1cm;
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .posicion {
             text-align: center;
-            font-size: 10pt;
-            color: #999;
+            font-weight: bold;
+            color: #007832;
+        }
+        .medalla {
+            display: block;
+            font-size: 16px;
+            margin-top: 4px;
+        }
+        .oro { color: #d4af37; }
+        .plata { color: #c0c0c0; }
+        .bronce { color: #cd7f32; }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
         }
     </style>
 </head>
 <body>
+    <header>
 
-    <div class="header">
-        {% comment %} Reemplaza con tu logo si lo tienes {% endcomment %}
-        <!-- <img src="{{ STATIC_ROOT }}/img/logo.png" class="logo"> -->
-        <h1>Ranking de Participantes</h1>
-        <small>{{ evento.eve_nombre }}</small>
-    </div>
+        <div class="titulo">
+            <h1>Informe de Ranking</h1>
+            <p><strong>Evento:</strong> {{ evento.eve_nombre }}</p>
+            <p><strong>Fechas:</strong> {{ evento.eve_fecha_inicio|date:"d/m/Y" }} - {{ evento.eve_fecha_fin|date:"d/m/Y" }}</p>
+        </div>
+    </header>
 
     <table>
         <thead>
             <tr>
-                <th>Cedula</th>
-                <th>Participante</th>
-                <th>Promedio</th>
+                <th style="width: 10%;">Posición</th>
+                <th style="width: 25%;">Proyecto</th>
+                <th style="width: 45%;">Expositores</th>
+                <th style="width: 20%;">Puntaje Final</th>
             </tr>
         </thead>
         <tbody>
-            {% for p in ranking %}
+            {% for item in ranking %}
             <tr>
-                <td>{{ p.cedula }}</td>
-                <td style="text-align: left;">{{ p.nombre }}</td>
-                <td><strong>{{ p.promedio|floatformat:2 }}</strong></td>
+                <td class="posicion">
+                    {{ item.posicion }}
+                    {% if item.medalla %}
+                        {% if item.medalla == "🥇 Oro" %}
+                            <span class="medalla oro">🥇 Oro</span>
+                        {% elif item.medalla == "🥈 Plata" %}
+                            <span class="medalla plata">🥈 Plata</span>
+                        {% elif item.medalla == "🥉 Bronce" %}
+                            <span class="medalla bronce">🥉 Bronce</span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td>{{ item.proyecto }}</td>
+                <td>
+                    {% for exp in item.expositores %}
+                        {{ exp }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td style="text-align: center;">{{ item.puntaje_final }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3">No hay calificaciones disponibles.</td>
+                <td colspan="4" style="text-align:center; color:#999;">No hay datos disponibles</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 
-    <div class="footer">
-        <center> Documento generado automáticamente por el sistema - {{ evento.eve_nombre }}</center>
-    </div>
-
+    <footer>
+        Informe generado automáticamente por el sistema <strong>Eventosoft</strong> – {{ evento.eve_nombre }}
+    </footer>
 </body>
 </html>

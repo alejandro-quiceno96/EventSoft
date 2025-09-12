@@ -56,7 +56,8 @@
             <thead class="table-dark">
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">Participante</th>
+                    <th scope="col">Proyecto</th>
+                    <th>Expositores</th>
                     <th scope="col">Promedio</th>
                     <th scope="col">Acciones</th>
                 </tr>
@@ -77,10 +78,11 @@
                             {% endif %}
                         </strong>
                     </td>
-                    <td class="fw-semibold text-dark">{{ p.nombre }}</td>
+                    <td class="fw-semibold text-dark">{{ p.proyecto }}</td>
+                    <td class="fw-semibold text-dark">{{ p.expositores|join:", "}}</td>
                     <td>
                         <span class="badge bg-success fs-6">
-                            {{ p.promedio|floatformat:2 }}
+                            {{ p.puntaje_final }}
                         </span>
                     </td>
                     <td>

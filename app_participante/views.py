@@ -27,11 +27,13 @@ from django.contrib import messages
 def info_participantes_eventos(request):
     try:
         # Buscar al participante por cédula
-        participante = Participantes.objects.get(usuario=request.user.id)
-        comentarios = Calificaciones.objects.filter(clas_participante_fk=participante).select_related('cal_evaluador_fk')
+        participante = ParticipantesEventos.objects.get(par_eve_participante_fk__usuario=request.user)
+
+        # Obtener calificaciones del participante
+        comentarios = Calificaciones.objects.filter(clas_proyecto_fk=participante.par_eve_proyecto).select_related('cal_evaluador_fk')
         # Obtener eventos donde el participante está inscrito
         participaciones = ParticipantesEventos.objects.filter(
-            par_eve_participante_fk=participante
+            par_eve_participante_fk=participante.par_eve_participante_fk
         ).select_related("par_eve_evento_fk")
 
         eventos_data = []
@@ -42,7 +44,7 @@ def info_participantes_eventos(request):
             # Obtener criterios y calificaciones del evento
             criterios = Criterios.objects.filter(cri_evento_fk=evento)
             calificaciones = Calificaciones.objects.filter(
-                clas_participante_fk=participante,
+                clas_proyecto_fk=participante.par_eve_proyecto,
                 cal_criterio_fk__in=criterios
             )
 
@@ -75,7 +77,7 @@ def info_participantes_eventos(request):
         # Ordenar eventos por fecha de inicio
         return render(request, 'app_participantes/eventos_participante.html', {
             "eventos": eventos_data,
-            "cedula_participante": participante.id,
+            "cedula_participante": participante.par_eve_participante_fk.id,
         })
 
     except Exception as e:
@@ -312,11 +314,11 @@ def generar_pdf_comentarios_participante(request, evento_id):
     Vista para descargar PDF con las calificaciones de un participante usando WeasyPrint
     """
     # Obtener el participante
-    participante = get_object_or_404(Participantes, usuario=request.user)
+    participante = get_object_or_404(ParticipantesEventos, par_eve_participante_fk__usuario=request.user)
     
     # Obtener todas las calificaciones del participante
     calificaciones = Calificaciones.objects.filter(
-        clas_participante_fk=participante
+        clas_proyecto_fk=participante.par_eve_proyecto
     ).select_related(
         'cal_evaluador_fk__usuario',
         'cal_criterio_fk'
@@ -343,21 +345,27 @@ def generar_pdf_comentarios_participante(request, evento_id):
     
     try:
         participante_evento = ParticipantesEventos.objects.get(
-            par_eve_participante_fk=participante,
+            par_eve_participante_fk=participante.par_eve_participante_fk,
             par_eve_evento_fk=evento_id
         )
         nota_final = participante_evento.par_eve_calificacion_final
     except ParticipantesEventos.DoesNotExist:
         nota_final = None  # o lo que desees manejar en caso de que no exista
-
+    
+    expositores = ParticipantesEventos.objects.filter(par_eve_proyecto=participante.par_eve_proyecto)
+    nombres_expositores = [
+            f"{exp.par_eve_participante_fk.usuario.first_name} {exp.par_eve_participante_fk.usuario.last_name}"
+            for exp in expositores
+        ]
     
     # Preparar contexto para el template
     context = {
-        'participante': participante,
+        'expositores': nombres_expositores,
         'evaluadores_data': evaluadores_data,
         'nota_final': nota_final,
         'fecha_reporte': datetime.now(),
-        'tiene_calificaciones': calificaciones.exists()
+        'tiene_calificaciones': calificaciones.exists(),
+        'proyecto': participante.par_eve_proyecto,
     }
     
     # Renderizar HTML
@@ -368,7 +376,7 @@ def generar_pdf_comentarios_participante(request, evento_id):
     
     # Crear el response
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="calificaciones_{participante.usuario.documento_identidad}_{datetime.now().strftime("%Y%m%d")}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="calificaciones_{participante.par_eve_participante_fk.usuario.documento_identidad}_{datetime.now().strftime("%Y%m%d")}.pdf"'
     
     # Generar PDF y escribir al response
     html.write_pdf(response)

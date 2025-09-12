@@ -14,7 +14,7 @@ from app_participante.models import Participantes
 from app_asistente.models import Asistentes
 from app_evaluador.models import Evaluadores
 from app_criterios.models import Criterios
-from app_eventos.models import Eventos, EvaluadoresEventos, ParticipantesEventos, AsistentesEventos
+from app_eventos.models import Eventos, EvaluadoresEventos, ParticipantesEventos, AsistentesEventos, Proyecto
 from django.shortcuts import get_object_or_404
 from app_certificados.models import Certificado
 from django.http import HttpResponse
@@ -75,43 +75,75 @@ def generar_clave_acceso(longitud=6):
     clave = ''.join(random.choice(caracteres) for _ in range(longitud))
     return clave
 
-def obtener_ranking(evento_id):
 
-    # Subconsulta: promedio por criterio y participante
+def obtener_ranking(evento_id):
+    """
+    Retorna el ranking de proyectos con sus expositores, puntaje final y medallas para el top 3.
+    """
+
+    # Subconsulta: promedio por criterio y proyecto
     subquery = (
         Calificaciones.objects
-        .values('clas_participante_fk', 'cal_criterio_fk')
+        .values('clas_proyecto_fk', 'cal_criterio_fk')
         .annotate(promedio_criterio=Avg('cal_valor'))
     )
 
-    # Diccionario temporal para almacenar acumulados
+    # Diccionario temporal para almacenar acumulados de puntajes ponderados
     ranking_dict = {}
 
     for row in subquery:
-        criterio = Criterios.objects.filter(id=row['cal_criterio_fk'], cri_evento_fk=evento_id).first()
+        criterio = Criterios.objects.filter(
+            id=row['cal_criterio_fk'],
+            cri_evento_fk=evento_id
+        ).first()
+
         if criterio:
-            participante_id = row['clas_participante_fk']
+            proyecto_id = row['clas_proyecto_fk']
             ponderado = row['promedio_criterio'] * criterio.cri_peso / 100
 
-            if participante_id not in ranking_dict:
-                ranking_dict[participante_id] = 0
-            ranking_dict[participante_id] += ponderado
+            if proyecto_id not in ranking_dict:
+                ranking_dict[proyecto_id] = 0
+            ranking_dict[proyecto_id] += ponderado
 
-    # Ordenar por promedio ponderado descendente
+    # Ordenar por puntaje final descendente
     ranking_ordenado = sorted(ranking_dict.items(), key=lambda x: x[1], reverse=True)
 
-    # Construir lista para el template
+    # Construir lista final para usar en PDF o template
     ranking = []
-    for participante_id, promedio in ranking_ordenado:
-        participante = Participantes.objects.get(id=participante_id)
+    for index, (proyecto_id, puntaje) in enumerate(ranking_ordenado, start=1):
+        proyecto = Proyecto.objects.get(id=proyecto_id)
+
+        # Obtener expositores vinculados al proyecto en este evento
+        expositores = ParticipantesEventos.objects.filter(
+            par_eve_proyecto=proyecto,
+            par_eve_evento_fk=evento_id
+        )
+
+        lista_expositores = [
+            f"{e.par_eve_participante_fk.usuario.first_name} {e.par_eve_participante_fk.usuario.last_name}"
+            for e in expositores
+        ]
+
+        # Asignar medalla solo al top 3
+        medalla = None
+        if index == 1:
+            medalla = "🥇 Oro"
+        elif index == 2:
+            medalla = "🥈 Plata"
+        elif index == 3:
+            medalla = "🥉 Bronce"
+
         ranking.append({
-            'id': participante.usuario.id,
-            'cedula': participante.usuario.documento_identidad,
-            'nombre': participante.usuario.first_name + " " + participante.usuario.last_name,
-            'promedio': round(promedio, 2)
+            'posicion': index,
+            'id': proyecto.id,
+            'proyecto': proyecto.pro_nombre,
+            'expositores': lista_expositores,
+            'puntaje_final': round(puntaje, 2),
+            'medalla': medalla
         })
 
     return ranking
+
 
 def generar_certificados(request, evento_id, tipo, usuario):
     evento = get_object_or_404(Eventos, id=evento_id)
