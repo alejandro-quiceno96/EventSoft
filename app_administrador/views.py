@@ -10,7 +10,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth import update_session_auth_hash
 from datetime import datetime
 import os
-from .utils import generar_pdf, generar_clave_acceso, obtener_ranking, generar_certificados, generar_reconocmiento
+from .utils import generar_pdf, generar_clave_acceso, obtener_ranking, generar_certificados, generar_reconocmiento, generar_certificados_expositores
 from django.urls import reverse
 from decimal import Decimal
 import json
@@ -208,6 +208,8 @@ def obtener_evento(request, evento_id):
         'memorias': evento.eve_memorias if evento.eve_memorias else False,
         'certificado': certificado,
         'ficha_tecnica': evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else False,
+        'inscripcion_expositor': evento.eve_habilitar_participantes,
+        'inscripcion_evaluador': evento.eve_habilitar_evaluadores,
     }
 
     return JsonResponse(datos_evento)
@@ -243,7 +245,6 @@ def eliminar_evento(request, evento_id):
 @require_http_methods(["GET", "POST"])
 def editar_evento(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
-    print(f"Evento a editar: {evento}")
     if request.method == 'POST':
         nombre = request.POST.get('nombre_evento')
         descripcion = request.POST.get('descripcion_evento')
@@ -256,8 +257,6 @@ def editar_evento(request, evento_id):
         estado = request.POST.get('estado_evento')
         aforo = request.POST.get('cantidad_personas') or None
         aforo = int(aforo) if aforo else None
-        evento.eve_habilitar_participantes = 'habilitar_participantes' in request.POST
-        evento.eve_habilitar_evaluadores = 'habilitar_evaluadores' in request.POST
         
         # Archivos
         imagen = request.FILES.get('imagen_evento')
@@ -302,7 +301,6 @@ def editar_evento(request, evento_id):
         categoria_evento = evento_categoria.eve_cat_categoria_fk if evento_categoria else None
         area_categoria = categoria_evento.cat_area_fk if categoria_evento else None  # Si existe ese campo
 
-        print('Capacidad del evento:', evento.eve_capacidad)
 
         contexto = {
             'evento': evento,
@@ -1279,12 +1277,12 @@ def enviar_certificado_participantes(request, evento_id):
             par_eve_estado__iexact='Admitido'
         ).values_list('par_eve_participante_fk_id', flat=True)
     )
-
     
     if request.method == 'POST':
-
+        print("Enviando certificados a participantes...")
         correos_enviados = []
         for participante in participantes:
+            print(f"Procesando participante: {participante.usuario.email}")
             contexto = {
                 'evento': evento,
                 'participante': participante
@@ -1299,11 +1297,13 @@ def enviar_certificado_participantes(request, evento_id):
                 to=[participante.usuario.email]
             )
             email.content_subtype = 'html'
+            
+            
 
             # Adjuntar certificado PDF
-            pdf_content = generar_certificados(request,evento_id, "participante", participante.id )
+            pdf_content = generar_certificados_expositores(request,evento_id, "expositor", participante.id )
             email.attach(f'certificado_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
-
+            print(email)
             email.send(fail_silently=False)
             correos_enviados.append(participante.usuario.email)
 
@@ -1395,83 +1395,41 @@ def enviar_certificado_evaluadores(request, evento_id):
 
 @csrf_exempt 
 @login_required(login_url='login')
-def enviar_certificado_reconocimiento(request, evento_id, participante_id):
+def enviar_certificado_reconocimiento(request, evento_id, proyecto_id):
     if request.method == 'POST':
         evento = get_object_or_404(Eventos, id=evento_id)
-        participante = get_object_or_404(Participantes, id=participante_id)
+        participante_eventos = ParticipantesEventos.objects.filter(par_eve_proyecto=proyecto_id, par_eve_evento_fk=evento_id)
+        
+        for participante in participante_eventos:
+            participante = participante.par_eve_participante_fk
+            participante_id = participante.id
 
-        contexto = {
-            'evento': evento,
-            'participante': participante
-        }
+            contexto = {
+                'evento': evento,
+                'participante': participante
+            }
 
-        mensaje = render_to_string('app_administrador/correos/certificado_reconocimiento.html', contexto)
+            mensaje = render_to_string('app_administrador/correos/certificado_reconocimiento.html', contexto)
 
-        email = EmailMessage(
-            subject=f"Reconocimiento en el evento {evento.eve_nombre}",
-            body=mensaje,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[participante.usuario.email]
-        )
-        email.content_subtype = 'html'
+            email = EmailMessage(
+                subject=f"Reconocimiento en el evento {evento.eve_nombre}",
+                body=mensaje,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[participante.usuario.email]
+            )
+            email.content_subtype = 'html'
 
-        # Adjuntar certificado PDF
-        pdf_content = generar_reconocmiento(request, evento_id, participante_id)
-        email.attach(f'Reconocmiento_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
+            # Adjuntar certificado PDF
+            pdf_content = generar_reconocmiento(request, evento_id, participante_id)
+            email.attach(f'Reconocmiento_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
 
-        email.send(fail_silently=False)
+            email.send(fail_silently=False)
 
         return JsonResponse({'success': True, 'message': 'Reconocimiento enviado correctamente.'})
     
     return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
 
 
-
-
-
-def habilitar_participantes(request, evento_id):
-    participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk_id=evento_id)
-    
-    if not participantes.exists():
-        messages.warning(request, 'No hay participantes para este evento.')
-        return redirect('administrador:index_administrador')
-    
-    # Determinar si habilitar o deshabilitar todos
-    todos_habilitados = all(p.habilitado for p in participantes)
-    nuevo_estado = not todos_habilitados
-    
-    # Actualizar todos los participantes
-    for p in participantes:
-        p.habilitado = nuevo_estado
-        p.save()
-    
-    # Mensaje de confirmación
-    estado_texto = "habilitados" if nuevo_estado else "deshabilitados"
-    messages.success(request, f'Todos los participantes han sido {estado_texto}.')
-    
-    return redirect('administrador:inicio')
-
-def habilitar_evaluadores(request, evento_id):
-    evaluadores = EvaluadoresEventos.objects.filter(evento_id=evento_id)
-    
-    if not evaluadores.exists():
-        messages.warning(request, 'No hay evaluadores para este evento.')
-        return redirect('administrador:index_administrador')
-    
-    # Determinar si habilitar o deshabilitar todos
-    todos_habilitados = all(e.habilitado for e in evaluadores)
-    nuevo_estado = not todos_habilitados
-    
-    # Actualizar todos los evaluadores
-    for e in evaluadores:
-        e.habilitado = nuevo_estado
-        e.save()
-    
-    # Mensaje de confirmación
-    estado_texto = "habilitados" if nuevo_estado else "deshabilitados"
-    messages.success(request, f'Todos los evaluadores han sido {estado_texto}.')
-    
-    return redirect('administrador:index_administrador')
 
 def modificar_certificados(request,evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
@@ -1531,20 +1489,15 @@ def asignar_evaluador_ajax(request, evento_id, proyecto_id, evaluador_id):
         if not evaluador_id:
             return JsonResponse({"success": False, "message": "No se recibió el evaluador."}, status=400)
 
-        # Obtener evento y proyecto
         evento = get_object_or_404(Eventos, id=evento_id)
         proyecto = get_object_or_404(Proyecto, id=proyecto_id)
-
-        # Obtener el evaluador (ojo: desde Evaluadores, no EvaluadoresEventos)
         evaluador = get_object_or_404(Evaluadores, id=evaluador_id)
 
         # Verificar si ya está asignado
-        existe = EvaluadorProyecto.objects.filter(
+        if EvaluadorProyecto.objects.filter(
             eva_pro_proyecto_fk=proyecto,
             eva_pro_evaluador_fk=evaluador
-        ).exists()
-
-        if existe:
+        ).exists():
             return JsonResponse({"success": False, "message": "Este evaluador ya está asignado al proyecto."})
 
         # Crear asignación
@@ -1553,7 +1506,26 @@ def asignar_evaluador_ajax(request, evento_id, proyecto_id, evaluador_id):
             eva_pro_evaluador_fk=evaluador
         )
 
-        return JsonResponse({"success": True, "message": "Evaluador asignado correctamente."})
+        # Enviar correo usando plantilla HTML
+        if evaluador.usuario.email:
+            subject = "Asignación de proyecto"
+            from_email = settings.DEFAULT_FROM_EMAIL
+            to = [evaluador.usuario.email]
+
+            context = {
+                "evaluador": evaluador.usuario.first_name,
+                "evento": evento,
+                "proyecto": proyecto,
+                "sitio": "EventSoft"
+            }
+
+            html_content = render_to_string("app_administrador/correos/asignacion_evaluador.html", context)
+
+            msg = EmailMultiAlternatives(subject, "", from_email, to)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+
+        return JsonResponse({"success": True, "message": "Evaluador asignado y notificado por correo."})
 
     return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
 
@@ -1580,3 +1552,24 @@ def designar_evaluador_ajax(request, evento_id, proyecto_id, evaluador_id):
         return JsonResponse({"success": True, "message": "Asignaciónn cancelada correctamente."})
 
     return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
+
+@login_required
+def config_inscripcion(request, evento_id):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        estado = data.get("estado")# 1 = activo, 0 = inactivo
+        tipo = data.get("tipo")  # "evaluador" o "expositor"
+
+        # Aquí guardas en tu modelo según el tipo (evaluador o expositor)
+        if tipo == "Evaluador":
+            evento = get_object_or_404(Eventos, id=evento_id)
+            evento.eve_habilitar_evaluadores = estado
+            evento.save()
+        elif tipo == "Expositor":
+            evento = get_object_or_404(Eventos, id=evento_id)
+            evento.eve_habilitar_participantes = estado
+            evento.save()
+
+
+        return JsonResponse({"success": True, "message": f"{tipo} actualizado a {estado}"})
+    return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)

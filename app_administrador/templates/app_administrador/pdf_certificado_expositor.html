@@ -25,15 +25,14 @@
 
     <div id="constar" class="constar">CERTIFICA:</div>
 
-   <div id="preview-texto" class="preview-texto">
-  Que <strong>{{ nombre_participante|default:"Nombre del participante" }}</strong>, identificado(a) con el número de documento 
-  <strong>{{ documento_participante|default:"###########" }}</strong>, participó en el evento 
-  <strong>{{ evento.eve_nombre|default:"nombre del evento" }}</strong> con el proyecto 
-  <strong>{{ proyecto|default:"nombre del proyecto" }}</strong>, llevado a cabo el día 
-  <strong>{{ fecha_inicio|default:"fecha del evento" }}</strong>, obteniendo el 
-  <strong>PRIMER LUGAR</strong> por su destacada participación.
-</div>
-
+    <div id="preview-texto" class="preview-texto">
+      Que <strong>{{nombre_participante|default:'Nombre del participante'}}</strong> identificado(a) con el número de documento
+      <strong>{{documento_participante|default:'###########'}}</strong> estuvo como 
+      <strong>{{rol_participante|default:'rol_participante'}}</strong> en el marco del 
+      <strong>{{evento.eve_nombre|default:'nombre del evento'}}</strong>, con la participación en el proyecto 
+      <strong>{{proyecto|default:'nombre del proyecto'}}</strong>, desarrollado el 
+      <strong>{{fecha_inicio|default:'fecha del evento'}}</strong>.
+    </div>
 
 
     <div id="preview-lugar-fecha" class="preview-lugar-fecha">
