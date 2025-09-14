@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Asignación de Proyecto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f6f8;
+      font-family: 'Work Sans', Arial, sans-serif;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    .header {
+      background: #007832;
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .content {
+      padding: 25px;
+    }
+    .content h2 {
+      color: #007832;
+      font-size: 20px;
+      margin-top: 0;
+    }
+    .card {
+      background: #f9faf9;
+      border: 1px solid #e6ebe6;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .btn {
+      display: inline-block;
+      background: #007832;
+      color: #fff !important;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 20px;
+    }
+    .btn:hover {
+      background: #006327;
+    }
+    .footer {
+      background: #fafafa;
+      padding: 15px;
+      text-align: center;
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Encabezado -->
+    <div class="header">
+      <h1>Asignación de Proyecto</h1>
+    </div>
+
+    <!-- Contenido -->
+    <div class="content">
+      <h2>Hola {{ evaluador }}</h2>
+      <p>
+        Se te ha asignado un nuevo proyecto para evaluación en el evento 
+        <strong>{{ evento.eve_nombre|default:evento }}</strong>.
+      </p>
+
+      <div class="card">
+        <p><b>Proyecto:</b> {{ proyecto.pro_nombre|default:proyecto }}</p>
+        <p><b>Evento:</b> {{ evento.eve_nombre|default:evento }}</p>
+      </div>
+
+      <p>
+        Por favor revisa la información y continúa con el proceso de evaluación.
+      </p>
+
+
+      <p style="margin-top: 25px; font-size: 14px; color:#555;">
+        Gracias por tu compromiso con la evaluación.
+      </p>
+    </div>
+
+    <!-- Pie -->
+    <div class="footer">
+      © {{ sitio }} — Todos los derechos reservados
+    </div>
+  </div>
+</body>
+</html>

@@ -136,6 +136,7 @@ def evento_detalle_participante(request, evento_id, participante_id):
         'codigo_qr': clave_acceso.par_eve_qr.url,
         'cedula': participante_id,
         "eve_informacion_tecnica": evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else None,
+        'proyecto': clave_acceso.par_eve_proyecto.pro_codigo if clave_acceso.par_eve_proyecto else 'No asignado',
         
         
     }
@@ -282,6 +283,8 @@ def cancelar_inscripcion(request, evento_id, participante_id):
                     # Continuar aunque falle la eliminación del archivo
             
             # Eliminar la inscripción
+            proyecto = participante_evento.par_eve_proyecto
+            proyecto.delete()  # Eliminar el proyecto asociado
             participante_evento.delete()
             
             # Si era la única inscripción, eliminar el participante

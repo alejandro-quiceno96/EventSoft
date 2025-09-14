@@ -83,7 +83,6 @@
 .modal {
   display: none; /* oculto por defecto */
   position: fixed;
-  z-index: 1050;
   top: 0;
   left: 0;
   width: 100%;
@@ -103,6 +102,7 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   animation: fadeIn 0.3s ease;
+  z-index: 2000;
 }
 
 .modal-header {
@@ -392,7 +392,7 @@
   </div>
 </div>
 <!-- Modal: Advertencia si aún no ha pasado la fecha -->
-<div class="modal fade" id="modalFechaNoValida" tabindex="-1" aria-hidden="true">
+<div class="modal" id="modalFechaNoValida" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center p-4">
       <i class="fa-solid fa-circle-exclamation fa-3x text-warning mb-3"></i>
@@ -452,7 +452,7 @@
         <script src="{% static 'app_administrador/js/traer_evaluadores.js'%}"></script>
         <script>
             const UrlEnvioCertificados = "{% url 'administrador:enviar_certificado_participantes' evento.id %}";
-            const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00"); // solo si es DateField
+            const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00");
             const fechaActual = new Date("{{ fecha_actual }}"); // DateTime
             const urlListarEvaluadores = "{% url 'administrador:listar_evaluadores' 123 456 %}";
             const urlAsignarEvaluador = "{% url 'administrador:asignar_evaluador' 123 456 789 %}";

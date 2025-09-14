@@ -112,10 +112,18 @@
       </div>
       <div class="modal-footer">
         <a type="button" id="btnModificar" class="btn-ver-mas" data-bs-dismiss="modal">Modificar información</a>
-        <button type="button" id="btnCriterios" class="btn-eliminar" data-bs-dismiss="modal">Criterios de
+        <button type="button" id="btnCriterios" class="btn-ver_participantes" data-bs-dismiss="modal">Criterios de
           Evaluación</button>
-        <button type="button" id="btnConfigCertificados" class="btn-eliminar" data-bs-dismiss="modal">Configuración de
+        <button type="button" id="btnConfigCertificados" class="btn-ver_participantes" data-bs-dismiss="modal"><i class="fas fa-cog"></i> Configuración de
           Certificados</button>
+        <button 
+          type="button" 
+          id="btnConfigInscripciones" 
+          class="btn-ver_participantes" 
+          data-bs-toggle="modal" 
+          data-bs-target="#configModal">
+          <i class="fas fa-cog"></i> Configuración de Inscripciones
+        </button>
         <button type="button" class="btn-memorias" id="btnSubirMemorias">
           <i class="fa-solid fa-upload"></i> Subir memorias del evento
         </button>
@@ -161,6 +169,58 @@
 
       </div>
       
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal de confirmación Config Inscripción -->
+<div class="modal fade" id="configModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-cog"></i> Configuración de Inscripción</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-check form-switch mb-3">
+  <input 
+    class="form-check-input toggle-switch" 
+    type="checkbox" 
+    id="switchEvaluador" 
+    data-role="Evaluador">
+  <label class="form-check-label" for="switchEvaluador">Inscripción de Evaluador</label>
+</div>
+
+<div class="form-check form-switch">
+  <input 
+    class="form-check-input toggle-switch" 
+    type="checkbox" 
+    id="switchExpositor" 
+    data-role="Expositor">
+  <label class="form-check-label" for="switchExpositor">Inscripción de Expositor</label>
+</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación config inscripcion -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="confirmMessage">
+        ¿Seguro que deseas inactivar esta inscripción?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="confirmYes">Sí, inactivar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -397,7 +457,7 @@
   const baseConfigCertificadosUrl = "{% url 'administrador:configuracion_certificados' 0 %}";
   const baseFichaTecnicaUrl = "{% url 'administrador:subir_info_tecnica' 123 %}";
   const baseModificarCertificadosUrl = "{% url 'administrador:modificar_certificados' 0 %}";
-  
+  const baseConfigInscripcionUrl = "{% url 'administrador:configurar_inscripcion' 0 %}";
 
 
     // Manejar formulario memorias con modal cargando
@@ -457,5 +517,6 @@
 <script src="{% static 'app_administrador/js/modificarEventos.js' %}"></script>
 <script src="{% static 'app_administrador/js/Eliminar.js' %}"></script>
 <script src="{% static 'app_administrador/js/subir_ficha_tecnica.js' %}"></script>
+<script src="{% static 'app_administrador/js/confgi_inscripcion.js' %}"></script>
 
 {% endblock %}

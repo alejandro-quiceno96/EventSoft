@@ -40,7 +40,11 @@ document.addEventListener("DOMContentLoaded", function () {
             </a>`;
             inputMemorias.value = data.memorias;
           }
-
+          document.getElementById("switchEvaluador").setAttribute("data-evento-id", eventoId);
+          document.getElementById("switchExpositor").setAttribute("data-evento-id", eventoId);
+          document.getElementById("switchEvaluador").checked = data.inscripcion_evaluador === true;
+          document.getElementById("switchExpositor").checked = data.inscripcion_expositor === true;
+          document.getElementById("confirmYes").setAttribute("data-evento-id", eventoId);
           document
             .getElementById("btnAccion")
             .setAttribute("data-id", data.eve_id);

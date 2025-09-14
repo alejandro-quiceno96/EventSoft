@@ -44,7 +44,7 @@ urlpatterns=[
     path('enviar_certificado_participantes/<int:evento_id>/', views.enviar_certificado_participantes, name='enviar_certificado_participantes'),
     path('enviar_certificado_asistentes/<int:evento_id>/', views.enviar_certificado_asistentes, name='enviar_certificado_asistentes'),
     path('enviar_certificado_evaluadores/<int:evento_id>/', views.enviar_certificado_evaluadores, name='enviar_certificado_evaluadores'),
-    path('enviar_certificado_primer_lugar/<int:evento_id>/<int:participante_id>/', views.enviar_certificado_reconocimiento, name='enviar_certificado_reconocimiento'),
+    path('enviar_certificado_primer_lugar/<int:evento_id>/<int:proyecto_id>/', views.enviar_certificado_reconocimiento, name='enviar_certificado_reconocimiento'),
 
 
     #memorias
@@ -56,8 +56,7 @@ urlpatterns=[
     path('certificados/<int:evento_id>/modificar/', views.modificar_certificados, name='modificar_certificados'),
 
     # habilitar y desabilitar
-    path('evento/<int:evento_id>/habilitar-participantes/', views.habilitar_participantes, name='habilitar_participantes'),
-    path('evento/<int:evento_id>/habilitar-evaluadores/', views.habilitar_evaluadores, name='habilitar_evaluadores'),
+    path("configurar-inscripcion/<int:evento_id>", views.config_inscripcion, name="configurar_inscripcion"),
 
 
     path('evento/subir-info-tecnica/<int:evento_id>/', views.subir_info_tecnica, name='subir_info_tecnica'),
