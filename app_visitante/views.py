@@ -484,10 +484,11 @@ def registrar_asistente(request, evento_id):
         asi_eve_evento_fk=evento,
         asi_eve_estado__in=['Admitido', 'Pendiente']
     ).count()
-
-    if inscritos >= evento.eve_capacidad:
-        messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
-        return redirect(reverse('detalle_evento', args=[evento.id]))
+    
+    if evento.eve_capacidad != 0:
+        if inscritos >= evento.eve_capacidad:
+            messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
+            return redirect(reverse('detalle_evento', args=[evento.id]))
 
     if request.method == 'POST':
         soporte = request.FILES.get('comprobante_pago', None)  # Soporte opcional

@@ -19,6 +19,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
+from django.db.models import Sum
 
 
 @login_required(login_url='login')
@@ -551,8 +552,10 @@ def criterios_evaluacion(request, evento_id):
         return redirect('app_evaluador:criterios_evaluacion', evento_id=evento_id)
 
     criterios = Criterios.objects.filter(cri_evento_fk=evento)
+    total_peso = sum(int(c.cri_peso) for c in criterios) if criterios else 0
     return render(request, 'app_evaluador/criterios_evaluacion.html', {
         'evento': evento,
+        'total_peso': total_peso,
         'criterios': criterios,
         'evaluador_id': request.session.get('evaluador_id'),
         'evaluador': request.session.get('evaluador_nombre'),

@@ -131,16 +131,23 @@
             <input type="file" id="comprobante_pago" name="comprobante_pago" accept=".pdf,.png,.jpg,.jpeg" required>
 
             <!-- 🔹 Botón dinámico -->
-            {% if evento.asistenteseventos_set.count >= evento.eve_capacidad %}
-            <!-- Si ya no hay cupos -->
-            <button type="button" id="btn-cupos-llenos" class="btn-guardar">
-                <i class="fas fa-ban"></i> Cupos Llenos
-            </button>
+            {% if evento.eve_capacidad != 0 %}
+                {% if evento.asistenteseventos_set.count >= evento.eve_capacidad %}
+                <!-- Si ya no hay cupos -->
+                <button type="button" id="btn-cupos-llenos" class="btn-guardar">
+                    <i class="fas fa-ban"></i> Cupos Llenos
+                </button>
+                {% else %}
+                <!-- Si hay cupos -->
+                <button type="submit" class="btn-guardar">
+                    <i class="fas fa-save"></i> Guardar Registro
+                </button>
+                {% endif %}
             {% else %}
-            <!-- Si hay cupos -->
-            <button type="submit" class="btn-guardar">
-                <i class="fas fa-save"></i> Guardar Registro
-            </button>
+                <!-- Si la capacidad es 0 (ilimitada) -->
+                <button type="submit" class="btn-guardar">
+                    <i class="fas fa-save"></i> Guardar Registro
+                </button>
             {% endif %}
         </form>
     </main>
