@@ -40,6 +40,7 @@ def info_participantes_eventos(request):
 
         for participacion in participaciones:
             evento = participacion.par_eve_evento_fk  # acceso correcto a la relación
+            proyecto = participacion.par_eve_proyecto
 
             # Obtener criterios y calificaciones del evento
             criterios = Criterios.objects.filter(cri_evento_fk=evento)
@@ -70,6 +71,7 @@ def info_participantes_eventos(request):
                 "calificacion": round(promedio, 2) if promedio is not None else "Sin calificar",
                 "comentarios": comentarios,
                 "eve_memorias": evento.eve_memorias,
+                "proyecto": proyecto.pro_codigo,
 
             })
             
@@ -282,9 +284,11 @@ def cancelar_inscripcion(request, evento_id, participante_id):
                     print(f"Error al eliminar archivo: {e}")
                     # Continuar aunque falle la eliminación del archivo
             
-            # Eliminar la inscripción
-            proyecto = participante_evento.par_eve_proyecto
-            proyecto.delete()  # Eliminar el proyecto asociado
+            expositores = ParticipantesEventos.objects.filter(par_eve_proyecto=participante_evento.par_eve_proyecto).count()
+            if expositores == 1:
+                proyecto = participante_evento.par_eve_proyecto
+                proyecto.delete()
+            # Eliminar el proyecto asociado
             participante_evento.delete()
             
             # Si era la única inscripción, eliminar el participante

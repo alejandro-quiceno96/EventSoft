@@ -213,11 +213,10 @@ def cancelar_administrador(request):
     return JsonResponse({"success": False, "error": "Método no permitido"})
 
 def obtener_estadisticas_evento(request, evento_id):
-    asistentes = AsistentesEventos.objects.filter(id=evento_id, asi_eve_estado = "Admitido").count()
-    evaluadores = EvaluadoresEventos.objects.filter(id=evento_id, eva_estado = "Admitido").count()
-    Participantes = ParticipantesEventos.objects.filter(id=evento_id, par_eve_estado = "Admitido").count()
+    asistentes = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_estado = "Admitido").count()
+    evaluadores = EvaluadoresEventos.objects.filter(eva_eve_evento_fk=evento_id, eva_estado = "Admitido").count()
+    Participantes = ParticipantesEventos.objects.filter(par_eve_evento_fk=evento_id, par_eve_estado = "Admitido").count()
     total_particpantes = asistentes + evaluadores + Participantes
-    
     return JsonResponse({
         'asistentes': asistentes,
         'evaluadores': evaluadores,
