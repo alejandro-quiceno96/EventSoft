@@ -186,7 +186,7 @@ def verificar_documento(request):
 
 
 def inicio_visitante(request):
-    eventos = Eventos.objects.all()
+    eventos = Eventos.objects.filter(eve_fecha_inicio__gte = datetime.date.today(), eve_estado = "activo").order_by('eve_fecha_inicio')
 
     categoria = request.GET.get('categoria')
     area = request.GET.get('area')
@@ -421,7 +421,9 @@ def submit_preinscripcion_participante(request):
         pro_nombre = request.POST.get('pro_nombre')
         pro_descripcion = request.POST.get('pro_descripcion')
         pro_documentos = request.FILES.get('pro_documentos')
-
+        
+        if not pro_documentos:
+            return redirect(reverse('detalle_evento', args=[evento.id]))
         # Crear el proyecto nuevo
         proyecto = Proyecto.objects.create(
             pro_evento_fk = evento,
@@ -489,6 +491,12 @@ def registrar_asistente(request, evento_id):
         if inscritos >= evento.eve_capacidad:
             messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
             return redirect(reverse('detalle_evento', args=[evento.id]))
+        
+        evento.eve_capacidad -= 1
+        evento.save()
+    else:
+        return redirect(reverse('detalle_evento', args=[evento.id]))
+    
 
     if request.method == 'POST':
         soporte = request.FILES.get('comprobante_pago', None)  # Soporte opcional
