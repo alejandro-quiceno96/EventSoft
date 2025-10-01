@@ -23,6 +23,7 @@ from django.utils import timezone
 import locale
 from django.utils.timezone import now
 
+from datetime import date
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos, Proyecto
 from app_areas.models import Areas
@@ -132,6 +133,7 @@ def crear_evento(request):
     }
     return render(request, 'app_administrador/crearevento.html', context)
 
+    
 
 def subir_info_tecnica(request, evento_id):
     evento = get_object_or_404(Eventos, pk=evento_id)
