@@ -14,7 +14,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = ["https://eventsoft.onrender.com"]
+ALLOWED_HOSTS = ["eventsoft.onrender.com"]
+
 
 
 # Application definition
