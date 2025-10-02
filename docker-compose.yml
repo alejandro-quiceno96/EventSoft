@@ -1,3 +1,4 @@
+version: "3.9"
 
 services:
   web:
@@ -8,29 +9,10 @@ services:
     environment:
       SECRET_KEY: ${SECRET_KEY:-changeme}
       DEBUG: ${DEBUG:-0}
-      DB_HOST: ${DB_HOST:-db}
-      DB_PORT: ${DB_PORT:-3306}
-      DB_NAME: ${DB_NAME:-eventsoft}
-      DB_USER: ${DB_USER:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-}   # <--- acepta vacío
-      
-    depends_on:
-      - db
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "8000:8000"
-
-  db:
-    image: mysql:8.0
-    container_name: eventsoft_db
-    env_file:
-      - .env
-    environment:
-      MYSQL_DATABASE: ${DB_NAME:-eventsoft}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-    volumes:
-      - db_data:/var/lib/mysql
-    ports:
-      - "3307:3306"
-
-volumes:
-  db_data:
