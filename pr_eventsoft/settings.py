@@ -56,19 +56,10 @@ ROOT_URLCONF = 'pr_eventsoft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # Carpetas raíz de plantillas personalizadas
         'DIRS': [
-            BASE_DIR / 'templates',  # carpeta global
-            BASE_DIR / 'app_administrador' / 'templates',
-            BASE_DIR / 'app_asistente' / 'templates',
-            BASE_DIR / 'app_evaluador' / 'templates',
-            BASE_DIR / 'app_participante' / 'templates',
-            BASE_DIR / 'app_super_admin' / 'templates',
-            BASE_DIR / 'app_visitante' / 'templates',
-            BASE_DIR / 'app_usuarios' / 'templates',
-            BASE_DIR / 'emails' / 'templates',
+            os.path.join(BASE_DIR, 'templates'),
         ],
-        'APP_DIRS': True,  # 🔹 Permite que Django busque dentro de app/templates/app/
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
