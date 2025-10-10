@@ -4,7 +4,7 @@ services:
   web:
     build: .
     container_name: eventsoft_web
-    env_file: 
+    env_file:
       - .env
     environment:
       SECRET_KEY: ${SECRET_KEY:-changeme}
@@ -16,3 +16,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"

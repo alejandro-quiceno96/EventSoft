@@ -56,18 +56,19 @@ ROOT_URLCONF = 'pr_eventsoft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        # Carpetas raíz de plantillas personalizadas
         'DIRS': [
-            BASE_DIR / 'templates',
+            BASE_DIR / 'templates',  # carpeta global
             BASE_DIR / 'app_administrador' / 'templates',
-            BASE_DIR / 'app_participante' / 'templates',
             BASE_DIR / 'app_asistente' / 'templates',
-            BASE_DIR / 'app_super_admin' / 'templates',
             BASE_DIR / 'app_evaluador' / 'templates',
+            BASE_DIR / 'app_participante' / 'templates',
+            BASE_DIR / 'app_super_admin' / 'templates',
             BASE_DIR / 'app_visitante' / 'templates',
             BASE_DIR / 'app_usuarios' / 'templates',
             BASE_DIR / 'emails' / 'templates',
         ],
-        'APP_DIRS': True,
+        'APP_DIRS': True,  # 🔹 Permite que Django busque dentro de app/templates/app/
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -136,10 +137,9 @@ USE_TZ = True
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
     BASE_DIR / 'app_administrador' / 'static',
@@ -149,6 +149,7 @@ STATICFILES_DIRS = [
     BASE_DIR / 'app_evaluador' / 'static',
     BASE_DIR / 'app_visitante' / 'static',
 ]
+
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
