@@ -56,14 +56,21 @@ ROOT_URLCONF = 'pr_eventsoft.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates', 'app_administrador/templates', 
-                 'app_participante/templates', 'app_asistente/templates',
-                 'app_super_admin/templates', 'app_evaluador/templates',
-                 'app_visitante/templates', 'app_usuarios/templates',
-                 'emails/templates',],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'app_administrador' / 'templates',
+            BASE_DIR / 'app_participante' / 'templates',
+            BASE_DIR / 'app_asistente' / 'templates',
+            BASE_DIR / 'app_super_admin' / 'templates',
+            BASE_DIR / 'app_evaluador' / 'templates',
+            BASE_DIR / 'app_visitante' / 'templates',
+            BASE_DIR / 'app_usuarios' / 'templates',
+            BASE_DIR / 'emails' / 'templates',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
