@@ -40,7 +40,7 @@ codigo_global = {
     "expira": None
 }
 
-
+@csrf_exempt
 def login_view(request):
     if request.method == 'POST':
         identificador = request.POST['username']
@@ -76,7 +76,7 @@ def login_view(request):
             messages.error(request, 'Contraseña incorrecta.')
     return render(request, 'app_visitante/login.html')
 
-
+@csrf_exempt
 def recuperar_contraseña(request):
     global codigo_global
     paso = 1  # Paso inicial → ingresar email
@@ -148,6 +148,7 @@ def recuperar_contraseña(request):
         "mostrarmensajes": request.method == "POST"
     })
 
+@csrf_exempt
 def registro_usuario_view(request):
     """
     Vista para registrar un nuevo usuario
@@ -184,7 +185,7 @@ def verificar_documento(request):
     except Exception:
         return JsonResponse({'error': 'Error del servidor.'}, status=500)
 
-
+@csrf_exempt
 def inicio_visitante(request):
     eventos = Eventos.objects.filter(eve_fecha_inicio__gte = datetime.date.today(), eve_estado = "activo").order_by('eve_fecha_inicio')
 
@@ -256,10 +257,11 @@ def validar_clave_admin(request):
     return JsonResponse({"success": False, "error": "Método no permitido"})
 
 
-
+@csrf_exempt
 def inicio_sesion_administrador(request):
     return render(request, 'app_visitante/inicio_sesion_administrador.html')
 
+@csrf_exempt
 def inicio_evaluador(request):
     return render(request, 'app_visitante/inicio_sesion_evaluador.html')
 
