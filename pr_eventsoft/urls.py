@@ -4,8 +4,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from emails.views import enviar_correo
+from app_visitante import views as visitante_views
+from django.contrib.auth import views as auth_views
 
 
+LOGIN_URL = '/admin/login/' 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('app_visitante.urls')),
@@ -15,7 +18,11 @@ urlpatterns = [
     path('super_admin/', include(('app_super_admin.urls', 'super_administrador'), namespace='super_administrador')),
     path('evaluador/', include('app_evaluador.urls', namespace='app_evaluador')),
     path('enviar_correo/', enviar_correo, name='enviar_correo'),
-    
+    #Tests que se necesitan parque corran 
+    path('visitante/', visitante_views.inicio_visitante, name='inicio_visitante'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='/'), name='logout'),
+      # o la URL de tu vista de login
+
 ]
 
 

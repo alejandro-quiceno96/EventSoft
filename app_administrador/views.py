@@ -10,10 +10,12 @@ from django.template.loader import render_to_string
 from django.contrib.auth import update_session_auth_hash
 from datetime import datetime
 import os
+from django.views.decorators.http import require_POST
 from .utils import generar_pdf, generar_clave_acceso, obtener_ranking, generar_certificados, generar_reconocmiento, generar_certificados_expositores
 from django.urls import reverse
 from decimal import Decimal
 import json
+from django.utils.dateparse import parse_date
 from weasyprint import HTML
 from django.core.mail import EmailMessage
 from django.conf import settings
@@ -217,25 +219,36 @@ def obtener_evento(request, evento_id):
     return JsonResponse(datos_evento)
 
 @csrf_exempt
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def eliminar_evento(request, evento_id):
+    # 🚫 Validar que el método sea POST
+    if request.method != 'POST':
+        return JsonResponse({'mensaje': 'Método no permitido'}, status=405)
+
     try:
         evento = Eventos.objects.get(id=evento_id)
 
-        # Eliminar archivo de imagen si existe
+        # 🔹 Validar que el evento no esté cerrado
+        if evento.eve_estado == 'Cerrado':
+            return JsonResponse(
+                {'mensaje': 'No se puede eliminar un evento cerrado.'},
+                status=403
+            )
+
+        # 🔹 Eliminar imagen asociada
         if evento.eve_imagen and evento.eve_imagen.name:
             if os.path.isfile(evento.eve_imagen.path):
                 evento.eve_imagen.delete(save=False)
 
-        # Eliminar archivo de programación si existe
+        # 🔹 Eliminar archivo de programación asociado
         if evento.eve_programacion and evento.eve_programacion.name:
             if os.path.isfile(evento.eve_programacion.path):
                 evento.eve_programacion.delete(save=False)
 
-        # Finalmente eliminar el evento de la base de datos
+        # 🔹 Eliminar el evento
         evento.delete()
 
-        return JsonResponse({'mensaje': 'Evento eliminado correctamente'})
+        return JsonResponse({'mensaje': 'Evento eliminado correctamente'}, status=200)
 
     except Eventos.DoesNotExist:
         return JsonResponse({'mensaje': 'Evento no encontrado'}, status=404)
@@ -243,10 +256,17 @@ def eliminar_evento(request, evento_id):
     except Exception as e:
         return JsonResponse({'mensaje': f'Error al eliminar el evento: {str(e)}'}, status=500)
 
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+    
+@login_required(login_url='login')
 @require_http_methods(["GET", "POST"])
 def editar_evento(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Bloquear si el evento está cerrado
+    if evento.eve_estado.lower() == "cerrado":
+        messages.error(request, "No se puede editar un evento cerrado.")
+        return redirect('administrador:index_administrador')
+
     if request.method == 'POST':
         nombre = request.POST.get('nombre_evento')
         descripcion = request.POST.get('descripcion_evento')
@@ -265,44 +285,54 @@ def editar_evento(request, evento_id):
         documento = request.FILES.get('documento_evento')
 
         if imagen:
-            # Eliminar archivo anterior si existe
             if evento.eve_imagen and evento.eve_imagen.name:
                 if os.path.isfile(evento.eve_imagen.path):
                     evento.eve_imagen.delete(save=False)
             evento.eve_imagen = imagen
 
         if documento:
-            # Eliminar archivo anterior si existe
             if evento.eve_programacion and evento.eve_programacion.name:
                 if os.path.isfile(evento.eve_programacion.path):
                     evento.eve_programacion.delete(save=False)
             evento.eve_programacion = documento
 
-        # Campos normales
+        # Validar fechas
+        fecha_inicio_obj = parse_date(fecha_inicio)
+        fecha_fin_obj = parse_date(fecha_fin)
+
+        if not fecha_inicio_obj or not fecha_fin_obj:
+            messages.error(request, "Debe ingresar fechas válidas.")
+            return redirect('administrador:index_administrador')
+
+        if fecha_fin_obj < fecha_inicio_obj:
+            messages.error(request, "La fecha fin no puede ser anterior a la fecha inicio.")
+            return redirect('administrador:index_administrador')
+
+        # Guardar campos
         evento.eve_nombre = nombre
         evento.eve_descripcion = descripcion
         evento.eve_ciudad = ciudad
         evento.eve_lugar = lugar
-        evento.eve_fecha_inicio = parse_datetime(fecha_inicio)
-        evento.eve_fecha_fin = parse_datetime(fecha_fin)
+        evento.eve_fecha_inicio = fecha_inicio_obj
+        evento.eve_fecha_fin = fecha_fin_obj
         evento.eve_capacidad = aforo if aforo is not None else 0
         evento.eve_tienecosto = True if inscripcion == 'Si' else False
         evento.eve_estado = estado
-
         evento.save()
 
         # Actualizar categoría del evento
-        evento_categoria = EventosCategorias.objects.filter( eve_cat_evento_fk=evento_id).first()
+        evento_categoria = EventosCategorias.objects.filter(eve_cat_evento_fk=evento_id).first()
         if evento_categoria:
-            evento_categoria.categoria_id = categoria
+            evento_categoria.eve_cat_categoria_fk_id = categoria
             evento_categoria.save()
-        return redirect('administrador:index_administrador')  # Asegúrate de tener esta URL nombrada
+
+        messages.success(request, "Evento actualizado correctamente.")
+        return redirect('administrador:index_administrador')
 
     else:
         evento_categoria = EventosCategorias.objects.filter(eve_cat_evento_fk=evento).first()
         categoria_evento = evento_categoria.eve_cat_categoria_fk if evento_categoria else None
-        area_categoria = categoria_evento.cat_area_fk if categoria_evento else None  # Si existe ese campo
-
+        area_categoria = categoria_evento.cat_area_fk if categoria_evento else None
 
         contexto = {
             'evento': evento,
@@ -313,7 +343,7 @@ def editar_evento(request, evento_id):
         }
 
         return render(request, 'app_administrador/modificarInformacion.html', contexto)
-    
+
 @require_http_methods(["GET", "POST"])
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_proyectos(request: HttpRequest, evento_id):
@@ -1312,11 +1342,10 @@ def enviar_certificado_participantes(request, evento_id):
         return redirect('administrador:index_administrador')
 
 @login_required(login_url='login')
+
 def enviar_certificado_asistentes(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     
-
-    # Obtener participantes admitidos
     participantes = Asistentes.objects.filter(
         id__in=AsistentesEventos.objects.filter(
             asi_eve_evento_fk=evento_id,
@@ -1324,9 +1353,7 @@ def enviar_certificado_asistentes(request, evento_id):
         ).values_list('asi_eve_asistente_fk_id', flat=True)
     )
 
-    
     if request.method == 'POST':
-
         correos_enviados = []
         for participante in participantes:
             contexto = {
@@ -1337,21 +1364,27 @@ def enviar_certificado_asistentes(request, evento_id):
             mensaje = render_to_string('app_administrador/correos/correo_certificado.html', contexto)
 
             email = EmailMessage(
-                subject=f"Certificado de participación en el evento { evento.eve_nombre}",
+                subject=f"Certificado de participación en el evento {evento.eve_nombre}",
                 body=mensaje,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[participante.usuario.email]
             )
             email.content_subtype = 'html'
 
-            # Adjuntar certificado PDF
-            pdf_content = generar_certificados(request,evento_id, "asistente", participante.id )
-            email.attach(f'certificado_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
+            pdf_content = generar_certificados(request, evento_id, "asistente", participante.id)
+            email.attach(
+                f'certificado_{participante.usuario.documento_identidad}.pdf',
+                pdf_content,
+                'application/pdf'
+            )
 
             email.send(fail_silently=False)
             correos_enviados.append(participante.usuario.email)
 
         return redirect('administrador:index_administrador')
+    
+    # 🔹 Esta línea es la que faltaba:
+    return HttpResponse("Vista de envío de certificados lista para ejecutar (GET).")
 
 @login_required(login_url='login') 
 def enviar_certificado_evaluadores(request, evento_id):
@@ -1575,3 +1608,104 @@ def config_inscripcion(request, evento_id):
 
         return JsonResponse({"success": True, "message": f"{tipo} actualizado a {estado}"})
     return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)
+
+
+
+from django.http import FileResponse
+
+
+@login_required
+def descargar_documento(request, participante_id):
+    """
+    Permite descargar el documento del participante autenticado.
+    Solo accesible si el usuario está logueado.
+    """
+    try:
+        participante_evento = ParticipantesEventos.objects.get(id=participante_id)
+        documento = participante_evento.par_eve_documentos
+        if not documento:
+            raise Http404("Documento no encontrado")
+
+        # Devuelve el archivo de forma segura
+        return FileResponse(documento.open('rb'), as_attachment=True, filename=documento.name)
+
+    except ParticipantesEventos.DoesNotExist:
+        raise Http404("Participante no encontrado")
+
+from django.http import FileResponse, HttpResponseForbidden
+from django.views.decorators.http import require_GET
+
+@require_GET
+def listar_evaluadores_pendientes(request):
+    # Obtener evaluadores con estado "Pendiente de Revisión"
+    evaluadores_pendientes = EvaluadoresEventos.objects.filter(
+        eva_estado="Pendiente de Revisión"
+    ).select_related('eva_eve_evaluador_fk')
+
+    # Obtener parámetros de orden si los hay (?orden=nombre o ?orden=experticia)
+    orden = request.GET.get('orden', None)
+    if orden:
+        evaluadores_pendientes = evaluadores_pendientes.order_by(orden)
+
+    # Convertir a JSON estructurado
+    data = []
+    for evaluador_evento in evaluadores_pendientes:
+        evaluador = evaluador_evento.eva_eve_evaluador_fk
+        data.append({
+            "id": evaluador.id,
+            "nombre_completo": f"{evaluador.eva_nombre} {evaluador.eva_apellido}",
+            "correo": evaluador.eva_correo,
+            "telefono": evaluador.eva_telefono,
+            "areas_interes": evaluador_evento.eva_eve_areas_interes,
+            "estado": evaluador_evento.eva_estado,
+            "documento_soporte": evaluador_evento.eva_eve_documentos.url if evaluador_evento.eva_eve_documentos else None,
+            "fecha_postulacion": evaluador_evento.eva_eve_fecha_hora,
+        })
+
+    return JsonResponse({"evaluadores": data}, safe=False)
+@login_required
+def evaluadores_pendientes(request):
+    evaluadores = EvaluadoresEventos.objects.filter(eva_estado='Pendiente de Revisión')
+    return render(request, 'app_administrador/evaluadores_pendientes.html', {'evaluadores': evaluadores})
+
+
+@login_required
+def descargar_documento_evaluador(request, evaluador_id):
+    evaluador = get_object_or_404(EvaluadoresEventos, id=evaluador_id)
+    if evaluador.eva_eve_documentos:
+        return FileResponse(evaluador.eva_eve_documentos.open(), as_attachment=True)
+    return HttpResponseForbidden("El evaluador no tiene documentos disponibles.")
+
+
+@login_required
+def aprobar_evaluador(request, evaluador_id):
+    evaluador = get_object_or_404(EvaluadoresEventos, id=evaluador_id)
+    evaluador.eva_estado = 'Aprobado'
+    evaluador.save()
+    return render(request, 'app_administrador/evaluador_aprobado.html', {'evaluador': evaluador})
+
+
+@login_required
+def rechazar_evaluador(request, evaluador_id):
+    evaluador = get_object_or_404(EvaluadoresEventos, id=evaluador_id)
+    evaluador.eva_estado = 'Rechazado'
+    evaluador.save()
+    return render(request, 'app_administrador/evaluador_rechazado.html', {'evaluador': evaluador})
+
+@csrf_exempt
+@require_POST
+def cambiar_estado_evaluador(request, evaluador_id):
+    try:
+        data = json.loads(request.body)
+        nuevo_estado = data.get('estado')
+        
+        evaluador_evento = EvaluadoresEventos.objects.get(id=evaluador_id)
+        evaluador_evento.eva_estado = nuevo_estado
+        evaluador_evento.save()
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': f'Estado actualizado a {nuevo_estado}'
+        })
+    except EvaluadoresEventos.DoesNotExist:
+        return JsonResponse({'success': False, 'mensaje': 'Evaluador no encontrado'}, status=404)

@@ -1,6 +1,6 @@
 from django.shortcuts import render,  get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.contrib.auth import update_session_auth_hash
@@ -8,8 +8,9 @@ from django.contrib import messages
 from .models import Asistentes
 from app_eventos.models import AsistentesEventos, Eventos, EventosCategorias
 from app_categorias.models import Categorias
-
-
+from django.http import HttpResponse, HttpResponseForbidden
+from django.core.mail import EmailMessage
+import os
 
 def inicio_asistente(request):
 
@@ -124,6 +125,8 @@ def cancelar_inscripcion(request, evento_id, asistente_id):
     else:
         return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
 
+
+
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def editar_perfil(request):
     user = request.user  # Es instancia de tu modelo Usuario
@@ -163,3 +166,76 @@ def editar_perfil(request):
         return redirect('app_asistente:inicio_asistente') # Redirige a la página de inicio del visitante
 
     return redirect('app_asistente:inicio_asistente')
+
+def inicio_visitante(request):
+    return render(request, 'app_visitante/inicio.html')
+
+
+def ver_programacion_evento(request, evento_id):
+    """Vista placeholder para visualización de programación."""
+    return render(request, "app_asistente/programacion_evento.html", {"evento_id": evento_id})
+
+def descargar_programacion_pdf(request, evento_id):
+    """Vista para descarga de programación en PDF (simulada)."""
+
+    # Verificar si hay un asistente autenticado o asociado en sesión (según tu lógica)
+    asistente_id = request.session.get("asistente_id")
+
+    # Bloquear si no está inscrito
+    if not AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_asistente_fk=asistente_id).exists():
+        return HttpResponseForbidden("No estás inscrito en este evento.")
+
+    # Si pasa, devolver un PDF simulado
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="programacion_evento_{evento_id}.pdf"'
+    response.write(b"%PDF-1.4\n%PDF simulado\n")
+    return response
+
+def enviar_certificado_asistentes(request, evento_id):
+    """
+    Envío masivo de certificados a los asistentes admitidos de un evento.
+    """
+    evento = get_object_or_404(Eventos, pk=evento_id)
+    inscripciones = AsistentesEventos.objects.filter(
+        asi_eve_evento_fk=evento, asi_eve_estado='Admitido'
+    )
+
+    for inscripcion in inscripciones:
+        asistente = inscripcion.asi_eve_asistente_fk.usuario
+        correo = EmailMessage(
+            subject=f"Certificado de {evento.eve_nombre}",
+            body=f"Estimado {asistente.username},\n\nAdjunto encontrará su certificado.\n\nAtentamente,\nEquipo EventSoft",
+            to=[asistente.email],
+        )
+
+        # Adjuntar PDF simulado
+        contenido_pdf = b"Certificado de Asistencia: " + bytes(asistente.username, 'utf-8')
+        correo.attach("certificado.pdf", contenido_pdf, "application/pdf")
+        correo.send()
+
+    return HttpResponse("✅ Certificados enviados correctamente")
+
+
+
+def descargar_memorias(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # Verificar que el usuario es asistente admitido
+    try:
+        asistente_evento = AsistentesEventos.objects.get(
+            asi_eve_asistente_fk__usuario=request.user,
+            asi_eve_evento_fk=evento
+        )
+        if asistente_evento.asi_eve_estado != "Admitido":
+            return HttpResponseForbidden("No tiene permiso para descargar las memorias")
+    except AsistentesEventos.DoesNotExist:
+        return HttpResponseForbidden("No tiene acceso a este evento")
+
+    # Verificar si hay memoria
+    if not evento.eve_memorias:
+        return render(request, 'app_asistente/memorias_no_disponibles.html', {
+            'mensaje': "Las memorias aún no están disponibles"
+        })
+
+    # Redirigir correctamente a la URL externa
+    return HttpResponseRedirect(evento.eve_memorias)

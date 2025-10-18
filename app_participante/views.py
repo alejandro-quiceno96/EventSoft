@@ -189,16 +189,17 @@ def obtener_datos_participante(request, participante_id, evento_id):
         return JsonResponse({"error": f"Error en el servidor: {str(e)}"}, status=500)
 
     
+
 @csrf_exempt
 def modificar_inscripcion(request, evento_id, participante_id):
     if request.method == 'POST':
         try:
-            # 1. Obtener participante desde el usuario logueado
+            # Obtener participante desde el usuario logueado
             participante = Participantes.objects.filter(usuario=request.user).first()
             if not participante:
                 return JsonResponse({"success": False, "error": "Participante no encontrado"})
 
-            # 2. Obtener inscripción en el evento
+            # Obtener inscripción en el evento
             participante_evento = ParticipantesEventos.objects.filter(
                 par_eve_participante_fk=participante_id,
                 par_eve_evento_fk=evento_id
@@ -207,22 +208,25 @@ def modificar_inscripcion(request, evento_id, participante_id):
             if not participante_evento:
                 return JsonResponse({"success": False, "error": "Inscripción al evento no encontrada"})
 
-            # 3. Obtener el proyecto relacionado
+            # ✅ Solo permitir editar si está pendiente de revisión
+            if participante_evento.par_eve_estado != "Pendiente de Revisión":
+                return JsonResponse({"success": False, "error": "No se puede editar, estado no permitido"})
+
+            # Obtener el proyecto relacionado
             proyecto = participante_evento.par_eve_proyecto
             if not proyecto:
                 return JsonResponse({"success": False, "error": "El participante no tiene proyecto asociado"})
 
-            # 4. Si se sube un nuevo documento, reemplazar
+            # Reemplazar documento si se sube uno nuevo
             documento = request.FILES.get("par_eve_documentos")
             if documento:
                 if proyecto.pro_documentos:
-                    proyecto.pro_documentos.delete(save=False)  # Elimina archivo viejo
+                    proyecto.pro_documentos.delete(save=False)
                 proyecto.pro_documentos = documento
 
-            # 5. Actualizar otros datos
+            # Actualizar otros datos
             nombre = request.POST.get("pro_nombre")
             descripcion = request.POST.get("pro_descripcion")
-
             if nombre:
                 proyecto.pro_nombre = nombre
             if descripcion:
@@ -237,7 +241,6 @@ def modificar_inscripcion(request, evento_id, participante_id):
             return JsonResponse({"success": False, "error": str(e)})
 
     return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
-
     
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 @csrf_exempt 
