@@ -27,7 +27,7 @@ class EventosCategorias(models.Model):
 class AsistentesEventos(models.Model):
     asi_eve_asistente_fk = models.ForeignKey('app_asistente.Asistentes', on_delete=models.CASCADE)
     asi_eve_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)
-    asi_eve_fecha_hora = models.DateTimeField()
+    asi_eve_fecha_hora = models.DateTimeField(auto_now_add=True)
     asi_eve_estado = models.CharField(max_length=45)
     asi_eve_soporte = models.FileField(upload_to='pdf/comprobantes/')
     asi_eve_qr = models.FileField(upload_to='pdf/qr_asistentes/')

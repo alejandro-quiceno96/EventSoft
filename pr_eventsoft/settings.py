@@ -2,6 +2,7 @@ from decouple import config
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()  # cargar variables desde .env
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -153,3 +154,10 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+# Redirección al login por defecto
+LOGIN_URL = '/admin/login/'
+
+# Configuración para pruebas de correo
+if 'test' in sys.argv:
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
