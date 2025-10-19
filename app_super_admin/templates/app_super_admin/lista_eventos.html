@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Eventos Activos</title>
+</head>
+<body>
+  <h1>Eventos Activos</h1>
+
+  <form method="get">
+    <input type="text" name="nombre" placeholder="Buscar por nombre">
+    <select name="administrador">
+      <option value="">-- Todos --</option>
+      {% for admin in administradores %}
+        <option value="{{ admin.id }}">{{ admin.usuario.username }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+  </form>
+
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Estado</th>
+        <th>Administrador</th>
+        <th>Detalle</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for evento in eventos %}
+      <tr>
+        <td>{{ evento.eve_nombre }}</td>
+        <td>{{ evento.eve_estado }}</td>
+        <td>{{ evento.eve_administrador_fk.usuario.username }}</td>
+        <td>
+          <a href="{% url 'super_admin:detalle_evento' evento.id %}">Ver detalle</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4">No hay eventos activos</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
