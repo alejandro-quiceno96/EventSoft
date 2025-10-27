@@ -21,6 +21,7 @@
 /* ===== CONTENEDOR PRINCIPAL ===== */
 .contenedor-principal-crear {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
@@ -57,6 +58,69 @@
     height: 3px;
     background: var(--color-primario);
     border-radius: 2px;
+}
+
+/* ===========================
+   Botón: Volver a Administración
+   =========================== */
+
+.btn-volver-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--color-primario);
+  color: #fff;
+  font-family: 'Work Sans', sans-serif;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 120, 50, 0.25);
+  margin-bottom: 20px;
+}
+
+.btn-volver-admin img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+/* Efecto al pasar el mouse */
+.btn-volver-admin:hover {
+  background-color: var(--color-primario-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 120, 50, 0.3);
+}
+
+.btn-volver-admin:hover img {
+  transform: translateX(-4px);
+}
+
+/* Efecto al presionar */
+.btn-volver-admin:active {
+  transform: scale(0.97);
+}
+
+/* Adaptabilidad móvil */
+@media (max-width: 768px) {
+  .btn-volver-admin {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+  }
+
+  .btn-volver-admin img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.obligacion-input{
+    color: var(--color-error);
 }
 
 /* ===== BARRA DE PROGRESO ===== */
@@ -204,19 +268,130 @@ textarea {
     min-height: 100px;
 }
 
-/* ===== FILAS DE INPUTS ===== */
-.fila-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
 @media (max-width: 768px) {
     .fila-inputs {
         grid-template-columns: 1fr;
         gap: 15px;
     }
 }
+
+/* ===========================
+   Mensaje informativo
+   =========================== */
+
+.mensaje-info {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 1rem;
+  color: #333;
+  background-color: #f4fff8; /* Verde muy suave */
+  border-left: 5px solid #007832;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 120, 50, 0.1);
+  margin: 1rem 0;
+  line-height: 1.5;
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* Efecto de entrada suave */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Adaptabilidad móvil */
+@media (max-width: 768px) {
+  .mensaje-info {
+    font-size: 0.95rem;
+    padding: 0.8rem 1rem;
+  }
+}
+
+.modal-revision {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-revision-contenido {
+  background: #fff;
+  width: 90%;
+  max-width: 420px;
+  margin: 12% auto;
+  padding: 30px 25px;
+  border-radius: 14px;
+  text-align: center;
+  font-family: 'Work Sans', sans-serif;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.4s ease;
+}
+
+.modal-revision-contenido h2 {
+  color: #007832;
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+}
+
+.modal-revision-contenido p {
+  color: #333;
+  margin-bottom: 20px;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.modal-revision-contenido button {
+  background: #007832;
+  color: #fff;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-weight: 500;
+}
+
+.modal-revision-contenido button:hover {
+  background: #005f27;
+}
+
+/* Icono de éxito */
+.icono-exito {
+  font-size: 3rem;
+  color: #007832;
+  margin-bottom: 10px;
+  animation: popIn 0.4s ease;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+
 
 /* ===== CONTADORES DE CARACTERES ===== */
 .contador {

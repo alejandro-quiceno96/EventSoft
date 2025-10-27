@@ -97,6 +97,9 @@ def crear_evento(request):
                 eve_cat_evento_fk=evento,
                 eve_cat_categoria_fk_id=categoria
             )
+            
+            administrador.num_eventos -= 1
+            administrador.save()
 
             # 🟩 ENVIAR CORREO A SUPERADMINISTRADORES
             superadmins =   SuperAdministradores.objects.select_related('usuario').all()
@@ -121,8 +124,7 @@ def crear_evento(request):
                 email.attach_alternative(mensaje_html, "text/html")
                 email.send(fail_silently=False)
 
-            messages.success(request, 'Evento creado exitosamente')
-            return redirect('administrador:index_administrador')
+            return redirect(reverse('administrador:crear_evento') + '?revision=evento')
 
         except Exception as e:
             print(f"Error al crear evento: {e}")
@@ -159,8 +161,9 @@ def inicio(request):
         evento.total_inscritos = evento.total_participantes + evento.total_asistentes + evento.total_evaluadores
 
     context = {
-        'administrador': f"{request.user.first_name} {request.user.last_name}",
+        'administrador': administrador,
         'eventos': eventos,
+        
     }
 
     return render(request, 'app_administrador/admin.html', context)

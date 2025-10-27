@@ -46,6 +46,25 @@
       border-radius: 8px;
       margin: 20px 0;
     }
+    .steps {
+      background-color: #f9f9f9;
+      border-left: 4px solid #007832;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-top: 25px;
+    }
+    .steps h3 {
+      color: #007832;
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .steps ol {
+      margin: 10px 0 0 20px;
+      padding: 0;
+    }
+    .steps li {
+      margin-bottom: 8px;
+    }
     .footer {
       font-size: 14px;
       color: #666;
@@ -59,6 +78,7 @@
     <div class="header">
       <h2>¡Felicidades, ahora eres Administrador!</h2>
     </div>
+
     <div class="content">
       <p>Hola {{ nombre_usuario }},</p>
 
@@ -67,13 +87,24 @@
       <p>Tu código de acceso es el siguiente (lo necesitarás para ingresar al panel administrativo):</p>
 
       <div class="code-box">
-        {{ clave}}
+        {{ clave }}
       </div>
 
       <p>Recuerda que tienes hasta el <strong>{{ fecha_limite }}</strong> para registrar un máximo de <strong>{{ num_eventos }}</strong> evento(s).</p>
 
+      <div class="steps">
+        <h3>🔑 Pasos para usar tu código de acceso:</h3>
+        <ol>
+          <li>Ingresa a la plataforma <strong>EventSoft</strong> e inicia sesión con tu usuario y contraseña.</li>
+          <li>Una vez dentro, haz clic en el <strong>menú principal</strong> (☰) ubicado en la esquina superior izquierda.</li>
+          <li>Selecciona la opción <strong>“Panel de Administrador de Evento”</strong>.</li>
+          <li>Cuando el sistema lo solicite, ingresa tu <strong>código de acceso</strong> mostrado arriba.</li>
+        </ol>
+      </div>
+
       <p>Si tienes dudas o necesitas ayuda, no dudes en contactarnos.</p>
     </div>
+
     <div class="footer">
       © {{ año_actual }} EventSoft. Todos los derechos reservados.
     </div>
