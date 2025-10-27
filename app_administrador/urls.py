@@ -61,6 +61,16 @@ urlpatterns=[
 
     path('evento/subir-info-tecnica/<int:evento_id>/', views.subir_info_tecnica, name='subir_info_tecnica'),
 
+
+    path('participante/<int:participante_id>/documento/', views.descargar_documento, name='descargar_documento'),
+
+    path('evaluadores/<int:evaluador_id>/aprobar/', views.aprobar_evaluador, name='aprobar_evaluador'),
+    path('evaluadores/<int:evaluador_id>/rechazar/', views.rechazar_evaluador, name='rechazar_evaluador'),
+    path('evaluadores/pendientes/', views.listar_evaluadores_pendientes, name='evaluadores_pendientes'),
+    path('evaluadores/pendientes/', views.listar_evaluadores_pendientes, name='evaluadores_pendientes'),
+    path('evaluadores/<int:evaluador_id>/estado/', views.cambiar_estado_evaluador, name='cambiar_estado_evaluador'),
+    path('evaluadores/<int:evaluador_id>/descargar/', views.descargar_documento_evaluador, name='descargar_documentos_evaluador'),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

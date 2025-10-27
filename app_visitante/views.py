@@ -376,7 +376,7 @@ def detalle_evento(request, evento_id):
     
     return render(request, 'app_visitante/detalle_evento.html', context)
 
-@login_required(login_url='login')
+@login_required(login_url='/login/')
 def preinscripcion_participante(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     return render(request, 'app_visitante/Pre_inscripcion_participante.html', {'evento': evento})
