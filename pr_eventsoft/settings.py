@@ -2,6 +2,7 @@ from decouple import config
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import sys
 
 load_dotenv()  # cargar variables desde .env
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'app_super_admin',
     'app_usuarios',
     'app_certificados',
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -79,17 +81,10 @@ WSGI_APPLICATION = 'pr_eventsoft.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST',),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-}  
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -153,3 +148,10 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+# Redirección al login por defecto
+LOGIN_URL = '/admin/login/'
+
+# Configuración para pruebas de correo
+if 'test' in sys.argv:
+    EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
