@@ -8,6 +8,12 @@
 {% block content %}
  <link rel="stylesheet" href="{% static 'app_administrador/css/crearEvento.css'%}">
 <div class="contenedor-principal-crear">
+    <div>
+        <a href="{% url 'administrador:index_administrador' %}" class="btn-volver-admin">
+            <img src="{% static 'app_administrador/image/atras.png' %}" alt="Volver">
+            Volver a Administración
+        </a>
+    </div>
     <div class="contenedor-crear-evento">
         <h2>Nuevo Evento</h2>
         
@@ -33,14 +39,14 @@
 
                 <!-- Nombre del Evento -->
                 <div class="div contenedor-input-1">
-                    <label for="nombre_evento">Nombre del Evento:</label>
+                    <label for="nombre_evento">Nombre del Evento<strong class="obligacion-input">*</strong>:</label>
                     <input type="text" name="nombre_evento" id="nombre_evento" maxlength="100" oninput="actualizarContaNombre()" required>
                     <small id="contador_nombre" class="contador">0 / 100</small>
                 </div>
 
                 <!-- Descripción -->
                 <div class="div contenedor-input-2">
-                    <label for="descripcion_evento">Descripción:</label>
+                    <label for="descripcion_evento">Descripción<strong class="obligacion-input">*</strong>:</label>
                     <textarea id="descripcion_evento" name="descripcion_evento" placeholder="Describe tu evento..." maxlength="400" oninput="actualizarContador()" rows="4" required></textarea>
                     <small id="contador" class="contador">0 / 400</small>
                 </div>
@@ -49,11 +55,11 @@
                 <div class="div contenedor-input-3">
                     <div class="fila-inputs">
                         <div class="div-1">
-                            <label for="ciudad">Ciudad:</label>
+                            <label for="ciudad">Ciudad<strong class="obligacion-input">*</strong>:</label>
                             <input type="text" name="ciudad" id="ciudad" required>
                         </div>
                         <div class="div-2">
-                            <label for="lugar">Lugar:</label>
+                            <label for="lugar">Lugar<strong class="obligacion-input">*</strong>:</label>
                             <input type="text" name="lugar" id="lugar" required>
                         </div>
                     </div>
@@ -63,11 +69,11 @@
                 <div class="div contenedor-input-4">
                     <div class="fila-inputs">
                         <div class="div-3">
-                            <label for="fecha_inicio">Fecha de inicio:</label>
+                            <label for="fecha_inicio">Fecha de inicio<strong class="obligacion-input">*</strong>:</label>
                             <input type="date" name="fecha_inicio" id="fecha_inicio" required>
                         </div>
                         <div class="div-4">
-                            <label for="fecha_fin">Fecha de fin:</label>
+                            <label for="fecha_fin">Fecha de fin<strong class="obligacion-input">*</strong>:</label>
                             <input type="date" name="fecha_fin" id="fecha_fin" required>
                         </div>
                     </div>
@@ -94,7 +100,7 @@
                 <div class="div contenedor-input-6">
                     <div class="fila-inputs">
                         <div>
-                            <label for="area">Área:</label>
+                            <label for="area">Área<strong class="obligacion-input">*</strong>:</label>
                             <select id="area" name="area" required>
                                 <option value="">Seleccione un área</option>
                                 {% for area in areas %}
@@ -103,7 +109,7 @@
                             </select>
                         </div>
                         <div>
-                            <label for="categoria">Categoría:</label>
+                            <label for="categoria">Categoría<strong class="obligacion-input">*</strong>:</label>
                             <select id="categoria" name="categoria" required>
                                 <option value="">Seleccione una categoría</option>
                             </select>
@@ -115,7 +121,7 @@
                 <div class="div contenedor-input-11">
                     <div class="fila-inputs">
                         <div>
-                            <label for="permitir_participantes">¿Tiene Cupo Límite?</label>
+                            <label for="permitir_participantes">¿Tiene Cupo Límite?<strong class="obligacion-input">*</strong></label>
                             <select id="permitir_participantes" name="permitir_participantes" onchange="toggleCantidadParticipantes()">
                                 <option value="0">No</option>
                                 <option value="1">Sí</option>
@@ -133,7 +139,7 @@
                     <div>
                         <label for="inscripcion">Costo de inscripción:</label>
                         <select name="inscripcion" id="inscripcion" required>
-                            <option value="">Seleccionar una opción</option>
+                            <option value="">Seleccionar una opción<strong class="obligacion-input">*</strong></option>
                             <option value="Si">Sí</option>
                             <option value="No">No</option>
                         </select>
@@ -148,7 +154,7 @@
                 <div class="div contenedor-input-10">
                     <div class="archivo-container">
                         <div class="archivo-item">
-                            <label for="imagen_evento">Imagen del Evento:</label>
+                            <label for="imagen_evento">Imagen del Evento<strong class="obligacion-input">*</strong>:</label>
                             <div class="file-upload-area" id="imagen-upload-area">
                                 <input type="file" name="imagen_evento" id="imagen_evento" accept="image/*" required>
                                 <div class="upload-placeholder">
@@ -161,8 +167,13 @@
                         
                         <div class="archivo-item">
                             <label for="documento_evento">Programación del Evento (PDF):</label>
+                           <p class="mensaje-info">
+                            No es obligatoria subir la programación del evento para su creación,
+                            la puedes subir cuando la tengas lista.
+                            </p>
+
                             <div class="file-upload-area" id="documento-upload-area">
-                                <input type="file" name="documento_evento" id="documento_evento" accept=".pdf" required>
+                                <input type="file" name="documento_evento" id="documento_evento" accept=".pdf">
                                 <div class="upload-placeholder">
                                     <img src="{% static 'app_administrador/image/pdf-icon.png' %}" alt="PDF" class="upload-icon">
                                     <span>Haz clic o arrastra un PDF aquí</span>
@@ -191,7 +202,47 @@
     </div>
 </div>
 
+<!-- Modal personalizado para revisión de evento -->
+<div id="modalRevisionEvento" class="modal-revision">
+  <div class="modal-revision-contenido">
+    <div class="icono-exito">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <h2>¡Evento Creado Exitosamente!</h2>
+    <p>
+      Tu evento está en revisión por el superadministrador.<br>
+      Cuando sea aceptado, se verá reflejado en la página principal del evento.
+    </p>
+    <button onclick="cerrarModalRevisionEvento()">Aceptar</button>
+  </div>
+</div>
+
+
+
+{% if mostrar_modal_revision %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      mostrarModalRevisionEvento();
+    });
+  </script>
+{% endif %}
 <!-- Scripts -->
+ <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("revision") === "evento") {
+      document.getElementById("modalRevisionEvento").style.display = "block";
+    }
+  });
+
+  function cerrarModalRevisionEvento() {
+    document.getElementById("modalRevisionEvento").style.display = "none";
+    // Quita el parámetro "revision" de la URL
+    const url = new URL(window.location);
+    url.searchParams.delete("revision");
+    window.history.replaceState({}, document.title, url);
+  }
+</script>
 <script>
     const baseCategoriaUrl = "{% url 'administrador:get_categorias' 0 %}".replace('0', '');
 </script>

@@ -61,7 +61,7 @@ def login_view(request):
             roles = []
             if SuperAdministradores.objects.filter(usuario=usuario).exists():
                 roles.append('Super Administrador')
-            if Administradores.objects.filter(usuario=usuario).exists():
+            if Administradores.objects.filter(usuario_id=usuario, estado = "Activo").exists():
                 roles.append('Administrador de Eventos')
 
             # Guardamos ID en sesión para confirmación de rol

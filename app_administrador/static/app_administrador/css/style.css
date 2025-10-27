@@ -93,97 +93,162 @@ h6 {
     border-radius: 10px;
 }
 
-/* ===== SIDEBAR ===== */
-/* Sidebar */
-.sidebar {
-    width: 80px;
-    backdrop-filter: blur(10px);
-    color: black;
-    position: fixed;
-    height: 100vh;
-    transition: width 0.3s;
-    overflow-x: hidden;
-    z-index: 1000;
+
+.titulo-seccion {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 1.8rem;
+  color: #007832;
+  font-weight: 700;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.sidebar:hover {
-    width: 250px;
+/* Contenedor principal */
+.gestion-eventos-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9f9f9;
+  padding: 1.2rem 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.5rem;
+  gap: 20px;
 }
 
-.sidebar a {
-    color: black;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    white-space: nowrap;
-    transition: background-color 0.2s;
+.contenedor-eventos{
+  display: flex;
+  width: 100vw;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }
 
-.sidebar a:hover {
-    background-color: #495057;
+.crear-eventos-section{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
 }
 
-.sidebar i {
-    min-width: 30px;
+/* Estado deshabilitado */
+.btn-deshabilitado {
+  background-color: #ccc !important;
+  color: #666 !important;
+  cursor: not-allowed;
+  pointer-events: none; /* Evita clics */
+  box-shadow: none;
+  transform: none;
+}
+
+/* Botón "Crear Nuevo Evento" */
+.btn-crear-evento {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #007832;
+  color: #fff;
+  font-family: 'Work Sans', sans-serif;
+  font-weight: 600;
+  padding: 0.7rem 1.3rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 10px rgba(0, 120, 50, 0.2);
+}
+
+.btn-crear-evento i {
+  font-size: 1rem;
+}
+
+/* Efectos al pasar el mouse */
+.btn-crear-evento:hover {
+  background-color: #009944;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 120, 50, 0.3);
+}
+
+.btn-crear-evento:active {
+  transform: scale(0.97);
+}
+
+/* Adaptabilidad móvil */
+@media (max-width: 768px) {
+  .gestion-eventos-header {
+    flex-direction: column;
+    gap: 0.8rem;
     text-align: center;
-    font-size: 18px;
+  }
+
+  .btn-crear-evento {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .titulo-seccion {
+    font-size: 1.5rem;
+  }
 }
 
-.sidebar span {
+/* =====================
+   Encabezado de Eventos
+   ===================== */
+
+.eventos-header {
+  width: 40%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 1rem;
+  border-radius: 20px;
+  animation: fadeInUp 0.8s ease-out;
+  margin-bottom: 2rem;
+}
+
+.eventos-header h1 {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 2rem;
+  color: var(--color-naranja);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Animación suave al cargar */
+@keyframes fadeInUp {
+  0% {
     opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.sidebar:hover span {
+    transform: translateY(30px);
+  }
+  100% {
     opacity: 1;
-    margin-left: 10px;
+    transform: translateY(0);
+  }
 }
 
-/* Dropdown */
-.dropdown-btn {
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    white-space: nowrap;
-    cursor: pointer;
-}
+/* Adaptabilidad móvil */
+@media (max-width: 768px) {
+  .eventos-header {
+    padding: 1.5rem;
+    border-radius: 14px;
+  }
 
-.dropdown-container {
-    display: none;
-    padding-left: 20px;
+  .eventos-header h1 {
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+  }
 }
-
-.dropdown-container a {
-    padding: 10px;
-    text-decoration: none;
-    color: black;
-    display: block;
-}
-
-.dropdown-container a:hover {
-    background-color: #6c757d42;
-}
-
-.sidebar .dropdown-btn.active + .dropdown-container {
-    display: block;
-}
-
-/* ===== CONTENIDO PRINCIPAL ===== */
-.main-content {
-    margin-left: 80px;
-    transition: margin-left 0.3s ease;
-}
-
-.sidebar:hover ~ .main-content {
-    margin-left: 250px;
-}
-
 
 
 /* ===== ADMINISTRAR EVENTOS ===== */
 .contenedor-principal-de-eventos {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     flex-wrap: wrap;
     width: 100%;
     justify-content: center;
