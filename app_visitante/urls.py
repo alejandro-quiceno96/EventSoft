@@ -4,8 +4,6 @@ from app_eventos.models import Eventos
 from app_categorias.models import Categorias
 from app_areas.models import Areas  # O Area si renombraste la clase
 
-app_name = "app_visitante"
-
 urlpatterns = [
     path('', views.inicio_visitante, name='inicio_visitante'),
     path('login/', views.login_view, name='login'),
