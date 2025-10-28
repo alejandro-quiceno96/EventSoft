@@ -27,14 +27,14 @@
 
                 <p class="no-cuenta">
                     ¿No tienes cuenta?
-                    <a href="{% url 'app_visitante:registro' %}" class="btn-registro">Registrarme</a>
+                    <a href="{% url 'registro' %}" class="btn-registro">Registrarme</a>
                 </p>
                 <p class="no-cuenta">
                     Olvidaste tu contraseña
-                    <a href="{% url 'app_visitante:recuperar_contraseña' %}" class="btn-registro">Recuperar</a>
+                    <a href="{% url 'recuperar_contraseña' %}" class="btn-registro">Recuperar</a>
                 </p>
             </form>
-              <a href="{% url 'app_visitante:inicio_visitante' %}" class="volver-web"><i class="fa-solid fa-house"></i> Volver a la web</a>
+              <a href="{% url 'inicio_visitante' %}" class="volver-web"><i class="fa-solid fa-house"></i> Volver a la web</a>
         </div>
     </div>
 </body>

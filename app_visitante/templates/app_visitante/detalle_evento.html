@@ -136,7 +136,7 @@
 <body>
   <!-- ===== Header ===== -->
   <div class="header">
-    <a href="{% url 'app_asistente:inicio_visitante' %}" class="floating-home-btn" title="Inicio">
+    <a href="{% url 'inicio_visitante' %}" class="floating-home-btn" title="Inicio">
       <i class="fas fa-home"></i> Volver al Inicio
     </a>
     Información del Evento
@@ -166,10 +166,16 @@
           <span>Fecha: {{ evento.eve_fecha_inicio }} al {{ evento.eve_fecha_fin }}</span>
         </div>
 
+        {% if evento.eve_programacion %}
         <a href="{{ evento.eve_programacion.url }}" target="_blank" rel="noopener" class="programacion-link">
           <i class="fas fa-file-alt"></i> Ver programación
         </a>
-
+        {% else %}
+        <div class="info-item">
+          <i class="fas fa-info-circle"></i>
+          <span>Programación no disponible</span>
+        </div>
+        {% endif %}
         <!-- ===== Acciones ===== -->
         <div class="action-buttons">
           {% if usuario_inscrito_asistente or usuario_inscrito_participante or usuario_inscrito_evaluador %}
@@ -201,12 +207,12 @@
                 </div>
               </div>
             {% else %}
-              <a href="{% url 'app_visitante:preinscripcion_asistente' evento.id %}" class="action-btn">
+              <a href="{% url 'preinscripcion_asistente' evento.id %}" class="action-btn">
                 <i class="fas fa-user"></i> Preinscribirme como asistente
               </a>
               <div id="opciones-ocultas" class="extra-buttons">
                 {% if evento.eve_habilitar_participantes %}
-                  <a href="{% url 'app_visitante:preinscripcion_participante' evento.id %}" class="action-btn">
+                  <a href="{% url 'preinscripcion_participante' evento.id %}" class="action-btn">
                     <i class="fas fa-pen"></i> Preinscribirme como Expositor
                   </a>
                 {% else %}
@@ -216,7 +222,7 @@
                 {% endif %}
 
                 {% if evento.eve_habilitar_evaluadores %}
-                  <a href="{% url 'app_visitante:preinscripcion_evaluador' evento.id %}" class="action-btn">
+                  <a href="{% url 'preinscripcion_evaluador' evento.id %}" class="action-btn">
                     <i class="fa-solid fa-chalkboard-user"></i> Preinscribirme como evaluador
                   </a>
                 {% else %}

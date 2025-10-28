@@ -18,7 +18,7 @@
   </header>
 
 <main class="form-container">
-  <a href="{% url 'app_visitante:detalle_evento' evento.id %}" class="btn-volver">
+  <a href="{% url 'detalle_evento' evento.id %}" class="btn-volver">
     <i class="fa-solid fa-arrow-left"></i> Volver
   </a>
 
@@ -39,7 +39,7 @@
 </div>
 
   <!-- 🔹 Formulario: Asociar Proyecto -->
-  <form id="form-asociar" class="hidden" action="{% url 'app_visitante:submit_preinscripcion_participante' %}" method="post">
+  <form id="form-asociar" class="hidden" action="{% url 'submit_preinscripcion_participante' %}" method="post">
     {% csrf_token %}
     <input type="hidden" name="evento_id" value="{{ evento_id|default:evento.id }}">
     <input type="hidden" name="proyecto_id" id="proyecto_id">
@@ -57,7 +57,7 @@
   </form>
 
   <!-- 🔹 Formulario: Inscribir Proyecto -->
-  <form id="form-inscribir" class="hidden" action="{% url 'app_visitante:submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
+  <form id="form-inscribir" class="hidden" action="{% url 'submit_preinscripcion_participante' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" name="evento_id" value="{{ evento_id|default:evento.id }}">
     <input type="hidden" name="opcion" value="inscribir">
@@ -113,7 +113,7 @@
 </div>
   <script src="{% static 'app_visitante/js/form_parti.js' %}" defer></script>
   <script>
-    const urlBuscarProyecto = "{% url 'app_visitante:buscar_proyecto' 'CODIGO_TEMPORAL' %}";
+    const urlBuscarProyecto = "{% url 'buscar_proyecto' 'CODIGO_TEMPORAL' %}";
   </script>
 </body>
 

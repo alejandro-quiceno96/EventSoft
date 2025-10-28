@@ -13,9 +13,6 @@ from app_categorias.models import Categorias
 from django.core.files.storage import default_storage
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
@@ -24,28 +21,23 @@ from django.contrib import messages
 
 @csrf_exempt
 @login_required(login_url='login')
-def info_participantes_eventos(request):
+def ver_info_participantes_eventos(request):
     try:
-        # Buscar al participante por cédula
-        participante = ParticipantesEventos.objects.get(par_eve_participante_fk__usuario=request.user)
-
-        # Obtener calificaciones del participante
-        comentarios = Calificaciones.objects.filter(clas_proyecto_fk=participante.par_eve_proyecto).select_related('cal_evaluador_fk')
-        # Obtener eventos donde el participante está inscrito
+        # Buscar todas las participaciones del usuario logueado
         participaciones = ParticipantesEventos.objects.filter(
-            par_eve_participante_fk=participante.par_eve_participante_fk
-        ).select_related("par_eve_evento_fk")
+            par_eve_participante_fk__usuario=request.user
+        ).select_related("par_eve_evento_fk", "par_eve_participante_fk", "par_eve_proyecto")
 
         eventos_data = []
 
         for participacion in participaciones:
-            evento = participacion.par_eve_evento_fk  # acceso correcto a la relación
+            evento = participacion.par_eve_evento_fk
             proyecto = participacion.par_eve_proyecto
 
-            # Obtener criterios y calificaciones del evento
+            # Obtener calificaciones y criterios si aplica
             criterios = Criterios.objects.filter(cri_evento_fk=evento)
             calificaciones = Calificaciones.objects.filter(
-                clas_proyecto_fk=participante.par_eve_proyecto,
+                clas_proyecto_fk=proyecto,
                 cal_criterio_fk__in=criterios
             )
 
@@ -69,25 +61,23 @@ def info_participantes_eventos(request):
                 "eve_imagen": evento.eve_imagen,
                 "par_eve_estado": participacion.par_eve_estado,
                 "calificacion": round(promedio, 2) if promedio is not None else "Sin calificar",
-                "comentarios": comentarios,
                 "eve_memorias": evento.eve_memorias,
-                "proyecto": proyecto.pro_codigo,
-
+                "proyecto": proyecto.pro_codigo if proyecto else None,
             })
-            
-        
-        # Ordenar eventos por fecha de inicio
+
+        # Renderizar página con eventos ordenados por fecha
         return render(request, 'app_participantes/eventos_participante.html', {
             "eventos": eventos_data,
-            "cedula_participante": participante.par_eve_participante_fk.id,
+            "cedula_participante": participaciones.first().par_eve_participante_fk.id if participaciones.exists() else None
         })
 
     except Exception as e:
-        print(e)
+        print("⚠️ Error en vista ver_info_participantes:", e)
         return render(request, 'app_participantes/eventos_participante.html', {
-            "eventos":  [],
+            "eventos": [],
             "cedula_participante": None
         })
+
 
 
 
