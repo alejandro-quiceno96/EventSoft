@@ -189,18 +189,23 @@ def generar_certificados(request, evento_id, tipo, usuario):
     pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
     return pdf_file
 
+
 def generar_certificados_expositores(request, evento_id, tipo, usuario):
-    evento = Eventos.objects.get(id=evento_id)
+    evento = get_object_or_404(Eventos, id=evento_id)
     try:
         certificado = get_object_or_404(Certificado, evento_fk=evento)
     except Certificado.DoesNotExist:
-        return HttpResponse("Certificado no encontrado para este evento, por favor configurelo", status=404)
+        return HttpResponse("Certificado no encontrado para este evento, por favor configúrelo", status=404)
+
     # Obtener instancia del participante
     if tipo == 'expositor':
-        participante_evento = get_object_or_404(ParticipantesEventos, par_eve_participante_fk=usuario)
+        participante_evento = get_object_or_404(
+            ParticipantesEventos, 
+            par_eve_participante_fk=usuario, 
+            par_eve_evento_fk=evento
+        )
         participante = participante_evento.par_eve_participante_fk
     else:
-        print("Tipo de participante no válido")
         return HttpResponse("Tipo de participante no válido", status=400)
 
     # Configurar fecha en español
@@ -211,7 +216,6 @@ def generar_certificados_expositores(request, evento_id, tipo, usuario):
 
     fecha_formateada = datetime.now().strftime('%d de %B de %Y')
     fecha_inicio = evento.eve_fecha_inicio.strftime('%d de %B de %Y')
-    
 
     # Renderizar plantilla HTML con datos del certificado
     html_string = render_to_string('app_administrador/pdf_certificado_expositor.html', {
@@ -220,12 +224,12 @@ def generar_certificados_expositores(request, evento_id, tipo, usuario):
         'now': fecha_formateada,
         'rol_participante': tipo.capitalize(),
         'nombre_participante': " ".join(filter(None, [
-            participante.usuario.first_name.upper(),
-            participante.usuario.segundo_nombre.upper() ,
-            participante.usuario.last_name.upper(),
-            participante.usuario.segundo_apellido.upper()
+            participante.usuario.first_name.upper() if participante.usuario.first_name else "",
+            participante.usuario.segundo_nombre.upper() if getattr(participante.usuario, 'segundo_nombre', None) else "",
+            participante.usuario.last_name.upper() if participante.usuario.last_name else "",
+            participante.usuario.segundo_apellido.upper() if getattr(participante.usuario, 'segundo_apellido', None) else ""
         ])),
-        'documento_participante': participante.usuario.documento_identidad,
+        'documento_participante': getattr(participante.usuario, 'documento_identidad', 'N/A'),
         'fecha_inicio': fecha_inicio,
         'proyecto': participante_evento.par_eve_proyecto.pro_nombre if participante_evento.par_eve_proyecto else "N/A",
     })

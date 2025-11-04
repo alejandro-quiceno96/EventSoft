@@ -398,9 +398,17 @@ def editar_perfil(request):
         user.segundo_nombre = request.POST.get('segundo_nombre', '')
         user.segundo_apellido = request.POST.get('segundo_apellido', '')
         user.telefono = request.POST.get('telefono', '')
-        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
 
-        # Manejo de contraseña si el usuario desea cambiarla
+        # ✅ Validar y asignar fecha de nacimiento (evita error de formato vacío)
+        fecha_nacimiento_str = request.POST.get('fecha_nacimiento')
+        if fecha_nacimiento_str:
+            try:
+                user.fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
+            except ValueError:
+                messages.error(request, 'Formato de fecha inválido. Debe ser YYYY-MM-DD.')
+                return redirect('app_participante:ver_info_participante')
+
+        # 🔐 Manejo de contraseña si el usuario desea cambiarla
         if request.POST.get('current_password'):
             current_password = request.POST.get('current_password')
             if user.check_password(current_password):
@@ -408,7 +416,8 @@ def editar_perfil(request):
                 confirm_password = request.POST.get('confirm_password')
                 if new_password == confirm_password and new_password != '':
                     user.set_password(new_password)
-                    update_session_auth_hash(request, user)  # Mantener sesión
+                    user.save()  # Guarda antes de mantener la sesión
+                    update_session_auth_hash(request, user)  # Mantiene sesión activa
                     messages.success(request, 'Contraseña actualizada correctamente.')
                 else:
                     messages.error(request, 'Las contraseñas no coinciden o están vacías.')
@@ -417,8 +426,10 @@ def editar_perfil(request):
                 messages.error(request, 'La contraseña actual es incorrecta.')
                 return redirect('app_participante:ver_info_participante')
 
+        # 💾 Guardar los demás cambios del perfil
         user.save()
         messages.success(request, 'Perfil actualizado correctamente.')
-        return redirect('app_participante:ver_info_participante') # Redirige a la página de inicio del visitante
+        return redirect('app_participante:ver_info_participante')
 
-    return redirect('app_participante:ver_info_participante')  # Redirige a la página de inicio del visitante si no es una solicitud POST
+    # Si no es POST, redirige a la página de información del participante
+    return redirect('app_participante:ver_info_participante')
