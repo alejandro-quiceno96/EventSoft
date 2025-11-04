@@ -1303,7 +1303,6 @@ def descargar_certificado_pdf(request, evento_id):
 @login_required(login_url='login')
 def enviar_certificado_participantes(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
-    
 
     # Obtener participantes admitidos
     participantes = Participantes.objects.filter(
@@ -1316,6 +1315,8 @@ def enviar_certificado_participantes(request, evento_id):
     if request.method == 'POST':
         print("Enviando certificados a participantes...")
         correos_enviados = []
+        errores = []
+
         for participante in participantes:
             print(f"Procesando participante: {participante.usuario.email}")
             contexto = {
@@ -1324,25 +1325,34 @@ def enviar_certificado_participantes(request, evento_id):
             }
 
             mensaje = render_to_string('app_administrador/correos/correo_certificado.html', contexto)
-
             email = EmailMessage(
-                subject=f"Certificado de participación en el evento { evento.eve_nombre}",
+                subject=f"Certificado de participación en el evento {evento.eve_nombre}",
                 body=mensaje,
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[participante.usuario.email]
             )
             email.content_subtype = 'html'
-            
-            
 
-            # Adjuntar certificado PDF
-            pdf_content = generar_certificados_expositores(request,evento_id, "expositor", participante.id )
-            email.attach(f'certificado_{participante.usuario.documento_identidad}.pdf', pdf_content, 'application/pdf')
-            print(email)
-            email.send(fail_silently=False)
-            correos_enviados.append(participante.usuario.email)
+            # Generar y adjuntar PDF
+            try:
+                pdf_content = generar_certificados_expositores(request, evento_id, "expositor", participante.id)
+                if isinstance(pdf_content, HttpResponse):
+                    continue  # Saltar si hubo error en la generación
+                email.attach(
+                    f'certificado_{getattr(participante.usuario, "documento_identidad", participante.id)}.pdf',
+                    pdf_content,
+                    'application/pdf'
+                )
+                email.send(fail_silently=False)
+                correos_enviados.append(participante.usuario.email)
+            except Exception as e:
+                errores.append(str(e))
+                print(f"Error enviando correo a {participante.usuario.email}: {e}")
 
+        print(f"Certificados enviados a: {correos_enviados}")
         return redirect('administrador:index_administrador')
+
+    return HttpResponse("Método no permitido", status=405)
 
 @login_required(login_url='login')
 
