@@ -55,3 +55,4 @@ webencodings==0.5.1
 xhtml2pdf==0.2.17
 yarl==1.20.1
 zopfli==0.2.3.post1
+coverage==7.11.0

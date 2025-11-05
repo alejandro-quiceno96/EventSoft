@@ -1,0 +1,37 @@
+[run]
+# Indica qué parte del código cubrir
+branch = True
+omit =
+    */migrations/*
+    */__init__.py
+    */settings/*
+    */wsgi.py
+    */asgi.py
+    */manage.py
+    */tests/*
+
+
+[report]
+# Configuración del reporte
+show_missing = True
+skip_covered = True
+precision = 2
+omit =
+    */migrations/*
+    */__init__.py
+    */settings/*
+    */wsgi.py
+    */asgi.py
+    */manage.py
+    */tests/*
+
+# Ordena los módulos en el reporte
+sort = Cover
+
+[html]
+# Carpeta donde se genera el reporte HTML
+directory = coverage_html_report
+
+[xml]
+# Generar reporte XML (para CI/CD o SonarQube)
+output = coverage.xml
