@@ -36,7 +36,18 @@ class ActualizarEstadoProyectoTestCase(TestCase):
         self.admin = Administradores.objects.create(usuario=self.user_admin)
 
         # Crear evento
-        
+        self.evento = Eventos.objects.create(
+            eve_nombre="Expo Ciencia 2025",
+            eve_descripcion="Evento de innovación científica",
+            eve_ciudad="Manizales",
+            eve_lugar="Centro Cultural",
+            eve_fecha_inicio=now().date(),
+            eve_fecha_fin=now().date(),
+            eve_estado="Activo",
+            eve_capacidad=100,
+            eve_tienecosto=False,
+            eve_administrador_fk=self.admin
+        )
 
         # Crear proyecto vinculado al evento
         self.proyecto = Proyecto.objects.create(

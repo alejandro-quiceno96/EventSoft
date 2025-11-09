@@ -1,6 +1,5 @@
 document.querySelectorAll('.btn-ver-estadisticas-evento').forEach(btn => {
     btn.addEventListener('click', function() {
-        console.log("Hola")
         document.getElementById('modal-estadisticas-evento-titulo').textContent = "📊 " + this.dataset.eventoNombre;
         document.getElementById('modal-estadisticas-evento-lugar').textContent = this.dataset.lugar;
         document.getElementById('modal-estadisticas-evento-ciudad').textContent = this.dataset.ciudad;

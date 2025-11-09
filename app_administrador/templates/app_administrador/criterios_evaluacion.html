@@ -82,14 +82,14 @@
 
                 <div class="contenedor-botones">
                     <button class="btn btn-outline-primary btn-sm btn-modificar-criterios"
-                            data-url="{% url 'administrador:modificar_criterio' criterio.id %}">
+                         data-url="{% url 'administrador:modificar_criterio' criterio.id %}">
                         <i class="fa-solid fa-pen-to-square"></i> Modificar
                     </button>
                     <button class="btn btn-outline-danger btn-sm btn-eliminar-criterios"
                             data-id="{{ criterio.id }}"
                             data-url="{% url 'administrador:eliminar_criterio' criterio.id %}">
                         <i class="fa-solid fa-trash"></i> Eliminar
-                    </button>
+                    </button>   
                 </div>
             </div>
         </div>

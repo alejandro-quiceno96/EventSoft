@@ -4,6 +4,7 @@ from app_eventos.models import Proyecto
 class Evaluadores(models.Model):
     usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='evaluador')
     
+    
     def __str__(self):
         return f"Evaluador: {self.usuario.username} ({self.usuario.tipo_documento} {self.usuario.documento_identidad})"
 
