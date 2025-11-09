@@ -238,18 +238,17 @@ def generar_certificados_expositores(request, evento_id, tipo, usuario):
     pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
     return pdf_file
 
-def generar_reconocmiento(request, evento_id, usuario):
+def generar_reconocmiento(request, evento_id, usuario_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     try:
         certificado = get_object_or_404(Certificado, evento_fk=evento)
     except Certificado.DoesNotExist:
         return HttpResponse("Certificado no encontrado para este evento", status=404)
-    
 
-    
-    participante_evento = get_object_or_404(ParticipantesEventos, par_eve_participante_fk=usuario)
+    participante_evento = get_object_or_404(ParticipantesEventos, par_eve_participante_fk=usuario_id)
     participante = participante_evento.par_eve_participante_fk
-    # Configurar fecha en español
+
+    # Configurar idioma en español
     try:
         locale.setlocale(locale.LC_TIME, 'es_CO.UTF-8')
     except locale.Error:
@@ -258,22 +257,28 @@ def generar_reconocmiento(request, evento_id, usuario):
     fecha_formateada = datetime.now().strftime('%d de %B de %Y')
     fecha_inicio = evento.eve_fecha_inicio.strftime('%d de %B de %Y')
 
-    # Renderizar plantilla HTML con datos del certificado
+    # ✅ Construcción segura del nombre completo
+    nombre_completo = " ".join(filter(None, [
+        (getattr(participante.usuario, 'first_name', '') or '').upper(),
+        (getattr(participante.usuario, 'segundo_nombre', '') or '').upper(),
+        (getattr(participante.usuario, 'last_name', '') or '').upper(),
+        (getattr(participante.usuario, 'segundo_apellido', '') or '').upper(),
+    ]))
+
+    # Renderizar plantilla HTML
     html_string = render_to_string('app_administrador/pdf_certificado_primer_lugar.html', {
         'certificado': certificado,
         'evento': evento,
         'now': fecha_formateada,
-        'nombre_participante': " ".join(filter(None, [
-            participante.usuario.first_name.upper(),
-            participante.usuario.segundo_nombre.upper() ,
-            participante.usuario.last_name.upper(),
-            participante.usuario.segundo_apellido.upper()
-        ])),
-        'documento_participante': participante.usuario.documento_identidad,
+        'nombre_participante': nombre_completo,
+        'documento_participante': getattr(participante.usuario, 'documento_identidad', ''),
         'fecha_inicio': fecha_inicio,
-        'proyecto': participante_evento.par_eve_proyecto.pro_nombre if participante_evento.par_eve_proyecto else "N/A",
+        'proyecto': (
+            participante_evento.par_eve_proyecto.pro_nombre
+            if participante_evento.par_eve_proyecto else "N/A"
+        ),
     })
 
-    # Generar PDF
+    # Generar PDF con WeasyPrint
     pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
     return pdf_file

@@ -55,6 +55,7 @@ class EvaluadoresEventos(models.Model):
     eva_eve_qr = models.FileField(upload_to='pdf/qr_evaluador/',null=True, blank=True)
     eva_clave_acceso = models.CharField(max_length=45, null=True, blank=True)
     habilitado = models.BooleanField(default=True)
+    criterios_modificables = models.BooleanField(default=False, null=True, blank=True)
     
 class Proyecto(models.Model):
     pro_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)

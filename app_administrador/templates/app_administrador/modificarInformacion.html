@@ -197,7 +197,12 @@
 
 <div class="archivo-item">
     <label for="documento_evento">Programación del Evento (PDF):</label>
-    <a class="btn-ver-doc " href="{{evento.eve_programacion.url}}" target="_blank" download="{{evento.eve_programacion.name}}">Ver PDF</a>
+    {% if evento.eve_programacion %}
+       <a class="btn-ver-doc " href="{{evento.eve_programacion.url}}" target="_blank" download="{{evento.eve_programacion.name}}">Ver PDF</a>
+    {% else %}
+       <span class="no-doc">No hay documento cargado</span>
+    {% endif %}
+    
     <div class="file-upload-area" id="documento-upload-area">
         <input type="file" name="documento_evento" id="documento_evento" accept=".pdf">
         <div class="upload-placeholder" style="{% if evento.eve_programacion %}display:none;{% endif %}">

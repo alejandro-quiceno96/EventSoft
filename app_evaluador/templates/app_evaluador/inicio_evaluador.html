@@ -48,75 +48,87 @@
 
 
             {% if relacion.estado_evento == "en_curso" %}
-    <a href="{% url 'app_evaluador:ver_participantes' evento.id %}" class="btn-funcion mb-1">
-        <i class="fa-solid fa-users"></i> Evaluar Participantes
-    </a>
-    {% if relacion.eva_estado == "Admitido" %}
-        <a href="{% url 'app_evaluador:criterios_evento' evento.id %}" class="btn-funcion mb-1">
-            <i class="fa-solid fa-clipboard-list"></i> Ver Rúbrica
-        </a>
-    {% endif %}
+            <a href="{% url 'app_evaluador:ver_participantes' evento.id %}" class="btn-funcion mb-1">
+                <i class="fa-solid fa-users"></i> Evaluar Participantes
+            </a>
+            {% if relacion.eva_estado == "Admitido" %}
+            {% if relacion.criterios_modificables %}
+            <a href="{% url 'app_evaluador:criterios_evaluacion' evento.id %}" class="btn-funcion mb-1">
+                <i class="fa-solid fa-clipboard-list"></i> Editar Rúbrica
+            </a>
+            {% else %}
+            <a href="{% url 'app_evaluador:criterios_evento' evento.id %}" class="btn-funcion mb-1">
+                <i class="fa-solid fa-clipboard-list"></i> Ver Rúbrica
+            </a>
+            {% endif %}
+            {% endif %}
 
-{% elif relacion.estado_evento == "no_iniciado" %}
-    <div class="alert alert-info mt-2 mb-0 py-2 px-3 small" role="alert">
-        <i class="fa-solid fa-circle-info"></i> La opción de calificar participantes estará disponible el día del evento.
-    </div>
-    
-    {% if relacion.eva_estado == "Admitido" %}
-        <a href="{% url 'app_evaluador:criterios_evento' evento.id %}" class="btn-funcion mb-1 mt-2">
-            <i class="fa-solid fa-clipboard-list"></i> Ver Rúbrica
-        </a>
-    {% endif %}
 
-{% else %}
-    <div class="alert alert-success mt-2 mb-0 py-2 px-3 small" role="alert">
-        Evento terminado. ¡Muchas gracias por tu apoyo!.
-    </div>
-    {% if evento.eve_memorias %}
-        <a href="{{ evento.eve_memorias }}" class="btn-funcion mb-1 mt-3" target="_blank">
-            <i class="fa-solid fa-file-pdf"></i> Ver Memorias del Evento
-        </a>
-    {% else %}
-        <div class="alert alert-success mt-2 mb-0 py-2 px-3 small" role="alert">
-            <i class="fa-solid fa-circle-info"></i> No se han subido las memorias del evento.
-        </div>
-    {% endif %}
-{% endif %}
+            {% elif relacion.estado_evento == "no_iniciado" %}
+            <div class="alert alert-info mt-2 mb-0 py-2 px-3 small" role="alert">
+                <i class="fa-solid fa-circle-info"></i> La opción de calificar participantes estará disponible el día
+                del evento.
+            </div>
 
-                <a href="{% url 'app_evaluador:detalle_evento_evaluador' evaluador.id evento.id %}"
-                    class="btn-funcion mb-1">
-                    <i class="fa-solid fa-circle-info"></i> Ver Información
+            {% if relacion.eva_estado == "Admitido" %}
+                {% if relacion.criterios_modificables == True %}
+                <a href="{% url 'app_evaluador:crud_criterios_evento' evento.id %}" class="btn-funcion mb-1">
+                    <i class="fa-solid fa-clipboard-list"></i> Editar Rúbrica
                 </a>
-
-                {% elif relacion.eva_estado == "Pendiente" %}
-                <div class="alert alert-warning mt-2 mb-0 py-2 px-3 small" role="alert">
-                    <i class="fa-solid fa-circle-info"></i> Tu solicitud está en revisión por el administrador del
-                    evento.
-                </div>
-                <a href="#" class="btn-funcion mt-2" id="btn-preinscripcion" data-evento="{{ evento.id }}"
-                    data-evaluador="{{ evaluador.id }}">
-                    <i class="fa-solid fa-file"></i> Mi Preinscripción
-                </a>
-                <a href="#" class="btn-funcion mt-2" id="btn-cancelar-inscripcion" data-evento="{{ evento.id }}"
-                    data-evaluador="{{ evaluador.id }}" data-bs-toggle="modal"
-                    data-bs-target="#modalCancelarInscripcion">
-                    <i class="fa-solid fa-circle-xmark"></i> Cancelar inscripción
-                </a>
-                {% elif relacion.eva_estado == "Rechazado" %}
-                <div class="alert alert-danger mt-2 mb-0 py-2 px-3 small" role="alert">
-                    <i class="fa-solid fa-circle-xmark"></i> Tu preinscripción fue rechazada. Puedes revisar o modificar
-                    tus datos.
-                </div>
-                <a href="#" class="btn-funcion mt-2" id="btn-preinscripcion" data-evento="{{ evento.id }}"
-                    data-evaluador="{{ evaluador.id }}">
-                    <i class="fa-solid fa-file-pen"></i> Modificar Preinscripción
-                </a>
-                <a href="#" class="btn-funcion mt-2" id="btn-cancelar-inscripcion" data-evento="{{ evento.id }}"
-                    data-evaluador="{{ evaluador.id }}" data-bs-toggle="modal"
-                    data-bs-target="#modalCancelarInscripcion">
-                    <i class="fa-solid fa-circle-xmark"></i> Cancelar inscripción
+                {% else %}
+                <a href="{% url 'app_evaluador:criterios_evento' evento.id %}" class="btn-funcion mb-1">
+                    <i class="fa-solid fa-clipboard-list"></i> Ver Rúbrica
                 </a>
                 {% endif %}
+            {% endif %}
+
+            {% else %}
+            <div class="alert alert-success mt-2 mb-0 py-2 px-3 small" role="alert">
+                Evento terminado. ¡Muchas gracias por tu apoyo!.
+            </div>
+            {% if evento.eve_memorias %}
+            <a href="{{ evento.eve_memorias }}" class="btn-funcion mb-1 mt-3" target="_blank">
+                <i class="fa-solid fa-file-pdf"></i> Ver Memorias del Evento
+            </a>
+            {% else %}
+            <div class="alert alert-success mt-2 mb-0 py-2 px-3 small" role="alert">
+                <i class="fa-solid fa-circle-info"></i> No se han subido las memorias del evento.
+            </div>
+            {% endif %}
+            {% endif %}
+
+            <a href="{% url 'app_evaluador:detalle_evento_evaluador' evaluador.id evento.id %}"
+                class="btn-funcion mb-1">
+                <i class="fa-solid fa-circle-info"></i> Ver Información
+            </a>
+
+            {% elif relacion.eva_estado == "Pendiente" %}
+            <div class="alert alert-warning mt-2 mb-0 py-2 px-3 small" role="alert">
+                <i class="fa-solid fa-circle-info"></i> Tu solicitud está en revisión por el administrador del
+                evento.
+            </div>
+            <a href="#" class="btn-funcion mt-2" id="btn-preinscripcion" data-evento="{{ evento.id }}"
+                data-evaluador="{{ evaluador.id }}">
+                <i class="fa-solid fa-file"></i> Mi Preinscripción
+            </a>
+            <a href="#" class="btn-funcion mt-2" id="btn-cancelar-inscripcion" data-evento="{{ evento.id }}"
+                data-evaluador="{{ evaluador.id }}" data-bs-toggle="modal" data-bs-target="#modalCancelarInscripcion">
+                <i class="fa-solid fa-circle-xmark"></i> Cancelar inscripción
+            </a>
+            {% elif relacion.eva_estado == "Rechazado" %}
+            <div class="alert alert-danger mt-2 mb-0 py-2 px-3 small" role="alert">
+                <i class="fa-solid fa-circle-xmark"></i> Tu preinscripción fue rechazada. Puedes revisar o modificar
+                tus datos.
+            </div>
+            <a href="#" class="btn-funcion mt-2" id="btn-preinscripcion" data-evento="{{ evento.id }}"
+                data-evaluador="{{ evaluador.id }}">
+                <i class="fa-solid fa-file-pen"></i> Modificar Preinscripción
+            </a>
+            <a href="#" class="btn-funcion mt-2" id="btn-cancelar-inscripcion" data-evento="{{ evento.id }}"
+                data-evaluador="{{ evaluador.id }}" data-bs-toggle="modal" data-bs-target="#modalCancelarInscripcion">
+                <i class="fa-solid fa-circle-xmark"></i> Cancelar inscripción
+            </a>
+            {% endif %}
 
 
 

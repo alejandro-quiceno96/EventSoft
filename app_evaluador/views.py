@@ -20,6 +20,7 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
 from django.db.models import Sum
+from decimal import Decimal
 
 
 @login_required(login_url='login')
@@ -32,7 +33,6 @@ def principal_evaluador(request):
         request.session['evaluador_nombre'] = evaluador.usuario.username
         
         ahora = timezone.localdate()
-        print(f"Hora actual: {ahora}")
         for relacion in evaluadores_eventos:
             evento = relacion.eva_eve_evento_fk
             if evento.eve_fecha_inicio <= ahora <= evento.eve_fecha_fin:
@@ -263,65 +263,12 @@ def obtener_calificaciones(request, evento_id, participante_id, evaluador_id):
     ]
     return JsonResponse({'calificaciones': data})
 
- 
-login_required(login_url='login')
-def detalle_evento_json(request, evento_id, evaluador_id):
-    evento = get_object_or_404(Eventos, pk=evento_id)
-
-    data = {
-        'nombre': evento.eve_nombre,
-        'descripcion': evento.eve_descripcion,
-        'ciudad': evento.eve_ciudad,
-        'lugar': evento.eve_lugar,
-        'fecha': evento.eve_fecha.strftime('%Y-%m-%d') if evento.eve_fecha else '',
-        'estado': evento.eve_estado,
-        'imagen': evento.eve_imagen.url if evento.eve_imagen else ''
-    }
-    return JsonResponse(data)
-
-    
-
-def detalle_evento_evaluador(request, evento_id, evaluador_cedula):
-    """Obtener detalles de un evento para el evaluador"""
-    print(f"Recibida petición para evento {evento_id} y evaluador {evaluador_cedula}")
-    try:
-        evento = Eventos.objects.get(id=evento_id)
-        evaluador = Evaluadores.objects.get(eva_cedula=evaluador_cedula)
-    except (Eventos.DoesNotExist, Evaluadores.DoesNotExist):
-        return JsonResponse({"error": "Evento o evaluador no encontrado"}, status=404)
-
-    # Obtener la categoría relacionada
-    categoria_nombre = ""
-    try:
-        evento_categoria = EventosCategorias.objects.get(eve_cat_evento_fk=evento_id)
-        categoria_nombre = evento_categoria.eve_cat_categoria_fk.cat_nombre
-    except EventosCategorias.DoesNotExist:
-        pass
-
-    datos_evento = {
-        'eve_id': evento.id,
-        'eve_nombre': evento.eve_nombre,
-        'eve_descripcion': evento.eve_descripcion,
-        'eve_ciudad': evento.eve_ciudad,
-        'eve_lugar': evento.eve_lugar,
-        'eve_fecha_inicio': evento.eve_fecha_inicio.strftime('%Y-%m-%d'),
-        'eve_fecha_fin': evento.eve_fecha_fin.strftime('%Y-%m-%d'),
-        'eve_estado': evento.eve_estado,
-        'eve_imagen': evento.eve_imagen.url if evento.eve_imagen else None,
-        'eve_capacidad': evento.eve_capacidad if evento.eve_capacidad is not None else 'Cupos ilimitados',
-        'eve_costo': 'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
-        'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
-        'eve_categoria': categoria_nombre,
-        'evaluador': evaluador 
-    }
-
-    return JsonResponse(datos_evento)
 
 
 def generar_reporte_evaluador(request, cedula):
     """Generar reporte PDF del evaluador"""
     try:
-        evaluador = get_object_or_404(Evaluadores, eva_cedula=cedula)
+        evaluador = get_object_or_404(Evaluadores, usuario_id=cedula)
         
         # CORRECCIÓN: Usar select_related de forma segura
         calificaciones = Calificaciones.objects.filter(
@@ -366,7 +313,7 @@ def generar_reporte_evaluador(request, cedula):
 def participantes_por_evaluar(request, evaluador_cedula, evento_id):  # CORRECCIÓN: Agregar evento_id como parámetro
     """Obtener participantes de un evento que debe evaluar el evaluador"""
     try:
-        evaluador = Evaluadores.objects.get(eva_cedula=evaluador_cedula)
+        evaluador = Evaluadores.objects.get(usuario_id=evaluador_cedula)
         evento = Eventos.objects.get(id=evento_id)
         
         # Obtener participantes del evento
@@ -491,7 +438,6 @@ def detalle_evento(request, cedula, evento_id):
         'documento': clave_acceso.eva_eve_documentos.url if clave_acceso and clave_acceso.eva_eve_documentos else None,
         'informacion_tecnica': evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else None,
     }
-    print(proyectos)
 
     return render(request, 'app_evaluador/detalle_evento.html', {
     'evento': datos_evento,
@@ -560,70 +506,44 @@ def criterios_evaluacion(request, evento_id):
         'evaluador_id': request.session.get('evaluador_id'),
         'evaluador': request.session.get('evaluador_nombre'),
     })
-
-
-
     
-def modificar_criterio(request, criterio_id):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        try:
-            criterio = Criterios.objects.get(id=criterio_id)
-            criterio.cri_descripcion = data.get('descripcion')
-            criterio.cri_peso = data.get('porcentaje')
-            criterio.save()
-            return JsonResponse({'success': True})
-        except Criterios.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Criterio no encontrado'}, status=404)
-    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
-
-
-
-def eliminar_criterio(request, criterio_id):
-    if request.method == 'POST':
-        try:
-            criterio = Criterios.objects.get(id=criterio_id)
-            criterio.delete()
-            return JsonResponse({'success': True})
-        except Criterios.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'No encontrado'}, status=404)
-    return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
-
-
-
-def tabla_calificaciones(request, evento_id):
+def modificar_criterios_evaluacion(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
 
-    subquery = (
-        Calificaciones.objects
-        .filter(cal_evento_fk=evento_id)
-        .values('cal_participante_fk', 'cal_criterio_fk')
-        .annotate(promedio_criterio=Avg('cal_valor'))
-    )
+    if request.method == 'POST':
+        criterios = request.POST.getlist('criterio[]')
+        porcentajes = request.POST.getlist('porcentaje[]')
 
-    ranking_dict = {}
-    for fila in subquery:
-        criterio = Criterios.objects.filter(id=fila['cal_criterio_fk'], cri_evento_fk=evento_id).first()
-        if criterio:
-            participante_id = fila['cal_participante_fk']
-            ponderado = fila['promedio_criterio'] * criterio.cri_peso / 100
-            ranking_dict[participante_id] = ranking_dict.get(participante_id, 0) + ponderado
+        try:
+            porcentajes_float = [Decimal(p) for p in porcentajes]
+        except ValueError:
+            messages.error(request, "Porcentajes inválidos.")
+            return redirect('app_evaluador:crud_criterios_evento', evento_id=evento_id)
 
-    ranking_ordenado = sorted(ranking_dict.items(), key=lambda x: x[1], reverse=True)
+        suma_nuevos = sum(porcentajes_float)
 
-    ranking = []
-    for participante_id, promedio in ranking_ordenado:
-        participante = Participantes.objects.get(id=participante_id)
-        ranking.append({
-            'id': participante.id,
-            'nombre': participante.par_nombre,
-            'promedio': round(promedio, 2)
-        })
+        criterios_existentes = Criterios.objects.filter(cri_evento_fk=evento_id)
+        suma_existente = sum(c.cri_peso for c in criterios_existentes)
 
-    return render(request, 'app_evaluador/posiciones.html', {
-        'ranking': ranking,
+        # suma_existente ya es una suma de Decimals
+        if suma_existente + suma_nuevos > Decimal('100'):
+            messages.error(request, "La suma de los porcentajes no puede superar el 100%.")
+            return redirect('app_evaluador:crud_criterios_evento', evento_id=evento_id)
+        
+        for desc, porc in zip(criterios, porcentajes_float):
+            Criterios.objects.create( cri_descripcion=desc, cri_peso=porc,  cri_evento_fk=evento)
+
+        messages.success(request, "Criterio(s) agregado(s) correctamente.")
+        return redirect('app_evaluador:crud_criterios_evento', evento_id=evento_id)
+
+    criterios = Criterios.objects.filter(cri_evento_fk=evento)
+    total_peso = sum(int(c.cri_peso) for c in criterios) if criterios else 0
+    return render(request, 'app_evaluador/crud_criterios.html', {
         'evento': evento,
-        'evaluador': request.session.get('eva_nombre'),
+        'total_peso': total_peso,
+        'criterios': criterios,
+        'evaluador_id': request.session.get('evaluador_id'),
+        'evaluador': request.session.get('evaluador_nombre'),
     })
     
 def obtener_datos_preinscripcion(request, evento_id, evaluador_id):
