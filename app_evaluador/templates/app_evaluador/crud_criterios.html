@@ -1,0 +1,147 @@
+{% extends "app_evaluador/base.html" %}
+{% load static %}
+
+{% block title %}
+    {{ evaluador|default:'Evaluador' }}
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'app_administrador/css/criteriosadmin.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* SOLO TEXTO */
+  body,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  a,
+  button,
+  input,
+  label,
+  span,
+  div {
+    font-family: 'Work Sans', sans-serif !important;
+  }
+</style>
+
+
+<div class="container ">
+  <a href="{% url 'app_evaluador:principal_evaluador' %}" class="btn btn-detalle-calificacion mb-2">
+            <i class="fa-solid fa-arrow-left"></i></i> Volver al panel principal
+    </a>
+    <h2 class="mb-4">Criterios de Evaluación</h2>
+     <div class="alert alert-info" role="alert">
+        <strong>Nota:</strong> Evalúa con la misma energía con la que los participantes dieron todo en su proyecto. 💡🔥
+        <form id="form-criterios" method="POST" >
+        {% csrf_token %}
+            <div class="mb-3">
+                <label for="nuevo_criterio" class="form-label">Nuevo Criterio:</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" name="criterio[]" placeholder="Descripción" required>
+                    <input type="number" class="form-control_porcentaje porcentaje-nuevo" name="porcentaje[]" placeholder="%" min="0" max="100" required>
+                    <button type="submit" class="btn btn-success">Agregar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="total-porcentaje" class="porcentaje-total" data-aos="fade-up" data-aos-delay="200">
+    <div class="porcentaje">
+        <strong>Porcentaje total: <span id="porcentaje-total">{{total_peso}}</span>%</strong>
+    </div>
+</div>
+
+<div class="row g-4" data-aos="fade-up" data-aos-delay="300">
+    {% for criterio in criterios %}
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <h5 class="card-title titulo-card">Criterio {{ forloop.counter }}</h5>
+
+                <div class="mb-4">
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-control descripcion" rows="3" maxlength="100" readonly>{{ criterio.cri_descripcion }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Porcentaje</label>
+                    <input type="number" class="form-control porcentaje-existente"
+                           data-id="{{ criterio.id }}"
+                           value="{{ criterio.cri_peso }}"
+                           readonly>
+                </div>
+            </div>
+            <div class="contenedor-botones">
+                    <button class="btn btn-outline-primary btn-sm btn-modificar-criterios"
+                         data-url="{% url 'administrador:modificar_criterio' criterio.id %}">
+                        <i class="fa-solid fa-pen-to-square"></i> Modificar
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm btn-eliminar-criterios"
+                            data-id="{{ criterio.id }}"
+                            data-url="{% url 'administrador:eliminar_criterio' criterio.id %}">
+                        <i class="fa-solid fa-trash"></i> Eliminar
+                    </button>   
+                </div>
+        </div>
+        
+    </div>
+    {% endfor %}
+</div>
+
+<div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalConfirmarEliminarLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalConfirmarEliminarLabel">Confirmar eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro de que deseas eliminar este criterio?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="modalExito" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Éxito</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center"></div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'app_administrador/js/criteriosadmin.js' %}"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    AOS.init();
+
+    document.getElementById("form-criterios").addEventListener("submit", function(e) {
+        let nuevoPorcentaje = parseFloat(document.querySelector(".porcentaje-nuevo").value) || 0;
+        let sumaExistente = 0;
+
+        document.querySelectorAll(".porcentaje-existente").forEach(function(input) {
+            sumaExistente += parseFloat(input.value) || 0;
+        });
+
+        if ((sumaExistente + nuevoPorcentaje) > 100) {
+            e.preventDefault();
+            alert("Error: La suma de los porcentajes no puede superar 100%.");
+        }
+    });
+</script>
+{% endblock %}
