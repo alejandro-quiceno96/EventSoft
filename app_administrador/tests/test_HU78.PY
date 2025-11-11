@@ -71,7 +71,7 @@ class DetallesCalificacionesTestCase(TestCase):
                 self.assertAlmostEqual(d['puntaje_total'], 35)  # (70*0.5)
 
     def test_detalle_calificacion_individual(self):
-        url = reverse('administrador:detalle_calificacion', args=[self.proyecto.id, self.evaluador1.id, self.evento.id])
+        url = reverse('administrador:detalle_calificacion', args=[self.evaluador1.id,self.proyecto.id,  self.evento.id])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         info = response.context['calificaciones_info']

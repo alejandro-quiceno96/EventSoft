@@ -1167,6 +1167,7 @@ def enviar_correo(request, evento_id):
         'evento': evento,
     })
 
+@login_required(login_url='login')
 def guardar_memorias(request):
     if request.method == 'POST':
         url = request.POST.get('url_memorias')
@@ -1355,7 +1356,6 @@ def enviar_certificado_participantes(request, evento_id):
     return HttpResponse("Método no permitido", status=405)
 
 @login_required(login_url='login')
-
 def enviar_certificado_asistentes(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     

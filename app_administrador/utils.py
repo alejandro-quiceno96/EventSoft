@@ -176,10 +176,10 @@ def generar_certificados(request, evento_id, tipo, usuario):
         'now': fecha_formateada,
         'rol_participante': tipo.capitalize(),
         'nombre_participante': " ".join(filter(None, [
-            participante.usuario.first_name.upper(),
-            participante.usuario.segundo_nombre.upper() ,
-            participante.usuario.last_name.upper(),
-            participante.usuario.segundo_apellido.upper()
+            participante.usuario.first_name.upper() if participante.usuario.first_name else "",
+            participante.usuario.segundo_nombre.upper() if getattr(participante.usuario, 'segundo_nombre', None) else "",
+            participante.usuario.last_name.upper() if participante.usuario.last_name else "",
+            participante.usuario.segundo_apellido.upper() if getattr(participante.usuario, 'segundo_apellido', None) else ""
         ])),
         'documento_participante': participante.usuario.documento_identidad,
         'fecha_inicio': fecha_inicio,

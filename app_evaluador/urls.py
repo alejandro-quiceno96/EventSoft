@@ -31,7 +31,6 @@ urlpatterns = [
     path('cancelar-inscripcion/<int:evento_id>/<int:evaluador_id>/', views.cancelar_inscripcion, name='cancelar_inscripcion'),
     path('evento/<int:pk>/subir-info-tecnica/', views.subir_info_tecnica, name='subir_info_tecnica'),
 
-    path('eventos/<int:evento_id>/criterios/', views.criterios_evaluacion, name='criterios_evaluacion'),
     path('evento/<int:evento_id>/criterios_modificables/', views.modificar_criterios_evaluacion, name='crud_criterios_evento'),
     
     #modificar inscripcion
