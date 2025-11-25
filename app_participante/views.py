@@ -274,7 +274,7 @@ def cancelar_inscripcion(request, evento_id, participante_id):
                     # Eliminar el archivo físico de la carpeta media
                     default_storage.delete(participante_evento.par_eve_documentos.path)
                 except Exception as e:
-                    print(f"Error al eliminar archivo: {e}")
+                    pass
                     # Continuar aunque falle la eliminación del archivo
             
             expositores = ParticipantesEventos.objects.filter(par_eve_proyecto=participante_evento.par_eve_proyecto).count()
@@ -297,7 +297,6 @@ def cancelar_inscripcion(request, evento_id, participante_id):
             }, status=404)
             
         except Exception as e:
-            print(f"Error al cancelar inscripción: {e}")
             return JsonResponse({
                 "success": False, 
                 "error": "Error al procesar la solicitud"
@@ -307,7 +306,7 @@ def cancelar_inscripcion(request, evento_id, participante_id):
         return JsonResponse({
             "success": False, 
             "error": "Método no permitido"
-        }, status=405)
+        }, status=405) 
 
 def generar_pdf_comentarios_participante(request, evento_id):
     """

@@ -78,12 +78,13 @@ def login_view(request):
 
 @csrf_exempt
 def recuperar_contraseña(request):
-    global codigo_global
+    """
+    Vista para recuperación de contraseña en 3 pasos usando sesiones
+    """
     paso = 1  # Paso inicial → ingresar email
-    email = request.POST.get("email")
+    email = request.POST.get("email", "").strip()
 
     if request.method == "POST":
-
         # 📌 Paso 1: Enviar código
         if "codigo" not in request.POST and "nueva_password" not in request.POST:
             if email:
@@ -93,11 +94,13 @@ def recuperar_contraseña(request):
                     paso = 1  # vuelve a pedir correo
                 else:
                     codigo = str(random.randint(100000, 999999))
-                    codigo_global = {
+                    # Guardar en sesión en lugar de variable global
+                    request.session['codigo_recuperacion'] = {
                         "email": email,
                         "codigo": codigo,
-                        "expira": timezone.now() + datetime.timedelta(minutes=5)
+                        "expira": str(timezone.now() + datetime.timedelta(minutes=5))
                     }
+                    request.session.modified = True  # Asegurar que se guarde la sesión
 
                     # Enviar correo
                     send_mail(
@@ -113,33 +116,61 @@ def recuperar_contraseña(request):
 
         # 📌 Paso 2: verificar código ingresado
         elif "codigo" in request.POST:
-            codigo_ingresado = request.POST.get("codigo")
+            codigo_ingresado = request.POST.get("codigo", "").strip()
+            codigo_session = request.session.get('codigo_recuperacion', {})
 
-            if (codigo_global["email"] == email 
-                and codigo_global["codigo"] == codigo_ingresado 
-                and timezone.now() < codigo_global["expira"]):
+            # Convertir string de expiración de vuelta a datetime
+            expira_str = codigo_session.get("expira", "")
+            expira = timezone.now()
+            if expira_str:
+                try:
+                    expira = timezone.datetime.fromisoformat(expira_str.replace('Z', '+00:00'))
+                except (ValueError, AttributeError):
+                    expira = timezone.now()
+
+            if (codigo_session.get("email") == email 
+                and codigo_session.get("codigo") == codigo_ingresado 
+                and timezone.now() < expira):
                 paso = 3  # código válido → ingresar nueva contraseña
+                
+                # Guardar en sesión que el código fue verificado
+                request.session['codigo_verificado'] = True
+                request.session.modified = True
+                
             else:
-                messages.error(request, "Código inválido o expirado.")
+                messages.error(request, "❌ Código inválido o expirado.")
                 paso = 2  
 
         # 📌 Paso 3: cambiar contraseña
         elif "nueva_password" in request.POST:
-            nueva = request.POST.get("nueva_password")
-            confirmar = request.POST.get("confirmar_password")
+            nueva = request.POST.get("nueva_password", "")
+            confirmar = request.POST.get("confirmar_password", "")
+
+            # Verificar que el código fue previamente verificado
+            if not request.session.get('codigo_verificado', False):
+                messages.error(request, "❌ Debes verificar el código primero.")
+                return redirect("recuperar_contraseña")
 
             if nueva == confirmar:
                 user = User.objects.filter(email=email).first()
                 if user:
                     user.set_password(nueva)  # ✅ Django encripta la contraseña
                     user.save()
-                    messages.success(request, "Contraseña cambiada correctamente. Ya puedes iniciar sesión.")
+                    
+                    # Limpiar sesión después de cambiar contraseña
+                    if 'codigo_recuperacion' in request.session:
+                        del request.session['codigo_recuperacion']
+                    if 'codigo_verificado' in request.session:
+                        del request.session['codigo_verificado']
+                    request.session.modified = True
+                    
+                    messages.success(request, "✅ Contraseña cambiada correctamente. Ya puedes iniciar sesión.")
                     return redirect("login")
                 else:
-                    messages.error(request, "No se encontró un usuario con este correo.")
+                    messages.error(request, "❌ No se encontró un usuario con este correo.")
                     paso = 1
             else:
-                messages.error(request, "Las contraseñas no coinciden.")
+                messages.error(request, "❌ Las contraseñas no coinciden.")
                 paso = 3
 
     return render(request, "app_visitante/recuperar_con.html", {

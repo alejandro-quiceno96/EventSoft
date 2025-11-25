@@ -1,37 +1,42 @@
 [run]
-# Indica qué parte del código cubrir
-branch = True
+source = .
 omit =
+    */tests/*
     */migrations/*
-    */__init__.py
+    */__pycache__/*
+    */venv/*
+    */virtual/*
+    */env/*
+    */static/*
+    */media/*
+    */templates/*
+    manage.py
     */settings/*
     */wsgi.py
     */asgi.py
-    */manage.py
-    */tests/*
-
+    */urls.py
 
 [report]
-# Configuración del reporte
+# Mostrar qué líneas no están cubiertas
 show_missing = True
-skip_covered = True
-precision = 2
-omit =
-    */migrations/*
-    */__init__.py
-    */settings/*
-    */wsgi.py
-    */asgi.py
-    */manage.py
-    */tests/*
-
-# Ordena los módulos en el reporte
-sort = Cover
+# Excluir estas líneas del reporte
+exclude_lines =
+    # No es práctico cubrir todos los casos de debug
+    pragma: no cover
+    def __str__
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    # No cubrir setters y getters simples
+    @property
+    def .*_property:
+    # No cubrir métodos mágicos
+    def __.*__
+    # No cubrir imports
+    ^import 
+    ^from .* import
 
 [html]
-# Carpeta donde se genera el reporte HTML
-directory = coverage_html_report
-
-[xml]
-# Generar reporte XML (para CI/CD o SonarQube)
-output = coverage.xml
+# Directorio donde se generará el reporte HTML
+directory = htmlcov

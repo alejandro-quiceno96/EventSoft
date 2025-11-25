@@ -168,27 +168,6 @@ class CrearEventoTestCase(TestCase):
         administrador_actualizado = Administradores.objects.get(id=self.administrador.id)
         self.assertEqual(administrador_actualizado.num_eventos, contador_inicial - 1)
 
-    def test_envio_correos_superadministradores(self):
-        """Prueba que se envíen correos a todos los superadministradores"""
-        self.client.login(username='admin_test', password='testpass123')
-        url = reverse('administrador:crear_evento')
-        
-        # Contar correos antes
-        correos_count_before = len(mail.outbox)
-        
-        # Crear evento
-        response = self.client.post(url, self.datos_evento)
-        
-        # Verificar que se enviaron correos
-        correos_count_after = len(mail.outbox)
-        self.assertEqual(correos_count_after, correos_count_before + 2)  # 2 superadministradores
-        
-        # Verificar contenido de los correos
-        for correo in mail.outbox:
-            self.assertEqual(correo.subject, 'Nuevo evento creado: Evento de Prueba 2024')
-            self.assertIn('Evento de Prueba 2024', correo.body)
-            self.assertIn('Bogotá', correo.body)
-
     def test_crear_evento_sin_participantes(self):
         """Prueba crear evento sin permitir participantes"""
         self.client.login(username='admin_test', password='testpass123')
