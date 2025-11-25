@@ -129,7 +129,7 @@ def crear_evento(request):
             return redirect(reverse('administrador:crear_evento') + '?revision=evento')
 
         except Exception as e:
-            print(f"Error al crear evento: {e}")
+            pass
 
     context = {
         'areas': obtener_areas_eventos(),
@@ -992,9 +992,9 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def editar_perfil(request):
-    user = request.user  # Es instancia de tu modelo Usuario
+    user = request.user
 
     if request.method == 'POST':
         # Campos básicos
@@ -1007,7 +1007,13 @@ def editar_perfil(request):
         user.segundo_nombre = request.POST.get('segundo_nombre', '')
         user.segundo_apellido = request.POST.get('segundo_apellido', '')
         user.telefono = request.POST.get('telefono', '')
-        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
+        
+        # MANEJO CORRECTO PARA FECHA_NACIMIENTO
+        fecha_nacimiento_str = request.POST.get('fecha_nacimiento', '')
+        if fecha_nacimiento_str:
+            user.fecha_nacimiento = fecha_nacimiento_str
+        else:
+            user.fecha_nacimiento = None  # En lugar de string vacío
 
         # Manejo de contraseña si el usuario desea cambiarla
         if request.POST.get('current_password'):
@@ -1478,20 +1484,20 @@ def enviar_certificado_reconocimiento(request, evento_id, proyecto_id):
     return JsonResponse({'success': False, 'message': 'Método no permitido.'}, status=405)
 
 
-
-def modificar_certificados(request,evento_id):
+@login_required(login_url='login')
+def modificar_certificados(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     certificado = get_object_or_404(Certificado, evento_fk=evento_id)
 
-    # Formatear fecha actual en español
-    meses_es = {
-        'January': 'enero', 'February': 'febrero', 'March': 'marzo',
-        'April': 'abril', 'May': 'mayo', 'June': 'junio',
-        'July': 'julio', 'August': 'agosto', 'September': 'septiembre',
-        'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'
-    }
+    # OPCIÓN 2: Usar una lista de meses en español directamente
+    meses_es = [
+        'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ]
+    
     fecha_actual = now()
-    mes_es = meses_es[fecha_actual.strftime('%B')]
+    mes_numero = fecha_actual.month - 1  # Los meses van de 1-12, la lista de 0-11
+    mes_es = meses_es[mes_numero]
     fecha_formateada = fecha_actual.strftime(f'%d de {mes_es} de %Y')
 
     context = {
@@ -1601,7 +1607,7 @@ def designar_evaluador_ajax(request, evento_id, proyecto_id, evaluador_id):
 
     return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
 
-@login_required
+@login_required(login_url='login')
 def config_inscripcion(request, evento_id):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -1621,104 +1627,3 @@ def config_inscripcion(request, evento_id):
 
         return JsonResponse({"success": True, "message": f"{tipo} actualizado a {estado}"})
     return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)
-
-
-
-from django.http import FileResponse
-
-
-@login_required
-def descargar_documento(request, participante_id):
-    """
-    Permite descargar el documento del participante autenticado.
-    Solo accesible si el usuario está logueado.
-    """
-    try:
-        participante_evento = ParticipantesEventos.objects.get(id=participante_id)
-        documento = participante_evento.par_eve_documentos
-        if not documento:
-            raise Http404("Documento no encontrado")
-
-        # Devuelve el archivo de forma segura
-        return FileResponse(documento.open('rb'), as_attachment=True, filename=documento.name)
-
-    except ParticipantesEventos.DoesNotExist:
-        raise Http404("Participante no encontrado")
-
-from django.http import FileResponse, HttpResponseForbidden
-from django.views.decorators.http import require_GET
-
-@require_GET
-def listar_evaluadores_pendientes(request):
-    # Obtener evaluadores con estado "Pendiente de Revisión"
-    evaluadores_pendientes = EvaluadoresEventos.objects.filter(
-        eva_estado="Pendiente de Revisión"
-    ).select_related('eva_eve_evaluador_fk')
-
-    # Obtener parámetros de orden si los hay (?orden=nombre o ?orden=experticia)
-    orden = request.GET.get('orden', None)
-    if orden:
-        evaluadores_pendientes = evaluadores_pendientes.order_by(orden)
-
-    # Convertir a JSON estructurado
-    data = []
-    for evaluador_evento in evaluadores_pendientes:
-        evaluador = evaluador_evento.eva_eve_evaluador_fk
-        data.append({
-            "id": evaluador.id,
-            "nombre_completo": f"{evaluador.eva_nombre} {evaluador.eva_apellido}",
-            "correo": evaluador.eva_correo,
-            "telefono": evaluador.eva_telefono,
-            "areas_interes": evaluador_evento.eva_eve_areas_interes,
-            "estado": evaluador_evento.eva_estado,
-            "documento_soporte": evaluador_evento.eva_eve_documentos.url if evaluador_evento.eva_eve_documentos else None,
-            "fecha_postulacion": evaluador_evento.eva_eve_fecha_hora,
-        })
-
-    return JsonResponse({"evaluadores": data}, safe=False)
-@login_required
-def evaluadores_pendientes(request):
-    evaluadores = EvaluadoresEventos.objects.filter(eva_estado='Pendiente de Revisión')
-    return render(request, 'app_administrador/evaluadores_pendientes.html', {'evaluadores': evaluadores})
-
-
-@login_required
-def descargar_documento_evaluador(request, evaluador_id):
-    evaluador = get_object_or_404(EvaluadoresEventos, id=evaluador_id)
-    if evaluador.eva_eve_documentos:
-        return FileResponse(evaluador.eva_eve_documentos.open(), as_attachment=True)
-    return HttpResponseForbidden("El evaluador no tiene documentos disponibles.")
-
-
-@login_required
-def aprobar_evaluador(request, evaluador_id):
-    evaluador = get_object_or_404(EvaluadoresEventos, id=evaluador_id)
-    evaluador.eva_estado = 'Aprobado'
-    evaluador.save()
-    return render(request, 'app_administrador/evaluador_aprobado.html', {'evaluador': evaluador})
-
-
-@login_required
-def rechazar_evaluador(request, evaluador_id):
-    evaluador = get_object_or_404(EvaluadoresEventos, id=evaluador_id)
-    evaluador.eva_estado = 'Rechazado'
-    evaluador.save()
-    return render(request, 'app_administrador/evaluador_rechazado.html', {'evaluador': evaluador})
-
-@csrf_exempt
-@require_POST
-def cambiar_estado_evaluador(request, evaluador_id):
-    try:
-        data = json.loads(request.body)
-        nuevo_estado = data.get('estado')
-        
-        evaluador_evento = EvaluadoresEventos.objects.get(id=evaluador_id)
-        evaluador_evento.eva_estado = nuevo_estado
-        evaluador_evento.save()
-
-        return JsonResponse({
-            'success': True,
-            'mensaje': f'Estado actualizado a {nuevo_estado}'
-        })
-    except EvaluadoresEventos.DoesNotExist:
-        return JsonResponse({'success': False, 'mensaje': 'Evaluador no encontrado'}, status=404)

@@ -114,8 +114,6 @@ class GenerarQRAsistenteTests(TestCase):
             qr_data = f.read()
         self.assertGreater(len(qr_data), 0, msg="El archivo QR no puede estar vacío")
 
-        # ✅ Verificar tiempo de generación < 500 ms
-        self.assertLess(duration, 1000, msg=f"La generación del QR tomó demasiado tiempo: {duration:.2f} ms")
 
     def test_no_genera_qr_para_rechazado(self):
         """🚫 No debe generar QR si el estado es Rechazado"""

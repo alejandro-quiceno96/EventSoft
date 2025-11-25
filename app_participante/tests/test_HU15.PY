@@ -10,6 +10,10 @@ class PreinscripcionParticipanteViewTest(TestCase):
     def setUp(self):
         self.client = Client()
 
+        # 🔹 Evitar duplicados si ya existen los usuarios
+        Usuario.objects.filter(username="participante_test").delete()
+        Usuario.objects.filter(username="admin_test").delete()
+
         # Crear usuario normal (visitante/participante)
         self.usuario_participante = Usuario.objects.create_user(
             username="participante_test",
@@ -53,7 +57,7 @@ class PreinscripcionParticipanteViewTest(TestCase):
         )
 
         # URL a probar
-        self.url = reverse('app_visitante:preinscripcion_participante', args=[self.evento.id])
+        self.url = reverse('preinscripcion_participante', args=[self.evento.id])
 
     def test_login_required_redirects(self):
         """La vista debe redirigir al login si no hay sesión activa."""
