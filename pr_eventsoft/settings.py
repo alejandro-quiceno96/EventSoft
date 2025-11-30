@@ -88,7 +88,7 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST',),
         'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
-            'driver': os.getenv('DB_DRIVER', 'ODBC Driver 17 for SQL Server'),
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }  
