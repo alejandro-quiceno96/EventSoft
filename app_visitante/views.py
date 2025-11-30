@@ -264,7 +264,7 @@ def inicio_visitante(request):
         'estado_admin': estado_admin,
     }
 
-    return render(request, 'app_visitante/index.html', contexto)
+    return render(request, 'app_visitante/Index.html', contexto)
 
 
 
