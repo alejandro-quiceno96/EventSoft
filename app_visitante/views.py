@@ -679,7 +679,7 @@ def chatbot(request):
                 return JsonResponse({"respuesta": respuesta})
 
         return JsonResponse({"respuesta": "Lo siento, no entendí tu pregunta. ¿Podrías reformularla?"})
-#
+
 def confirmar_rol(request):
     if request.method == 'POST':
         user_id = request.session.get('prelogin_user_id')
