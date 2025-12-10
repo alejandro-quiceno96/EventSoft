@@ -32,12 +32,13 @@ Generación de reportes en PDF para evaluadores y eventos.
 
 Dashboard con estadísticas para cada usuario.
 
+////////////////////////////////////////////////////////////
+
 
 Enlace del despliegue (PythonAnywhere):
 
-https://tuprojecto.pythonanywhere.com
+[https://tuprojecto.pythonanywhere.com](https://sebastian1010101010.pythonanywhere.com/)
 
-(Reemplázalo con el tuyo exacto.)
 
 Instrucciones claras para la ejecución en línea
 
@@ -85,17 +86,18 @@ Se configuró la ruta de archivos estáticos (collectstatic).
 
 Se habilitaron las rutas de documentos cargados por los usuarios.
 
-💻 Instrucciones para Clonar y Ejecutar el Proyecto en un Entorno de Desarrollo (LOCAL)
+Instrucciones para Clonar y Ejecutar el Proyecto en un Entorno de Desarrollo (LOCAL)
 
 A continuación están los pasos completamente detallados, pensados incluso para alguien que nunca haya abierto Django:
 
-⚙️ 1. Clonar el repositorio desde GitHub
+1. Clonar el repositorio desde GitHub
 
 Abre la terminal y ejecuta:
 
 git clone https://github.com/alejandro-quiceno96/EventSoft.git
+
 2. Entrar en la carpeta del proyecto
-cd tu-repositorio
+cd https://github.com/alejandro-quiceno96/EventSoft.git
 
 3. Crear un entorno virtual (recomendado)
 
@@ -111,13 +113,6 @@ python3 -m venv virtual
 Windows:
 virtual\Scripts\activate
 
-Linux / Mac:
-source virtual/bin/activate
-
-
-Sabrás que está activo porque verás algo así:
-
-(virtual) C:\Users\Santiago\proyecto>
 
 5. Instalar dependencias
 
@@ -136,7 +131,7 @@ Pillow
 
 psycopg2 / sqlite
 
-Django REST Framework (si lo usas)
+Django REST Framework 
 
 Cualquier otra librería del sistema
 
