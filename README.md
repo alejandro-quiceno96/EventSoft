@@ -33,10 +33,10 @@ Generación de reportes en PDF para evaluadores y eventos.
 Dashboard con estadísticas para cada usuario.
 
 Equipo del Proyecto
-Integrante	                                       Rol
-Santiago Alzate                      Desarrollador Backend / Frontend
-Santiago Molano                      Desarrollador Backend / Frontend
-Alejandro Quiceno                    Desarrollador Backend / Frontend
-Sebastian Perdomo                    Desarrollador Backend / Frontend
-Equipo SCRUM                         Acompañamiento y dirección metodológica
-Instructoras (Clientes)	             Especificación de requisitos
+Integrante	 
+Santiago Alzate/Desarrollador Backend / Frontend:
+Santiago Molano/Desarrollador Backend / Frontend:
+Alejandro Quiceno/Desarrollador Backend / Frontend:
+Sebastian Perdomo/Desarrollador Backend / Frontend:
+Equipo SCRUM/Acompañamiento y dirección metodológica:
+Instructoras (Clientes)/Especificación de requisitos:
