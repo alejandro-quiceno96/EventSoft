@@ -18,19 +18,19 @@ El sistema permite manejar eventos académicos, culturales, empresariales, e int
 
 **Funcionalidades Principales**
 
-Registro y administración completa de eventos.
+-Registro y administración completa de eventos.
 
-Inscripción automática de participantes con carga de documentos.
+-Inscripción automática de participantes con carga de documentos.
 
-Gestión de criterios de evaluación para cada evento.
+-Gestión de criterios de evaluación para cada evento.
 
-Asignación de evaluadores y control de accesos.
+-Asignación de evaluadores y control de accesos.
 
-Proceso de evaluación con cálculos automáticos y ranking.
+-Proceso de evaluación con cálculos automáticos y ranking.
 
-Generación de reportes en PDF para evaluadores y eventos.
+-Generación de reportes en PDF para evaluadores y eventos.
 
-Dashboard con estadísticas para cada usuario.
+-Dashboard con estadísticas para cada usuario.
 
 ////////////////////////////////////////////////////////////
 
@@ -163,37 +163,37 @@ Y podrás ver la aplicación funcionando localmente.
 
 **EXTRA: Cómo lo desplegamos en PythonAnywhere?**
 
-La aplicación fue desplegada usando PythonAnywhere, siguiendo estos pasos:
+**La aplicación fue deplegada usando PythonAnywhere, siguiendo estos pasos:**
 
-Se subió el código al repositorio GitHub.
+-Se subió el código al repositorio GitHub.
 
-En PythonAnywhere se creó un virtual environment idéntico al local:
+-En PythonAnywhere se creó un virtual environment idéntico al local:
 
-mkvirtualenv virtual --python=python3.10
-
-
-Se instaló el proyecto desde GitHub dentro del servidor:
-
-git clone https://github.com/alejandro-quiceno96/EventSoft.git
+-mkvirtualenv virtual --python=python3.10
 
 
-Se instaló requirements.txt.
+**Se instaló el proyecto desde GitHub dentro del servidor:**
 
-Se configuró el archivo WSGI para apuntar al módulo Django principal.
+-git clone https://github.com/alejandro-quiceno96/EventSoft.git
 
-Se configuraron las rutas:
 
-Static files
+-Se instaló requirements.txt.
 
-Media files (documentos de los participantes)
+-Se configuró el archivo WSGI para apuntar al módulo Django principal.
 
-Se configuró la base de datos en el panel (SQLite o PostgreSQL).
+-Se configuraron las rutas:
 
-Se corrió collectstatic en el servidor.
+-Static files
 
-Se reinició la app web.
+-Media files (documentos de los participantes)
 
-Con esto el proyecto quedó en producción, accesible para todos los roles del sistema.
+-Se configuró la base de datos en el panel (SQLite o PostgreSQL).
+
+-Se corrió collectstatic en el servidor.
+
+-Se reinició la app web.
+
+-Con esto el proyecto quedó en producción, accesible para todos los roles del sistema.
 
 
 
