@@ -166,7 +166,7 @@ para centralizar los archivos estáticos en el servidor.
 
 7. Configuración de la base de datos
 
-La base de datos fue configurada utilizando SQLite, opción adecuada para el tamaño y alcance del proyecto, y se verificó su correcto funcionamiento desde el panel de PythonAnywhere.
+La base de datos fue configurada utilizando MYSQL, opción adecuada para el tamaño y alcance del proyecto, y se verificó el correcto funcionamiento desde el panel de PythonAnywhere.
 
 8. Migraciones
 
