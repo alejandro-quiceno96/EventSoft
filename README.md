@@ -72,6 +72,22 @@ La aplicación está desplegada en PythonAnywhere, lo que permite acceder al sis
 
 -Interpretación de Django desde un virtual environment en la nube.
 
+**Paso a Paso clonar el proyecto**
+paso 1: Ingresar a archivos del Pc.
+paso 2: Elegir donde descargar el proyecto
+Paso 3: Entrar al cmd de git hub 
+Paso 4: Iniciarlizar el repositorio con **git init**
+Paso 5: Clonar el proyecto del repositorio **git clone https://github.com/alejandro-quiceno96/EventSoft.git**
+Paso 6: Entrar al archivo a verificar los archivos 
+Paso 7: Entrar al VS CODE, seleccionar la carpeta y abrirla
+Paso 8: Abrir el terminal ingresar a la carpeta **cd Eventsoft**
+Paso 9: Activar el entorno virtual 
+Paso 10: descargar todos los paquetes **pip install -r requirements.txt**
+Paso 11: Hacer las migraciones en la BD **python manage.py makemigrations** , **python manage.py migrate**, (LLenar la BD)
+Paso 12:Crear el SuperUsuario **python manage.py createsuperuser** (Llenar el panel)
+Paso 13 Ejectuar la aplicacion localmente **python manage.py runserver**
+Paso 14: ingresar al localHost **http://127.0.0.1:8000**
+
 **Características del despliegue en PythonAnywhere:**
 
 -Se configuró el virtual environment del proyecto.
@@ -86,114 +102,81 @@ La aplicación está desplegada en PythonAnywhere, lo que permite acceder al sis
 
 -Se habilitaron las rutas de documentos cargados por los usuarios.
 
-**Instrucciones para Clonar y Ejecutar el Proyecto en un Entorno de Desarrollo (LOCAL)**
 
-A continuación están los pasos completamente detallados, pensados incluso para alguien que nunca haya abierto Django:
+**Despliegue del proyecto en PythonAnywhere**
 
-**1. Clonar el repositorio desde GitHub**
+1. Control de versiones
 
-Abre la terminal y ejecuta:
+Inicialmente, el proyecto fue organizado y subido a un repositorio en GitHub, lo que permitió una gestión adecuada del código y facilitó su instalación en el servidor.
 
-git clone https://github.com/alejandro-quiceno96/EventSoft.git
+2. Creación del entorno virtual
 
-**2. Entrar en la carpeta del proyecto**
-cd https://github.com/alejandro-quiceno96/EventSoft.git
+En el servidor de PythonAnywhere se creó un entorno virtual con la misma versión de Python utilizada en desarrollo local, asegurando compatibilidad entre ambientes:
 
-**3. Crear un entorno virtual (recomendado)**
+**mkvirtualenv virtual --python=python3.10**
 
-Esto evita errores por versiones de librerías.
+Posteriormente, se activó el entorno virtual para trabajar de forma aislada.
 
-Windows:
-python -m venv virtual
+3. Clonación del proyecto
 
-Linux / Mac:
-python3 -m venv virtual
+El proyecto fue clonado directamente desde el repositorio de GitHub al servidor:
 
-**4. Activar el entorno virtual**
-Windows:
-virtual\Scripts\activate
+**git clone https://github.com/alejandro-quiceno96/EventSoft.git**
 
+Esto permitió contar con la misma estructura y código del entorno local.
 
-**5. Instalar dependencias**
+4. Instalación de dependencias
 
-Con el entorno virtual activo, ejecuta:
+Con el entorno virtual activo, se instalaron todas las dependencias necesarias usando el archivo requirements.txt:
 
-pip install -r requirements.txt
+**pip install -r requirements.txt**
 
+Esto aseguró que todas las librerías requeridas por Django y el proyecto estuvieran disponibles.
 
-**Esto instalará:**
+5. Configuración del archivo WSGI
 
-Django
+Se configuró el archivo WSGI de PythonAnywhere para que apunte correctamente al módulo principal del proyecto Django, permitiendo que la aplicación web pueda ejecutarse en producción.
 
-WeasyPrint
+6. Configuración de archivos estáticos y multimedia
 
-Pillow
+Se configuraron las rutas necesarias en el panel de PythonAnywhere para:
 
-psycopg2 / sqlite
+Static files, utilizados por el diseño y la interfaz.
 
-Django REST Framework 
+Media files, destinados al almacenamiento de documentos e imágenes subidas por los participantes.
 
-Cualquier otra librería del sistema
+Además, se ejecutó el comando:
 
-**6. Crear las migraciones**
-python manage.py makemigrations
-python manage.py migrate
+**python manage.py collectstatic**
 
-**7. Crear un superusuario (opcional pero recomendado)**
-python manage.py createsuperuser
+para centralizar los archivos estáticos en el servidor.
 
+7. Configuración de la base de datos
 
-Sigue las instrucciones en pantalla.
+La base de datos fue configurada utilizando SQLite, opción adecuada para el tamaño y alcance del proyecto, y se verificó su correcto funcionamiento desde el panel de PythonAnywhere.
 
-**8. Cargar archivos estáticos (solo una vez)**
-python manage.py collectstatic
+8. Migraciones
 
-**9. Ejecutar el servidor local**
+Se ejecutaron las migraciones para asegurar que la estructura de la base de datos estuviera sincronizada con los modelos del proyecto:
 
-Finalmente:
+**python manage.py migrate**
 
-python manage.py runserver
+9. Variables de entorno y seguridad
 
+Se ajustaron parámetros importantes del proyecto, como:
 
-**Ahora entra a:**
+D**EBUG = False para entorno de producción.**
 
-http://127.0.0.1:8000
+Configuración correcta de ALLOWED_HOSTS.
 
-Y podrás ver la aplicación funcionando localmente.
+Uso de variables de entorno para datos sensibles.
 
-**EXTRA: Cómo lo desplegamos en PythonAnywhere?**
+10. Reinicio y verificación
 
-**La aplicación fue deplegada usando PythonAnywhere, siguiendo estos pasos:**
-
--Se subió el código al repositorio GitHub.
-
--En PythonAnywhere se creó un virtual environment idéntico al local:
-
--mkvirtualenv virtual --python=python3.10
+Finalmente, se reinició la aplicación web desde el panel de PythonAnywhere y se realizaron pruebas funcionales para validar el acceso correcto de todos los roles del sistema.
 
 
-**Se instaló el proyecto desde GitHub dentro del servidor:**
 
--git clone https://github.com/alejandro-quiceno96/EventSoft.git
-
-
--Se instaló requirements.txt.
-
--Se configuró el archivo WSGI para apuntar al módulo Django principal.
-
--Se configuraron las rutas:
-
--Static files
-
--Media files (documentos de los participantes)
-
--Se configuró la base de datos en el panel (SQLite o PostgreSQL).
-
--Se corrió collectstatic en el servidor.
-
--Se reinició la app web.
-
--Con esto el proyecto quedó en producción, accesible para todos los roles del sistema.
 
 
 
