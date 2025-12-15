@@ -1,213 +1,190 @@
-# EventSoft
+# 🎯 EventSoft  
+**Sistema Web de Gestión Automatizada de Eventos**
 
-**Descripción del Proyecto**
+---
 
-Este proyecto corresponde a una aplicación web completa para la gestión automatizada de eventos, desarrollada como solución a una necesidad presentada por varias instructoras (clientes), quienes requerían un sistema capaz de administrar todo tipo de eventos de forma eficiente, ordenada y centralizada.
+## 📌 Descripción del Proyecto
 
-El sistema permite manejar eventos académicos, culturales, empresariales, e integra varios tipos de usuarios con funcionalidades específicas:
+**EventSoft** es una aplicación web desarrollada con **Django**, orientada a la gestión integral y automatizada de eventos académicos, culturales y empresariales.
 
-**Roles del Sistema**
+El sistema surge como respuesta a una necesidad real presentada por instructoras (clientes), quienes requerían una plataforma centralizada, eficiente y segura para administrar eventos con múltiples roles y procesos de evaluación.
 
-**Exponentes:** realizan preinscripción, cargan documentación y consultan estado.
+La aplicación permite registrar eventos, gestionar participantes, evaluadores y criterios de evaluación, realizar procesos de calificación con cálculos automáticos, generar reportes y visualizar estadísticas mediante dashboards personalizados.
 
-**Evaluadores:** califican participantes según criterios definidos, modifican sus datos y descargan reportes.
+---
 
-**Administradores:** gestionan eventos, participantes, evaluadores y asignaciones.
+## 👥 Roles del Sistema
 
-**Super Administradores:** control total sobre todas las apps del sistema.
+### 🔹 Exponentes / Participantes
+- Realizan preinscripción a eventos.
+- Cargan documentación requerida.
+- Consultan el estado de su inscripción y evaluación.
 
-**Funcionalidades Principales**
+### 🔹 Evaluadores
+- Califican participantes según criterios definidos.
+- Modifican su información personal.
+- Descargan reportes en PDF.
 
--Registro y administración completa de eventos.
+### 🔹 Administradores
+- Gestionan eventos.
+- Administran participantes, evaluadores y asignaciones.
+- Configuran criterios de evaluación y categorías.
 
--Inscripción automática de participantes con carga de documentos.
+### 🔹 Super Administradores
+- Control total del sistema.
+- Gestión completa de todas las aplicaciones y módulos.
 
--Gestión de criterios de evaluación para cada evento.
+---
+
+## ⚙️ Funcionalidades Principales
+
+- Registro y administración completa de eventos.
+- Inscripción automática de participantes con carga de documentos.
+- Gestión de criterios de evaluación por evento.
+- Asignación de evaluadores y control de accesos.
+- Proceso de evaluación con cálculos automáticos y ranking.
+- Generación de reportes en PDF.
+- Dashboard con estadísticas personalizadas por rol.
+- Control de inscripciones habilitadas o deshabilitadas.
+- Gestión de archivos estáticos y multimedia.
+
+---
+
+## 🌐 Enlace del Despliegue
+
+La aplicación se encuentra desplegada en **PythonAnywhere**:
 
--Asignación de evaluadores y control de accesos.
+🔗 https://sebastian1010101010.pythonanywhere.com/
+
+No es necesario realizar ninguna instalación para usar la aplicación en línea.
+
+---
+
+## 🧭 Uso de la Aplicación en Línea
 
--Proceso de evaluación con cálculos automáticos y ranking.
+1. Ingresar al enlace del despliegue.
+2. Seleccionar el rol correspondiente (Participante, Evaluador, Administrador).
+3. Acceder con las credenciales asignadas.
+4. Acceder al panel correspondiente según el rol.
+5. Ejecutar las funcionalidades permitidas por el sistema.
 
--Generación de reportes en PDF para evaluadores y eventos.
+---
 
--Dashboard con estadísticas para cada usuario.
+## 💻 Instalación y Ejecución Local
 
-////////////////////////////////////////////////////////////
+### 🔹 Requisitos Previos
+- Python 3.10 o superior
+- Git
+- MySQL
+- Pip
+- Virtualenv / venv
 
+---
 
-**Enlace del despliegue (PythonAnywhere):**
+### 🔹 Clonar el Proyecto
 
-[https://tuprojecto.pythonanywhere.com](https://sebastian1010101010.pythonanywhere.com/)
+```bash
+git init
+git clone https://github.com/alejandro-quiceno96/EventSoft.git
+cd EventSoft
+git checkout master
+```
 
+### 🔹Crear y Activar Entorno Virtual
 
-**Instrucciones claras para la ejecución en línea**
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+### Configuración de Variables de Entorno
 
-La aplicación está desplegada en PythonAnywhere, lo que permite acceder al sistema directamente desde cualquier navegador sin necesidad de instalar nada.
-
-**Cómo usar la aplicación online:**
-
--Entra al enlace del sitio web desplegado.
-
--Selecciona el rol con el que deseas ingresar (Participante, Evaluador, Administrador, etc.).
-
--Si eres evaluador o participante:
-
--Ingresa con tu cédula o el identificador asignado.
-
--Accede a tu panel personal.
-
--Si eres administrador:
-
--Accede con las credenciales entregadas por el Product Owner.
-
--Gestiona eventos, evaluadores, categorías, criterios o participantes.
-
--El sistema se ejecuta automáticamente en un servidor PythonAnywhere:
-
--Base de datos configurada.
-
--Archivos estáticos cargados.
-
--Media y documentos habilitados.
-
--Interpretación de Django desde un virtual environment en la nube.
-
-**Paso a Paso clonar el proyecto**
-
-paso 1: Ingresar a archivos del Pc.
-
-paso 2: Elegir donde descargar el proyecto
-
-Paso 3: Entrar al cmd de git hub 
-
-Paso 4: Iniciarlizar el repositorio con **git init**
-
-Paso 5: Clonar el proyecto del repositorio **git clone https://github.com/alejandro-quiceno96/EventSoft.git**
-ponerlo en la rama **master**, entrar a la carpeta con **cd Eventsoft** , luego poner **git branch master** y ahi entraremos a la rama master.
-
-Paso 6: Entrar al archivo a verificar los archivos 
-
-Paso 7: Entrar al VS CODE, seleccionar la carpeta y abrirla
-
-Paso 8: Abrir el terminal ingresar a la carpeta **cd Eventsoft**
-
-Paso 9: Activar el entorno virtual 
-
-Paso 10: descargar todos los paquetes **pip install -r requirements.txt**
-
-Paso 11: Hacer las migraciones en la BD **python manage.py makemigrations** , **python manage.py migrate**, (LLenar la BD)
-
-Paso 12:Crear el SuperUsuario **python manage.py createsuperuser** (Llenar el panel)
-
-Paso 13 Ejectuar la aplicacion localmente **python manage.py runserver**
-
-Paso 14: ingresar al localHost **http://127.0.0.1:8000**
-
-**Características del despliegue en PythonAnywhere:**
-
--Se configuró el virtual environment del proyecto.
-
--Se instaló Django, WeasyPrint y demás dependencias.
-
--Se configuró el archivo WSGI para ejecutar el proyecto.
-
--Se configuró la base de datos para uso en producción.
-
--Se configuró la ruta de archivos estáticos (collectstatic).
-
--Se habilitaron las rutas de documentos cargados por los usuarios.
-
-
-**Despliegue del proyecto en PythonAnywhere**
-
-1. Control de versiones
-
-Inicialmente, el proyecto fue organizado y subido a un repositorio en GitHub, lo que permitió una gestión adecuada del código y facilitó su instalación en el servidor.
-
-2. Creación del entorno virtual
-
-En el servidor de PythonAnywhere se creó un entorno virtual con la misma versión de Python utilizada en desarrollo local, asegurando compatibilidad entre ambientes:
-
-**mkvirtualenv virtual --python=python3.10**
-
-Posteriormente, se activó el entorno virtual para trabajar de forma aislada.
-
-3. Clonación del proyecto
-
-El proyecto fue clonado directamente desde el repositorio de GitHub al servidor:
-
-**git clone https://github.com/alejandro-quiceno96/EventSoft.git**
-
-Esto permitió contar con la misma estructura y código del entorno local.
-
-4. Instalación de dependencias
-
-Con el entorno virtual activo, se instalaron todas las dependencias necesarias usando el archivo requirements.txt:
-
-**pip install -r requirements.txt**
-
-Esto aseguró que todas las librerías requeridas por Django y el proyecto estuvieran disponibles.
-
-5. Configuración del archivo WSGI
-
-Se configuró el archivo WSGI de PythonAnywhere para que apunte correctamente al módulo principal del proyecto Django, permitiendo que la aplicación web pueda ejecutarse en producción.
-
-6. Configuración de archivos estáticos y multimedia
-
-Se configuraron las rutas necesarias en el panel de PythonAnywhere para:
-
-Static files, utilizados por el diseño y la interfaz.
-
-Media files, destinados al almacenamiento de documentos e imágenes subidas por los participantes.
-
-Además, se ejecutó el comando:
-
-**python manage.py collectstatic**
-
-para centralizar los archivos estáticos en el servidor.
-
-7. Configuración de la base de datos
-
-La base de datos fue configurada utilizando MYSQL, opción adecuada para el tamaño y alcance del proyecto, y se verificó el correcto funcionamiento desde el panel de PythonAnywhere.
-
-8. Migraciones
-
-Se ejecutaron las migraciones para asegurar que la estructura de la base de datos estuviera sincronizada con los modelos del proyecto:
-
-**python manage.py migrate**
-
-9. Variables de entorno y seguridad
-
-Se ajustaron parámetros importantes del proyecto, como:
-
-D**EBUG = False para entorno de producción.**
-
-Configuración correcta de ALLOWED_HOSTS.
-
-Uso de variables de entorno para datos sensibles.
-
-10. Reinicio y verificación
-
-Finalmente, se reinició la aplicación web desde el panel de PythonAnywhere y se realizaron pruebas funcionales para validar el acceso correcto de todos los roles del sistema.
-
-
-
-
-
-
-**Equipo del Proyecto**
-Integrantes: 
-Santiago Alzate/Desarrollador Backend / Frontend:
-
-Santiago Molano/Desarrollador Backend / Frontend:
-
-Alejandro Quiceno/Desarrollador Backend / Frontend:
-
-Sebastian Perdomo/Desarrollador Backend / Frontend:
-
-Equipo SCRUM/Acompañamiento y dirección metodológica:
+Crear un archivo .env en la raiz del proyecto y copiar y pegar lo siguiente: 
+```bash
+# Django
+SECRET_KEY=django-insecure-xxxx
+DEBUG=True
+
+# Base de Datos
+DB_NAME=eventsoft
+DB_USER=usuario_db
+DB_PASSWORD=contraseña_db
+DB_HOST=localhost
+DB_PORT=3306
+
+# Correo
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=correo@gmail.com
+EMAIL_HOST_PASSWORD=clave_correo
+DEFAULT_FROM_EMAIL=eventsoft3@gmail.com
+```
+### Instalar Dependencias 
+```bash
+pip install -r requirements.txt
+```
+### Migraciones y creación 
+```bash
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+````
+
+### Ejecutar Aplicación 
+```bash
+python manage.py runserver
+```
+### Acceder desde el navegador 
+```bash
+http://127.0.0.1:8000
+```
+
+### 🚀 Despliegue en PythonAnywhere (Resumen)
+Creación del entorno virtual:
+```bash
+mkvirtualenv virtual --python=python3.10
+```
+Clonación del repositorio desde GitHub.
+
+Instalación de dependencias.
+
+Configuración del archivo WSGI.
+
+Configuración de archivos estáticos y multimedia.
+
+Ejecución de:
+```bash
+python manage.py collectstatic
+python manage.py migrate
+```
+
+Configuración de:
+
+DEBUG = False
+
+ALLOWED_HOSTS
+
+Variables de entorno
+
+Reinicio y validación del sistema.
+
+### Equipo del Proyecto
+**Desarrollo Backend / Frontend**
+
+Santiago Alzate
+
+Santiago Molano
+
+Alejandro Quiceno
+
+Sebastián Perdomo
+
+**SCRUM / Acompañamiento**
 
 Instructoras:
-Diana Carolina Galvez
+
+Diana Carolina Gálvez
+
 Diana Carolina Vargas
+
 
