@@ -74,18 +74,31 @@ La aplicación está desplegada en PythonAnywhere, lo que permite acceder al sis
 
 **Paso a Paso clonar el proyecto**
 paso 1: Ingresar a archivos del Pc.
+
 paso 2: Elegir donde descargar el proyecto
+
 Paso 3: Entrar al cmd de git hub 
+
 Paso 4: Iniciarlizar el repositorio con **git init**
+
 Paso 5: Clonar el proyecto del repositorio **git clone https://github.com/alejandro-quiceno96/EventSoft.git**
+
 Paso 6: Entrar al archivo a verificar los archivos 
+
 Paso 7: Entrar al VS CODE, seleccionar la carpeta y abrirla
+
 Paso 8: Abrir el terminal ingresar a la carpeta **cd Eventsoft**
+
 Paso 9: Activar el entorno virtual 
+
 Paso 10: descargar todos los paquetes **pip install -r requirements.txt**
+
 Paso 11: Hacer las migraciones en la BD **python manage.py makemigrations** , **python manage.py migrate**, (LLenar la BD)
+
 Paso 12:Crear el SuperUsuario **python manage.py createsuperuser** (Llenar el panel)
+
 Paso 13 Ejectuar la aplicacion localmente **python manage.py runserver**
+
 Paso 14: ingresar al localHost **http://127.0.0.1:8000**
 
 **Características del despliegue en PythonAnywhere:**
