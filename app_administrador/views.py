@@ -487,15 +487,20 @@ def actualizar_estado_proyecto(request, proyecto_id, nuevo_estado):
     url = reverse('administrador:ver_participantes', kwargs={'evento_id': evento_id})
     return redirect(f'{url}?estado={nuevo_estado}')
 
-
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
 def ver_asistentes(request: HttpRequest, evento_id):
     estado = request.GET.get('estado')
 
     # Obtener los asistentes del evento utilizando el ORM de Django
     asistentes_evento = AsistentesEventos.objects.select_related('asi_eve_asistente_fk').filter(
-        asi_eve_evento_fk=evento_id,
-        asi_eve_estado=estado)
+        asi_eve_evento_fk=evento_id
+    )
+
+    if estado:
+        asistentes_evento = asistentes_evento.filter(asi_eve_estado=estado)
+
+    print(asistentes_evento)
+    print(Asistentes)
     
     evento = get_object_or_404(Eventos, id=evento_id)
 
@@ -518,6 +523,8 @@ def ver_asistentes(request: HttpRequest, evento_id):
             'estado': ae.asi_eve_estado,
             'hora_inscripcion': ae.asi_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ae.asi_eve_fecha_hora else None,
         })
+    capacidad = evento.eve_capacidad if evento.eve_capacidad and evento.eve_capacidad > 0 else None
+
 
     return render(request, 'app_administrador/ver_asistentes.html', {
         'asistentes': asistentes_data,
@@ -527,10 +534,11 @@ def ver_asistentes(request: HttpRequest, evento_id):
         'evento_fecha_fin': evento.eve_fecha_fin.isoformat(),
         'fecha_actual': now().isoformat(),
         'asistentes_admitidos': asistentes_admitidos,
+        'capacidad_max': capacidad, 
     })
     
 @csrf_exempt
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
@@ -541,7 +549,7 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
     if not evento_id:
         return JsonResponse({'status': 'error', 'message': 'ID de evento no proporcionado'}, status=400)
 
-    # Buscar el asistente_evento
+    # Buscar el registro de asistente en el evento
     asistente_evento = AsistentesEventos.objects.filter(
         asi_eve_asistente_fk=asistente_id,
         asi_eve_evento_fk=evento_id
@@ -552,15 +560,26 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
 
     evento = asistente_evento.asi_eve_evento_fk
 
-    # ✅ Verificar límite de aforo antes de admitir
+    # ✅ Validación de límite de aforo antes de admitir
     if nuevo_estado == 'Admitido':
+        if evento.eve_capacidad and evento.eve_capacidad > 0:  # Evento con cupo limitado
+            admitidos_actuales = AsistentesEventos.objects.filter(
+                asi_eve_evento_fk=evento,
+                asi_eve_estado='Admitido'
+            ).count()
+            if admitidos_actuales >= evento.eve_capacidad:
+                # No permitir admitir si no hay cupos
+                messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
+                url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
+                return redirect(url)
+
         qr_participante = generar_pdf(asistente_id, "Asistente", evento_id, tipo="asistente")
         clave_acceso = generar_clave_acceso()
     else:
         qr_participante = None
         clave_acceso = 0
 
-    # ✅ Actualizar los valores
+    # ✅ Actualizar los valores del asistente_evento
     asistente_evento.asi_eve_estado = nuevo_estado
     asistente_evento.asi_eve_qr = qr_participante
     asistente_evento.asi_eve_clave = clave_acceso
@@ -568,52 +587,44 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
 
     asistente = get_object_or_404(Asistentes, id=asistente_id)
 
-    # ✅ Envío de correo si es admitido
+    # ✅ Enviar correo según estado
     if nuevo_estado == 'Admitido':
         asunto = f"Confirmación de inscripción como asistente al evento: {evento.eve_nombre}"
-        mensaje_html = render_to_string("app_administrador/correos/notificacion_admitido_asistente.html", {
-            "nombre": asistente.usuario.first_name,
-            "evento": evento.eve_nombre,
-            "clave": clave_acceso,
-        })
-
+        mensaje_html = render_to_string(
+            "app_administrador/correos/notificacion_admitido_asistente.html",
+            {"nombre": asistente.usuario.first_name, "evento": evento.eve_nombre, "clave": clave_acceso}
+        )
         email = EmailMultiAlternatives(
-            asunto,
-            "",  # cuerpo de texto plano (opcional)
-            settings.DEFAULT_FROM_EMAIL,
-            [asistente.usuario.email]
+            asunto, "", settings.DEFAULT_FROM_EMAIL, [asistente.usuario.email]
         )
         email.attach_alternative(mensaje_html, "text/html")
 
-        ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))
-        if os.path.exists(ruta_pdf):
-            with open(ruta_pdf, 'rb') as f:
-                email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
+        if qr_participante:
+            ruta_pdf = os.path.join(settings.MEDIA_ROOT, str(qr_participante))
+            if os.path.exists(ruta_pdf):
+                with open(ruta_pdf, 'rb') as f:
+                    email.attach(os.path.basename(ruta_pdf), f.read(), 'application/pdf')
 
         email.send(fail_silently=True)
 
     elif nuevo_estado == 'Rechazado':
         asunto = f"Inscripción rechazada al evento: {evento.eve_nombre}"
-        mensaje_html = render_to_string("app_administrador/correos/correo_rechazo_asistente.html", {
-            "nombre": asistente.usuario.first_name,
-            "evento": evento.eve_nombre,
-            "motivo": motivo or "No se especificó motivo.",
-            "anio": timezone.now().year,
-        })
-
-        email = EmailMultiAlternatives(
-            asunto,
-            "",
-            settings.DEFAULT_FROM_EMAIL,
-            [asistente.usuario.email]
+        mensaje_html = render_to_string(
+            "app_administrador/correos/correo_rechazo_asistente.html",
+            {
+                "nombre": asistente.usuario.first_name,
+                "evento": evento.eve_nombre,
+                "motivo": motivo or "No se especificó motivo.",
+                "anio": timezone.now().year,
+            }
         )
+        email = EmailMultiAlternatives(asunto, "", settings.DEFAULT_FROM_EMAIL, [asistente.usuario.email])
         email.attach_alternative(mensaje_html, "text/html")
         email.send(fail_silently=True)
 
-    # ✅ Redirigir correctamente
+    # ✅ Redirigir a la vista de asistentes
     url = reverse('administrador:ver_asistentes', kwargs={'evento_id': evento_id})
     return redirect(f'{url}?estado={nuevo_estado}')
-
 
 @csrf_exempt
 def criterios_evaluacion(request, evento_id):

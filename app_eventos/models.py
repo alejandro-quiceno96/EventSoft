@@ -10,7 +10,7 @@ class Eventos(models.Model):
     eve_fecha_fin = models.DateField()
     eve_estado = models.CharField(max_length=100)
     eve_imagen = models.ImageField(upload_to='image/')
-    eve_capacidad = models.IntegerField()
+    eve_capacidad = models.PositiveIntegerField(null=True, blank=True)
     eve_tienecosto = models.BooleanField(default=False)
     eve_programacion = models.FileField(upload_to='pdf/programacion/', blank=True, null=True)
     eve_administrador_fk = models.ForeignKey('app_administrador.Administradores', on_delete=models.CASCADE)

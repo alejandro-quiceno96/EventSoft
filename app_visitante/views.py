@@ -514,33 +514,25 @@ def submit_preinscripcion_participante(request):
 def registrar_asistente(request, evento_id):
     evento = get_object_or_404(Eventos, pk=evento_id)
 
-    # ✅ Validar cupos disponibles antes de registrar
+    # Contar inscritos activos (Admitido + Pendiente)
     inscritos = AsistentesEventos.objects.filter(
         asi_eve_evento_fk=evento,
         asi_eve_estado__in=['Admitido', 'Pendiente']
     ).count()
-    
-    if evento.eve_capacidad != 0:
+
+    # ✅ Validar cupo solo si el evento tiene capacidad > 0
+    if evento.eve_capacidad and evento.eve_capacidad > 0:
         if inscritos >= evento.eve_capacidad:
             messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
             return redirect(reverse('detalle_evento', args=[evento.id]))
-        
-        evento.eve_capacidad -= 1
-        evento.save()
-    else:
-        return redirect(reverse('detalle_evento', args=[evento.id]))
-    
 
     if request.method == 'POST':
-        soporte = request.FILES.get('comprobante_pago', None)  # Soporte opcional
+        soporte = request.FILES.get('comprobante_pago', None)
 
-        # Verificar si el usuario ya es un asistente registrado
-        try:
-            asistente = Asistentes.objects.get(usuario_id=request.user.id)
-        except Asistentes.DoesNotExist:
-            asistente = Asistentes.objects.create(usuario_id=request.user.id)
+        # Obtener o crear el asistente
+        asistente, created = Asistentes.objects.get_or_create(usuario_id=request.user.id)
 
-        # Crear la inscripción del asistente al evento
+        # Determinar estado según costo del evento
         if evento.eve_tienecosto:
             estado = 'Pendiente'
             qr = ''
@@ -550,17 +542,27 @@ def registrar_asistente(request, evento_id):
             qr = generar_pdf(asistente.id, "Asistente", evento_id, tipo="asistente")
             clave = generar_clave_acceso()
 
-        # 🔹 Enviar correo solo si está admitido
+        # Crear registro del asistente al evento
+        asistente_evento = AsistentesEventos(
+            asi_eve_evento_fk=evento,
+            asi_eve_asistente_fk=asistente,
+            asi_eve_estado=estado,
+            asi_eve_qr=qr,
+            asi_eve_clave=clave,
+            asi_eve_soporte=soporte,
+            asi_eve_fecha_hora=timezone.now(),
+        )
+        asistente_evento.save()
+
+        # Enviar correo solo si está Admitido
         if estado == 'Admitido':
             subject = f"🎉 Confirmación de inscripción a {evento.eve_nombre}"
-
-            # Renderizar plantilla HTML
             html_content = render_to_string('app_visitante/correos/registro_asistente.html', {
                 'evento': evento,
                 'usuario': request.user,
                 'clave': clave
             })
-            text_content = strip_tags(html_content)  # Versión solo texto
+            text_content = strip_tags(html_content)
 
             email = EmailMultiAlternatives(
                 subject,
@@ -568,37 +570,22 @@ def registrar_asistente(request, evento_id):
                 settings.DEFAULT_FROM_EMAIL,
                 [request.user.email]
             )
+
+            # Adjuntar HTML
             email.attach_alternative(html_content, "text/html")
 
-            qr_absoluta = os.path.join(settings.MEDIA_ROOT, qr)
-            email.attach_file(qr_absoluta)
+            # Adjuntar QR
+            if qr:
+                qr_absoluta = os.path.join(settings.MEDIA_ROOT, qr)
+                email.attach_file(qr_absoluta)
+
             email.send()
 
-            # Crear la inscripción del asistente al evento
-            asistente_evento = AsistentesEventos(
-                asi_eve_evento_fk=evento,
-                asi_eve_asistente_fk=asistente,
-                asi_eve_estado=estado,
-                asi_eve_qr=qr,
-                asi_eve_clave=clave,
-                asi_eve_soporte=None,
-                asi_eve_fecha_hora=timezone.now(),
-            )
-        else:
-            asistente_evento = AsistentesEventos(
-                asi_eve_evento_fk=evento,
-                asi_eve_asistente_fk=asistente,
-                asi_eve_estado=estado,
-                asi_eve_qr=qr,
-                asi_eve_clave="",
-                asi_eve_soporte=soporte,
-                asi_eve_fecha_hora=timezone.now(),
-            )
+        messages.success(request, "✅ Inscripción registrada correctamente.")
+        return redirect(reverse('inicio_visitante') + '?registro=exito_asistente')
 
-        asistente_evento.save()
-
-    return redirect(reverse('inicio_visitante') + '?registro=exito_asistente')
-
+    # Si no es POST, redirigir al detalle del evento
+    return redirect(reverse('detalle_evento', args=[evento.id]))
 
 @login_required(login_url='login')
 def registrar_evaluador(request, evento_id):

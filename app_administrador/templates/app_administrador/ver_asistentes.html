@@ -101,11 +101,11 @@
         <a href="?estado=Rechazado" class="btn btn-danger"><i class="fa-solid fa-x"></i> Rechazados</a>
     </div>
     {% if estado == 'Admitido' %}
-            <div class="text-end mb-4 animate-fade-in">
-                <button id="btnAbrirModalCertificados" class="btn btn-success me-3">
-                <i class="fa-solid fa-envelope me-1"></i> Enviar certificados
-                </button>
-            </div>
+    <div class="text-end mb-4 animate-fade-in">
+        <button id="btnAbrirModalCertificados" class="btn btn-success me-3">
+            <i class="fa-solid fa-envelope me-1"></i> Enviar certificados
+        </button>
+    </div>
     {% endif %}
  
     
@@ -335,34 +335,199 @@
     </div>
   </div>
 </div>
+<script>
+    // --- Variables iniciales ---
+    let capacidadMax = {{ evento.eve_capacidad|default:"null" }};
+    if (capacidadMax === null) capacidadMax = Infinity;  // sin límite si es null
 
+    let admitidosActuales = {{ asistentes_admitidos|default:"0" }};
+    const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00");
+    const fechaActual = new Date("{{ fecha_actual }}");
+    const UrlEnvioCertificados = "{% url 'administrador:enviar_certificado_asistentes' evento.id %}";
 
+    console.log("capacidadMax:", capacidadMax, "admitidosActuales:", admitidosActuales);
 
-        <script>
-        let capacidadMax = parseInt('{{ evento.eve_capacidad }}');
-        let admitidosActuales = parseInt('{{ asistentes_admitidos }}');
-        console.log("capacidadMax:", capacidadMax);
-        console.log("admitidosActuales:", admitidosActuales);
-        </script>
-      
-        <script>
-            const eventoFechaFin = new Date("{{ evento_fecha_fin }}T00:00:00"); // solo si es DateField
-            const fechaActual = new Date("{{ fecha_actual }}"); // DateTime
-        </script>
+    // --- Funciones utilitarias ---
+    function showLoader() {
+        const bg = document.getElementById("loader-bg");
+        if (bg) bg.classList.remove("d-none");
+    }
 
+    function hideLoader() {
+        const bg = document.getElementById("loader-bg");
+        if (bg) bg.classList.add("d-none");
+    }
 
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.slice(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
-        <script src="{% static 'app_administrador/js/asistentes.js'%}"></script>
-        <script>
-            const UrlEnvioCertificados = "{% url 'administrador:enviar_certificado_asistentes' evento.id %}";
-        </script>
+    document.addEventListener('DOMContentLoaded', function () {
 
+        let asistenteId = null;
+        let eventoId = null;
+        let urlBase = null;
 
+        // --- Admitir asistentes ---
+        document.querySelectorAll('.btn-admitir').forEach(btn => {
+            btn.addEventListener('click', function () {
+                asistenteId = this.dataset.id;
+                eventoId = this.dataset.evento;
+                urlBase = this.dataset.url;
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'app_administrador/js/asistentes.js' %}"></script>
+                const mensaje = document.getElementById('mensaje-admitir');
+                if (mensaje) mensaje.innerText = `¿Estás seguro que deseas admitir a ${this.dataset.nombre}?`;
 
-    
-    
-    </body>
+                const modalAdmitir = new bootstrap.Modal(document.getElementById('modalAdmitir'));
+                modalAdmitir.show();
+            });
+        });
+
+        const btnConfirmarAdmitir = document.getElementById('confirmarAdmitir');
+        if (btnConfirmarAdmitir) {
+            btnConfirmarAdmitir.addEventListener('click', function () {
+
+                if (admitidosActuales >= capacidadMax) {
+                    const modalCupo = new bootstrap.Modal(document.getElementById('modalSinCupo'));
+                    modalCupo.show();
+                    setTimeout(() => {
+                        modalCupo.hide();
+                        location.reload();
+                    }, 1300);
+                    return;
+                }
+
+                const url = urlBase.replace('0', asistenteId).replace('estado-placeholder', 'Admitido');
+                const formData = new FormData();
+                formData.append('evento_id', eventoId);
+
+                showLoader();
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                })
+                    .then(res => {
+                        if (res.redirected) {
+                            window.location.href = res.url;
+                        } else {
+                            return res.json();
+                        }
+                    })
+                    .then(data => {
+                        if (data?.status === 'error') {
+                            alert(data.message);
+                            hideLoader();
+                        }
+                    })
+                    .catch(err => { console.error(err); hideLoader(); });
+
+            });
+        }
+
+        // --- Rechazar asistentes ---
+        document.querySelectorAll('.btn-rechazar').forEach(btn => {
+            btn.addEventListener('click', function () {
+                asistenteId = this.dataset.id;
+                eventoId = this.dataset.evento;
+                urlBase = this.dataset.url;
+
+                const mensaje = document.getElementById('mensaje-rechazo');
+                if (mensaje) mensaje.innerText = `¿Estás seguro que deseas rechazar a ${this.dataset.nombre}?`;
+
+                const textarea = document.getElementById('motivoRechazo');
+                if (textarea) textarea.value = '';
+            });
+        });
+
+        const btnConfirmarRechazo = document.getElementById('confirmarRechazo');
+        if (btnConfirmarRechazo) {
+            btnConfirmarRechazo.addEventListener('click', function () {
+                const motivo = document.getElementById('motivoRechazo')?.value.trim();
+                if (!motivo) {
+                    alert('Por favor, escribe el motivo del rechazo.');
+                    return;
+                }
+
+                const url = urlBase.replace('0', asistenteId).replace('estado-placeholder', 'Rechazado');
+                const formData = new FormData();
+                formData.append('evento_id', eventoId);
+                formData.append('motivo', motivo);
+
+                showLoader();
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                })
+                    .then(res => {
+                        if (res.redirected) {
+                            window.location.href = res.url;
+                        } else {
+                            return res.json();
+                        }
+                    })
+                    .then(data => {
+                        if (data?.status === 'error') {
+                            alert(data.message);
+                            hideLoader();
+                        }
+                    })
+                    .catch(err => { console.error(err); hideLoader(); });
+
+            });
+        }
+
+        // --- Enviar certificados ---
+        const btnAbrirCertificados = document.getElementById('btnAbrirModalCertificados');
+        let modalConfirmacion = null;
+
+        if (btnAbrirCertificados) {
+            btnAbrirCertificados.addEventListener('click', () => {
+                if (fechaActual < eventoFechaFin) {
+                    const modalAdvertencia = new bootstrap.Modal(document.getElementById('modalFechaNoValida'));
+                    modalAdvertencia.show();
+                } else {
+                    modalConfirmacion = new bootstrap.Modal(document.getElementById('modalEnviarCertificados'));
+                    modalConfirmacion.show();
+                }
+            });
+        }
+
+        const btnConfirmarEnvio = document.getElementById('btnConfirmarEnvioCertificados');
+        if (btnConfirmarEnvio) {
+            btnConfirmarEnvio.addEventListener('click', () => {
+                if (modalConfirmacion) modalConfirmacion.hide();
+
+                showLoader();
+                fetch(UrlEnvioCertificados, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } })
+                    .then(res => {
+                        hideLoader();
+                        if (res.ok) {
+                            const modalExito = new bootstrap.Modal(document.getElementById('modalEnvioExitoso'));
+                            modalExito.show();
+                        } else {
+                            res.json().then(data => { alert(data.message || 'Error al enviar los certificados.'); });
+                        }
+                    })
+                    .catch(err => { console.error(err); alert('Error al conectar con el servidor.'); hideLoader(); });
+            });
+        }
+
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
 </html>
