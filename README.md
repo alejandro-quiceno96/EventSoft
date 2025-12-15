@@ -73,6 +73,7 @@ La aplicación está desplegada en PythonAnywhere, lo que permite acceder al sis
 -Interpretación de Django desde un virtual environment en la nube.
 
 **Paso a Paso clonar el proyecto**
+
 paso 1: Ingresar a archivos del Pc.
 
 paso 2: Elegir donde descargar el proyecto
