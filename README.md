@@ -83,6 +83,7 @@ Paso 3: Entrar al cmd de git hub
 Paso 4: Iniciarlizar el repositorio con **git init**
 
 Paso 5: Clonar el proyecto del repositorio **git clone https://github.com/alejandro-quiceno96/EventSoft.git**
+ponerlo en la rama **master**, entrar a la carpeta con **cd Eventsoft** , luego poner **git branch master** y ahi entraremos a la rama master.
 
 Paso 6: Entrar al archivo a verificar los archivos 
 
