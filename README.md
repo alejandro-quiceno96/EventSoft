@@ -197,8 +197,16 @@ Finalmente, se reinició la aplicación web desde el panel de PythonAnywhere y s
 **Equipo del Proyecto**
 Integrantes: 
 Santiago Alzate/Desarrollador Backend / Frontend:
+
 Santiago Molano/Desarrollador Backend / Frontend:
+
 Alejandro Quiceno/Desarrollador Backend / Frontend:
+
 Sebastian Perdomo/Desarrollador Backend / Frontend:
+
 Equipo SCRUM/Acompañamiento y dirección metodológica:
-Instructoras (Clientes)/Especificación de requisitos:
+
+Instructoras:
+Diana Carolina Galvez
+Diana Carolina Vargas
+
