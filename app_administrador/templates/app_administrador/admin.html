@@ -24,6 +24,9 @@
         y tu licencia de administrador de eventos va hasta el
         <strong>{{ administrador.tiempo_limite }}</strong>.
       </p>
+      <div id="cuenta-regresiva-licencia" class="fw-bold mt-2 d-flex align-items-center gap-2" style="font-size: 1.1rem; color: var(--color-primario);">
+        <i class="fa-solid fa-clock"></i> <span>Calculando tiempo restante...</span>
+      </div>
     </div>
 
   </div>
@@ -465,7 +468,28 @@
     </div>
   </div>
 </div>
+<div id="modalGlobal" class="modal-overlay-licencia">
+  <div class="modal-box-licencia">
+    <!-- Cabecera -->
+    <div class="modal-header-licencia">
+      <h2 id="modalTitulo">Título del modal</h2>
+      <button class="modal-close-licencia" onclick="cerrarModal()">×</button>
+    </div>
 
+    <!-- Cuerpo -->
+    <div class="modal-body-licencia">
+      <div class="modal-icon">
+        <span>❌</span>
+      </div>
+      <p id="modalMensaje">Aquí va el mensaje del modal.</p>
+    </div>
+
+    <!-- Pie / botón -->
+    <div class="modal-footer-licencia">
+      <button class="btn-primary" onclick="cerrarModal()">Aceptar</button>
+    </div>
+  </div>
+</div>
 
 
 
@@ -482,7 +506,35 @@
   const baseFichaTecnicaUrl = "{% url 'administrador:subir_info_tecnica' 123 %}";
   const baseModificarCertificadosUrl = "{% url 'administrador:modificar_certificados' 0 %}";
   const baseConfigInscripcionUrl = "{% url 'administrador:configurar_inscripcion' 0 %}";
+  const tiempoLicencia = "{{administrador.tiempo_limite|date:'c'}}";
 
+  // Reemplaza tu función abrirModal actual con esta
+  function abrirModalLicencia(titulo, mensaje) {
+    console.log("=== MODAL ABIERTO ===");
+    console.log("Título:", titulo);
+    console.log("Mensaje:", mensaje);
+    console.log("Pila de llamadas:", new Error().stack);
+
+    const overlay = document.querySelector(".modal-overlay-licencia");
+    if (overlay) {
+      overlay.style.setProperty("display", "flex", "important");
+    }
+
+    // Actualizar contenido
+    const modalTitulo = document.querySelector("#modalTitulo");
+    const modalMensaje = document.querySelector("#modalMensaje");
+    if (modalTitulo) modalTitulo.textContent = titulo;
+    if (modalMensaje) modalMensaje.textContent = mensaje;
+  }
+
+  function cerrarModal() {
+    console.log("Me estoy cerrando");
+    const overlay = document.querySelector(".modal-overlay-licencia");
+    if (overlay) {
+      overlay.style.setProperty("display", "none", "important");
+      window.location = "/"
+    }
+  }
 
   // Manejar formulario memorias con modal cargando
   const formMemorias = document.getElementById('form-guardar-memorias');
@@ -535,6 +587,78 @@
     });
   });
 
+  function actualizarCuentaRegresiva(fechaLicencia) {
+    const elTexto = document.querySelector("#cuenta-regresiva-licencia span");
+    const elContenedor = document.getElementById("cuenta-regresiva-licencia");
+    if (!elTexto) return;
+
+    let ahora = new Date();
+    let diff = fechaLicencia - ahora;
+
+    if (diff <= 0) {
+      elTexto.textContent = "¡LICENCIA EXPIRADA!";
+      elContenedor.style.color = "var(--color-boton)";
+      return;
+    }
+
+    let dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+    let horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    let minutos = Math.floor((diff / 1000 / 60) % 60);
+    let segundos = Math.floor((diff / 1000) % 60);
+
+    elTexto.textContent = `La licencia expira en: ${dias}d ${horas}h ${minutos}m ${segundos}s`;
+    
+    // Cambiar a color de advertencia si quedan menos de 3 días
+    if (dias < 3) {
+      elContenedor.style.color = "#ff9800"; // Naranja de advertencia
+    }
+  }
+
+  function verificarLicencia() {
+    if (!tiempoLicencia) {
+      console.log("No hay fecha de licencia asignada");
+      return;
+    }
+    
+    let licencia = new Date(tiempoLicencia);
+    let hoy = new Date();
+
+    // Actualiza la cuenta regresiva e inicia el temporizador
+    actualizarCuentaRegresiva(licencia);
+    setInterval(() => actualizarCuentaRegresiva(licencia), 1000);
+
+    if (hoy > licencia) {
+      console.log("❌ LICENCIA VENCIDA - Abriendo modal");
+
+      let diffMs = hoy - licencia;
+      let diffDias = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      let diffHoras = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+      let diffMinutos = Math.floor((diffMs / (1000 * 60)) % 60);
+
+      let tiempoExpirado = "";
+      if (diffDias > 0) {
+        tiempoExpirado = `hace ${diffDias} día(s)`;
+        if (diffHoras > 0) tiempoExpirado += ` y ${diffHoras} hora(s)`;
+      } else if (diffHoras > 0) {
+        tiempoExpirado = `hace ${diffHoras} hora(s)`;
+        if (diffMinutos > 0) tiempoExpirado += ` y ${diffMinutos} minuto(s)`;
+      } else {
+        tiempoExpirado = `hace ${diffMinutos} minuto(s)`;
+      }
+
+      abrirModalLicencia(
+        "Licencia vencida Administrador",
+        `Tu acceso al portal de Administradores Eventos ha expirado ${tiempoExpirado}. Renueva tu licencia.`
+      );
+    } else {
+      console.log("✅ LICENCIA VIGENTE - No abre modal");
+    }
+  }
+
+  // Ejecutar verificación de licencia al cargar o recargar la página
+  document.addEventListener('DOMContentLoaded', function() {
+    verificarLicencia();
+  });
 </script>
 
 <script src="{% static 'app_administrador/js/verEventos.js' %}"></script>
