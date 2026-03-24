@@ -1,183 +1,296 @@
+import json
+from datetime import timedelta
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from django.utils import timezone
-from datetime import timedelta
 from app_eventos.models import Eventos
-from app_usuarios.models import Usuario
 from app_administrador.models import Administradores
-from app_super_admin.models import SuperAdministradores
 
+User = get_user_model()
 
-class OcultarEventoCerradoTest(TestCase):
-    """HU-96: Ocultar eventos cerrados de vista pública"""
-
+class EliminarEventoTestCase(TestCase):
+    
     def setUp(self):
+        """Configuración inicial para todos los tests"""
         self.client = Client()
         
-        # Super Admin
-        self.super_user = Usuario.objects.create_user(
-            username="superadmin",
-            password="super123",
-            tipo_documento="CC",
-            documento_identidad="1234567890",
-            email="super@test.com"
+        # Crear super administrador
+        self.super_admin = User.objects.create_user(
+            username='superadmin',
+            email='superadmin@example.com',
+            password='testpass123'
         )
-        self.super_admin = SuperAdministradores.objects.create(usuario=self.super_user)
         
-        # Admin de evento
-        self.admin_user = Usuario.objects.create_user(
-            username="admin",
-            password="admin123",
-            tipo_documento="CC",
-            documento_identidad="9876543210",
-            email="admin@test.com"
+        # Crear administrador de eventos
+        self.admin_user = User.objects.create_user(
+            username='admin1',
+            email='admin1@example.com',
+            password='testpass123'
         )
-        self.admin = Administradores.objects.create(
+        
+        self.administrador = Administradores.objects.create(
             usuario=self.admin_user,
-            num_eventos=5,
-            estado="Activo"
+            estado='Activo'
         )
         
-        self.hoy = timezone.now().date()
-
-    def test_ocultar_evento_cerrado_exitoso(self):
-        """Ocultar evento CERRADO de vista pública"""
-        evento = Eventos.objects.create(
-            eve_nombre="Evento Cerrado",
-            eve_descripcion="Test",
-            eve_ciudad="Manizales",
-            eve_lugar="Centro",
-            eve_fecha_inicio=self.hoy - timedelta(days=10),
-            eve_fecha_fin=self.hoy - timedelta(days=8),
-            eve_estado="CERRADO",
+        # Crear eventos con diferentes estados y fechas para testing
+        hoy = timezone.now().date()
+        
+        # Evento activo futuro
+        self.evento_activo_futuro = Eventos.objects.create(
+            eve_nombre='Evento Activo Futuro',
+            eve_descripcion='Evento activo que ocurrirá en el futuro',
+            eve_ciudad='Bogotá',
+            eve_lugar='Auditorio Principal',
+            eve_fecha_inicio=hoy + timedelta(days=10),
+            eve_fecha_fin=hoy + timedelta(days=12),
+            eve_estado='activo',
+            eve_imagen='evento_futuro.jpg',
             eve_capacidad=100,
             eve_tienecosto=False,
-            eve_administrador_fk=self.admin
+            eve_administrador_fk=self.administrador
         )
         
-        self.client.login(username="superadmin", password="super123")
-        response = self.client.post(
-            reverse('super_admin:modificar_eventos', 
-                    kwargs={'evento_id': evento.id, 'nuevo_estado': 'OCULTO'})
-        )
-        
-        evento.refresh_from_db()
-        self.assertEqual(evento.eve_estado, "OCULTO")
-        self.assertEqual(response.status_code, 302)
-
-   
-class EliminarEventoCerradoTest(TestCase):
-    """HU-96: Eliminar permanentemente eventos cerrados"""
-
-    def setUp(self):
-        self.client = Client()
-        
-        self.super_user = Usuario.objects.create_user(
-            username="superadmin",
-            password="super123",
-            tipo_documento="CC",
-            documento_identidad="1234567890",
-            email="super@test.com"
-        )
-        self.super_admin = SuperAdministradores.objects.create(usuario=self.super_user)
-        
-        self.admin_user = Usuario.objects.create_user(
-            username="admin",
-            password="admin123",
-            tipo_documento="CC",
-            documento_identidad="9876543210",
-            email="admin@test.com"
-        )
-        self.admin = Administradores.objects.create(
-            usuario=self.admin_user,
-            num_eventos=5,
-            estado="Activo"
-        )
-        
-        self.hoy = timezone.now().date()
-
-    def test_eliminar_evento_cerrado_exitoso(self):
-        """Eliminar evento CERRADO con confirmación"""
-        evento = Eventos.objects.create(
-            eve_nombre="Evento Eliminar",
-            eve_descripcion="Test",
-            eve_ciudad="Cali",
-            eve_lugar="Teatro",
-            eve_fecha_inicio=self.hoy - timedelta(days=15),
-            eve_fecha_fin=self.hoy - timedelta(days=13),
-            eve_estado="CERRADO",
-            eve_capacidad=200,
-            eve_tienecosto=False,
-            eve_administrador_fk=self.admin
-        )
-        
-        evento_id = evento.id
-        
-        self.client.login(username="superadmin", password="super123")
-        response = self.client.post(
-            reverse('super_admin:eliminar_evento', kwargs={'evento_id': evento_id}),
-            {'confirmacion': 'SI'}
-        )
-        
-        self.assertFalse(Eventos.objects.filter(id=evento_id).exists())
-        self.assertEqual(response.status_code, 302)
-
-
-
-class EliminacionCascadaTest(TestCase):
-    """HU-96: Verificar eliminación en cascada de registros asociados"""
-
-    def setUp(self):
-        self.client = Client()
-        
-        self.super_user = Usuario.objects.create_user(
-            username="superadmin",
-            password="super123",
-            tipo_documento="CC",
-            documento_identidad="1234567890",
-            email="super@test.com"
-        )
-        self.super_admin = SuperAdministradores.objects.create(usuario=self.super_user)
-        
-        self.admin_user = Usuario.objects.create_user(
-            username="admin",
-            password="admin123",
-            tipo_documento="CC",
-            documento_identidad="9876543210",
-            email="admin@test.com"
-        )
-        self.admin = Administradores.objects.create(
-            usuario=self.admin_user,
-            num_eventos=5,
-            estado="Activo"
-        )
-        
-        self.hoy = timezone.now().date()
-
-    def test_eliminacion_cascada_inscripciones(self):
-        """Al eliminar evento, se eliminan inscripciones asociadas"""
-        evento = Eventos.objects.create(
-            eve_nombre="Evento Cascada",
-            eve_descripcion="Test",
-            eve_ciudad="Pasto",
-            eve_lugar="Plaza",
-            eve_fecha_inicio=self.hoy - timedelta(days=10),
-            eve_fecha_fin=self.hoy - timedelta(days=8),
-            eve_estado="CERRADO",
+        # Evento que ya pasó (para depuración del sitio web)
+        self.evento_pasado = Eventos.objects.create(
+            eve_nombre='Evento que Ya Pasó',
+            eve_descripcion='Evento que ya finalizó',
+            eve_ciudad='Medellín',
+            eve_lugar='Sala 101',
+            eve_fecha_inicio=hoy - timedelta(days=30),
+            eve_fecha_fin=hoy - timedelta(days=28),
+            eve_estado='inactivo',
+            eve_imagen='evento_pasado.jpg',
             eve_capacidad=50,
+            eve_tienecosto=True,
+            eve_administrador_fk=self.administrador
+        )
+        
+        # Evento cancelado
+        self.evento_cancelado = Eventos.objects.create(
+            eve_nombre='Evento Cancelado',
+            eve_descripcion='Evento que fue cancelado',
+            eve_ciudad='Cali',
+            eve_lugar='Centro de Convenciones',
+            eve_fecha_inicio=hoy + timedelta(days=5),
+            eve_fecha_fin=hoy + timedelta(days=6),
+            eve_estado='cancelado',
+            eve_imagen='evento_cancelado.jpg',
+            eve_capacidad=80,
             eve_tienecosto=False,
-            eve_administrador_fk=self.admin
+            eve_administrador_fk=self.administrador
         )
         
-        # Simular inscripciones (asumir modelo Inscripcion existe)
-        # inscripcion = Inscripcion.objects.create(evento=evento, ...)
-        
-        self.client.login(username="superadmin", password="super123")
-        self.client.post(
-            reverse('super_admin:eliminar_evento', kwargs={'evento_id': evento.id}),
-            {'confirmacion': 'SI'}
+        # Evento pendiente
+        self.evento_pendiente = Eventos.objects.create(
+            eve_nombre='Evento Pendiente',
+            eve_descripcion='Evento pendiente de aprobación',
+            eve_ciudad='Barranquilla',
+            eve_lugar='Lugar Z',
+            eve_fecha_inicio=hoy + timedelta(days=20),
+            eve_fecha_fin=hoy + timedelta(days=22),
+            eve_estado='pendiente',
+            eve_imagen='evento_pendiente.jpg',
+            eve_capacidad=120,
+            eve_tienecosto=True,
+            eve_administrador_fk=self.administrador
         )
         
-        # Verificar que inscripciones también se eliminaron
-        # self.assertFalse(Inscripcion.objects.filter(evento_id=evento.id).exists())
-        self.assertFalse(Eventos.objects.filter(id=evento.id).exists())
+        # Contar eventos iniciales
+        self.total_eventos_inicial = Eventos.objects.count()
+        
+        # Autenticar como super administrador
+        self.client.login(username='superadmin', password='testpass123')
+    
+    def test_eliminar_evento_pasado(self):
+        """CA1: Eliminación exitosa de un evento que ya pasó (caso principal HU96)"""
+        # Verificar que el evento existe antes de eliminar
+        self.assertTrue(Eventos.objects.filter(id=self.evento_pasado.id).exists())
+        
+        # Realizar solicitud para eliminar evento
+        url = reverse('super_admin:eliminar_evento', args=[self.evento_pasado.id])
+        response = self.client.get(url)
+        
+        # Verificar redirección exitosa
+        self.assertEqual(response.status_code, 302)
+        
+        # Verificar que se redirige con el parámetro GET correcto
+        self.assertIn('modal_eliminado_evento=true', response.url)
+        self.assertIn(reverse('super_admin:index_super_admin'), response.url)
+        
+        # Verificar que el evento fue eliminado de la base de datos
+        self.assertFalse(Eventos.objects.filter(id=self.evento_pasado.id).exists())
+        
+        # Verificar que el contador de eventos disminuyó
+        self.assertEqual(Eventos.objects.count(), self.total_eventos_inicial - 1)
+    
+    def test_eliminar_evento_activo_futuro(self):
+        """CA1: Eliminación exitosa de un evento activo futuro"""
+        # Verificar que el evento existe antes de eliminar
+        self.assertTrue(Eventos.objects.filter(id=self.evento_activo_futuro.id).exists())
+        
+        url = reverse('super_admin:eliminar_evento', args=[self.evento_activo_futuro.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('modal_eliminado_evento=true', response.url)
+        
+        # Verificar que el evento fue eliminado
+        self.assertFalse(Eventos.objects.filter(id=self.evento_activo_futuro.id).exists())
+        self.assertEqual(Eventos.objects.count(), self.total_eventos_inicial - 1)
+    
+    def test_eliminar_evento_cancelado(self):
+        """CA1: Eliminación exitosa de un evento cancelado"""
+        self.assertTrue(Eventos.objects.filter(id=self.evento_cancelado.id).exists())
+        
+        url = reverse('super_admin:eliminar_evento', args=[self.evento_cancelado.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('modal_eliminado_evento=true', response.url)
+        
+        self.assertFalse(Eventos.objects.filter(id=self.evento_cancelado.id).exists())
+        self.assertEqual(Eventos.objects.count(), self.total_eventos_inicial - 1)
+    
+    def test_eliminar_evento_pendiente(self):
+        """CA1: Eliminación exitosa de un evento pendiente"""
+        self.assertTrue(Eventos.objects.filter(id=self.evento_pendiente.id).exists())
+        
+        url = reverse('super_admin:eliminar_evento', args=[self.evento_pendiente.id])
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('modal_eliminado_evento=true', response.url)
+        
+        self.assertFalse(Eventos.objects.filter(id=self.evento_pendiente.id).exists())
+        self.assertEqual(Eventos.objects.count(), self.total_eventos_inicial - 1)
+    
+    def test_evento_no_existe(self):
+        """CA2: Manejo de error cuando el evento no existe"""
+        evento_id_inexistente = 9999
+        
+        url = reverse('super_admin:eliminar_evento', args=[evento_id_inexistente])
+        response = self.client.get(url)
+        
+        # Verificar que retorna 404
+        self.assertEqual(response.status_code, 404)
+        
+        # Verificar que no se eliminó ningún evento
+        self.assertEqual(Eventos.objects.count(), self.total_eventos_inicial)
+    
+    def test_usuario_no_autenticado(self):
+        """CA1: Usuario no autenticado es redirigido al login"""
+        client_no_auth = Client()
+        
+        url = reverse('super_admin:eliminar_evento', args=[self.evento_pasado.id])
+        response = client_no_auth.get(url)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response.url)
+        
+        # Verificar que el evento NO fue eliminado
+        self.assertTrue(Eventos.objects.filter(id=self.evento_pasado.id).exists())
+    
+    
+    def test_eliminacion_permanente(self):
+        """CA1: Verificar que la eliminación es permanente (no soft delete)"""
+        # Capturar información del evento antes de eliminar
+        evento_id = self.evento_pasado.id
+        evento_nombre = self.evento_pasado.eve_nombre
+        
+        # Eliminar el evento
+        url = reverse('super_admin:eliminar_evento', args=[evento_id])
+        self.client.get(url)
+        
+        # Verificar que el evento no existe en absoluto en la base de datos
+        with self.assertRaises(Eventos.DoesNotExist):
+            Eventos.objects.get(id=evento_id)
+        
+        # Verificar que no existe por ningún campo
+        self.assertFalse(Eventos.objects.filter(eve_nombre=evento_nombre).exists())
+    
+    def test_eliminacion_multiples_eventos(self):
+        """CA1: Eliminación secuencial de múltiples eventos"""
+        # Verificar cantidad inicial
+        self.assertEqual(Eventos.objects.count(), 4)
+        
+        # Eliminar primer evento
+        url1 = reverse('super_admin:eliminar_evento', args=[self.evento_pasado.id])
+        response1 = self.client.get(url1)
+        self.assertEqual(response1.status_code, 302)
+        self.assertEqual(Eventos.objects.count(), 3)
+        
+        # Eliminar segundo evento
+        url2 = reverse('super_admin:eliminar_evento', args=[self.evento_cancelado.id])
+        response2 = self.client.get(url2)
+        self.assertEqual(response2.status_code, 302)
+        self.assertEqual(Eventos.objects.count(), 2)
+        
+        # Eliminar tercer evento
+        url3 = reverse('super_admin:eliminar_evento', args=[self.evento_pendiente.id])
+        response3 = self.client.get(url3)
+        self.assertEqual(response3.status_code, 302)
+        self.assertEqual(Eventos.objects.count(), 1)
+    
+    def test_integridad_referencial(self):
+        """CA1: Verificar que la eliminación no afecta otros modelos relacionados"""
+        # Este test verifica que al eliminar un evento, no hay problemas de integridad referencial
+        # En un caso real, podrías necesitar verificar relaciones con otros modelos
+        
+        # Contar eventos relacionados con el mismo administrador antes de eliminar
+        eventos_del_administrador_antes = Eventos.objects.filter(
+            eve_administrador_fk=self.administrador
+        ).count()
+        
+        # Eliminar un evento
+        url = reverse('super_admin:eliminar_evento', args=[self.evento_pasado.id])
+        self.client.get(url)
+        
+        # Verificar que el administrador sigue existiendo
+        self.assertTrue(Administradores.objects.filter(id=self.administrador.id).exists())
+        
+        # Verificar que los otros eventos del mismo administrador siguen existiendo
+        eventos_del_administrador_despues = Eventos.objects.filter(
+            eve_administrador_fk=self.administrador
+        ).count()
+        
+        self.assertEqual(eventos_del_administrador_despues, eventos_del_administrador_antes - 1)
+    
+    def test_eliminacion_todos_los_estados(self):
+        """CA1: La función puede eliminar eventos en cualquier estado"""
+        estados_eliminados = []
+        
+        # Eliminar eventos en diferentes estados
+        eventos_a_eliminar = [
+            self.evento_activo_futuro,  # activo
+            self.evento_pendiente,      # pendiente  
+            self.evento_cancelado,      # cancelado
+            self.evento_pasado          # inactivo
+        ]
+        
+        for evento in eventos_a_eliminar:
+            with self.subTest(estado=evento.eve_estado):
+                # Verificar que existe antes
+                self.assertTrue(Eventos.objects.filter(id=evento.id).exists())
+                
+                # Eliminar
+                url = reverse('super_admin:eliminar_evento', args=[evento.id])
+                response = self.client.get(url)
+                
+                # Verificar éxito
+                self.assertEqual(response.status_code, 302)
+                self.assertIn('modal_eliminado_evento=true', response.url)
+                
+                # Verificar que fue eliminado
+                self.assertFalse(Eventos.objects.filter(id=evento.id).exists())
+                
+                estados_eliminados.append(evento.eve_estado)
+        
+        # Verificar que se eliminaron eventos de todos los estados
+        self.assertEqual(len(estados_eliminados), 4)
+        self.assertIn('activo', estados_eliminados)
+        self.assertIn('pendiente', estados_eliminados)
+        self.assertIn('cancelado', estados_eliminados)
+        self.assertIn('inactivo', estados_eliminados)
+    

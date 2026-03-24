@@ -19,79 +19,6 @@ from app_areas.models import Areas
 from app_categorias.models import Categorias
 from django.utils import timezone
 
-@login_required(login_url='login')
-def crear_evento(request):
-    """
-    HU88 - Crear evento (compatible con pruebas automáticas).
-    Valida límite de eventos, fechas y datos requeridos.
-    """
-    if request.method != "POST":
-        return redirect('super_admin:index_super_admin')
-
-    # Aceptar nombres de campos tanto con como sin prefijo 'eve_'
-    nombre = request.POST.get("eve_nombre") or request.POST.get("nombre")
-    descripcion = request.POST.get("eve_descripcion") or request.POST.get("descripcion")
-    fecha_inicio = request.POST.get("eve_fecha_inicio") or request.POST.get("fecha_inicio")
-    fecha_fin = request.POST.get("eve_fecha_fin") or request.POST.get("fecha_fin")
-    administrador_id = (
-        request.POST.get("eve_administrador_fk")
-        or request.POST.get("administrador")
-        or request.POST.get("administrador_id")
-    )
-
-    # Validar campos obligatorios
-    if not all([nombre, descripcion, fecha_inicio, fecha_fin, administrador_id]):
-        print("⚠️ Faltan campos:", nombre, descripcion, fecha_inicio, fecha_fin, administrador_id)
-        messages.error(request, "Faltan campos obligatorios.")
-        return redirect('super_admin:index_super_admin')
-
-    try:
-        admin = Administradores.objects.get(pk=administrador_id)
-    except Administradores.DoesNotExist:
-        print("⚠️ Administrador no encontrado:", administrador_id)
-        messages.error(request, "Administrador no encontrado.")
-        return redirect('super_admin:index_super_admin')
-
-    # Validar límite de eventos
-    eventos_creados = Eventos.objects.filter(eve_administrador_fk=admin).count()
-    if admin.num_eventos is not None and eventos_creados >= admin.num_eventos:
-        messages.error(request, "Límite máximo de eventos alcanzado.")
-        return redirect('super_admin:index_super_admin')
-
-    # Validar formato de fechas
-    try:
-        inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d")
-        fin = datetime.strptime(fecha_fin, "%Y-%m-%d")
-    except Exception as e:
-        print("⚠️ Error al convertir fechas:", e)
-        messages.error(request, "Formato de fecha inválido.")
-        return redirect('super_admin:index_super_admin')
-
-    # Validar coherencia de fechas
-    if fin < inicio:
-        messages.error(request, "La fecha de fin no puede ser anterior a la fecha de inicio.")
-        return redirect('super_admin:index_super_admin')
-
-    # Validar fechas en el pasado
-    if inicio.date() < timezone.now().date():
-        messages.error(request, "La fecha de inicio no puede estar en el pasado.")
-        return redirect('super_admin:index_super_admin')
-
-    # Crear el evento
-    evento = Eventos.objects.create(
-        eve_nombre=nombre,
-        eve_descripcion=descripcion,
-        eve_fecha_inicio=inicio,
-        eve_fecha_fin=fin,
-        eve_administrador_fk=admin,
-        eve_estado="BORRADOR",
-    )
-
-    print("✅ Evento creado:", evento.eve_nombre, "Admin:", admin.id, "Estado:", evento.eve_estado)
-
-    messages.success(request, f"Evento '{evento.eve_nombre}' creado exitosamente.")
-    # IMPORTANTE: devolver redirect (302) para pasar los tests HU88
-    return redirect('super_admin:index_super_admin')
 
 def crear_area(request):
     if request.method == "POST":
@@ -159,45 +86,85 @@ def modificar_estado_evento(request, evento_id, nuevo_estado):
     url = reverse('super_admin:index_super_admin') + '?modal_evento_activo=true'
     return redirect(url)
 
-login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def editar_perfil(request):
-    user = request.user  # Es instancia de tu modelo Usuario
+    user = request.user
 
     if request.method == 'POST':
-        # Campos básicos
-        user.first_name = request.POST.get('first_name', '')
-        user.last_name = request.POST.get('last_name', '')
-        user.username = request.POST.get('username', '')
-        user.email = request.POST.get('email', '')
+        try:
+            # Solo actualizar campos si están presentes en el POST
+            if 'first_name' in request.POST:
+                user.first_name = request.POST.get('first_name', '')
+            if 'last_name' in request.POST:
+                user.last_name = request.POST.get('last_name', '')
+            if 'username' in request.POST:
+                nuevo_username = request.POST.get('username', '')
+                if nuevo_username != user.username:
+                    # Verificar unicidad del username
+                    if Usuario.objects.filter(username=nuevo_username).exclude(id=user.id).exists():
+                        messages.error(request, 'El nombre de usuario ya está en uso.')
+                        return redirect('super_admin:index_super_admin')
+                    user.username = nuevo_username
+            if 'email' in request.POST:
+                nuevo_email = request.POST.get('email', '')
+                if nuevo_email != user.email:
+                    # Verificar unicidad del email
+                    if Usuario.objects.filter(email=nuevo_email).exclude(id=user.id).exists():
+                        messages.error(request, 'El correo electrónico ya está en uso.')
+                        return redirect('super_admin:index_super_admin')
+                    user.email = nuevo_email
 
-        # Campos adicionales de tu modelo
-        user.segundo_nombre = request.POST.get('segundo_nombre', '')
-        user.segundo_apellido = request.POST.get('segundo_apellido', '')
-        user.telefono = request.POST.get('telefono', '')
-        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
-
-        # Manejo de contraseña si el usuario desea cambiarla
-        if request.POST.get('current_password'):
-            current_password = request.POST.get('current_password')
-            if user.check_password(current_password):
-                new_password = request.POST.get('new_password')
-                confirm_password = request.POST.get('confirm_password')
-                if new_password == confirm_password and new_password != '':
-                    user.set_password(new_password)
-                    update_session_auth_hash(request, user)  # Mantener sesión
-                    messages.success(request, 'Contraseña actualizada correctamente.')
+            # Campos adicionales del modelo Usuario
+            if 'segundo_nombre' in request.POST:
+                user.segundo_nombre = request.POST.get('segundo_nombre', '')
+            if 'segundo_apellido' in request.POST:
+                user.segundo_apellido = request.POST.get('segundo_apellido', '')
+            if 'telefono' in request.POST:
+                user.telefono = request.POST.get('telefono', '')
+            
+            # Manejo seguro de fecha de nacimiento
+            if 'fecha_nacimiento' in request.POST:
+                fecha_nacimiento_str = request.POST.get('fecha_nacimiento', '')
+                if fecha_nacimiento_str:
+                    try:
+                        # Validar formato de fecha
+                        fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
+                        user.fecha_nacimiento = fecha_nacimiento
+                    except ValueError:
+                        messages.error(request, 'Formato de fecha inválido. Use YYYY-MM-DD.')
+                        return redirect('super_admin:index_super_admin')
                 else:
-                    messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+                    # Si se envía vacío, establecer como None
+                    user.fecha_nacimiento = None
+
+            # Manejo de cambio de contraseña
+            current_password = request.POST.get('current_password', '')
+            if current_password:
+                if user.check_password(current_password):
+                    new_password = request.POST.get('new_password', '')
+                    confirm_password = request.POST.get('confirm_password', '')
+                    
+                    if new_password and confirm_password and new_password == confirm_password:
+                        if len(new_password) >= 8:  # Validar longitud mínima
+                            user.set_password(new_password)
+                            update_session_auth_hash(request, user)  # Mantener sesión
+                            messages.success(request, 'Contraseña actualizada correctamente.')
+                        else:
+                            messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+                            return redirect('super_admin:index_super_admin')
+                    else:
+                        messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+                        return redirect('super_admin:index_super_admin')
+                else:
+                    messages.error(request, 'La contraseña actual es incorrecta.')
                     return redirect('super_admin:index_super_admin')
-            else:
-                messages.error(request, 'La contraseña actual es incorrecta.')
-                return redirect('super_admin:index_super_admin')
 
-        user.save()
-        messages.success(request, 'Perfil actualizado correctamente.')
-        return redirect('super_admin:index_super_admin')
+            user.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+        except Exception as e:
+            messages.error(request, f'Error inesperado al actualizar perfil: {str(e)}')
 
-    return redirect('super_admin:index_super_admin')  # Redirige a la página de inicio si no es POST
+    return redirect('super_admin:index_super_admin')
 
 def gestionar_usuarios(request):
     # Todos los administradores actuales (IDs de usuario)
@@ -317,34 +284,3 @@ def eliminar_evento(request, evento_id):
     # Redirigir con parámetro GET
     url = reverse('super_admin:index_super_admin') + '?modal_eliminado_evento=true'
     return redirect(url)
-
-def lista_eventos(request):
-    """
-    HU-90: Muestra una lista de eventos activos con su respectivo administrador.
-    Filtrable por nombre de evento o administrador.
-    """
-    eventos = Eventos.objects.filter(eve_estado="ACTIVO")
-
-    # Filtros opcionales
-    nombre = request.GET.get("nombre")
-    if nombre:
-        eventos = eventos.filter(eve_nombre__icontains=nombre)
-
-    administrador = request.GET.get("administrador")
-    if administrador:
-        eventos = eventos.filter(eve_administrador_fk_id=administrador)
-
-    contexto = {
-        "eventos": eventos,
-        "administradores": Administradores.objects.all(),
-    }
-    return render(request, "super_admin/lista_eventos.html", contexto)
-
-
-def detalle_evento(request, id):
-    """
-    HU-91: Muestra el detalle de un evento específico.
-    (Solo placeholder para que el test HU90 no falle)
-    """
-    evento = get_object_or_404(Eventos, pk=id)
-    return render(request, "super_admin/detalle_evento.html", {"evento": evento})

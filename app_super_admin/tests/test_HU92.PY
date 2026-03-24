@@ -1,299 +1,248 @@
+import json
 from django.test import TestCase, Client
-from django.contrib.sessions.models import Session
-from django.utils import timezone
-from app_usuarios.models import Usuario
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 from app_administrador.models import Administradores
-from app_super_admin.models import SuperAdministradores
 
+User = get_user_model()
 
-class SuspenderAdministradorTest(TestCase):
-    """HU-92: Suspender credenciales de administrador de evento"""
-
+class SuspenderCancelarAdministradorTestCase(TestCase):
+    
     def setUp(self):
+        """Configuración inicial para todos los tests"""
         self.client = Client()
         
-        # Super Admin
-        self.super_user = Usuario.objects.create_user(
-            username="superadmin",
-            password="super123",
-            tipo_documento="CC",
-            documento_identidad="1234567890",
-            email="super@test.com"
-        )
-        self.super_admin = SuperAdministradores.objects.create(usuario=self.super_user)
-        
-        # Admin a suspender
-        self.admin_user = Usuario.objects.create_user(
-            username="admin_evento",
-            password="admin123",
-            tipo_documento="CC",
-            documento_identidad="9876543210",
-            email="admin@test.com"
-        )
-        self.admin = Administradores.objects.create(
-            usuario=self.admin_user,
-            num_eventos=5,
-            estado="Activo"
-        )
-
-    def test_suspender_admin_con_justificacion(self):
-        """Suspender admin requiere justificación obligatoria"""
-        self.client.login(username="superadmin", password="super123")
-        
-        justificacion = "Uso indebido de la plataforma"
-        
-        # Simular suspensión
-        self.admin.estado = "Suspendido"
-        self.admin.save()
-        
-        self.admin.refresh_from_db()
-        self.assertEqual(self.admin.estado, "Suspendido")
-        self.assertIsNotNone(justificacion)
-        self.assertGreater(len(justificacion), 10)
-
-    def test_suspender_sin_justificacion_falla(self):
-        """No permitir suspensión sin justificación"""
-        self.client.login(username="superadmin", password="super123")
-        
-        justificacion = ""
-        
-        # Validar que justificación es requerida
-        self.assertEqual(len(justificacion), 0)
-        # En implementación real, esto debe rechazarse
-
-    def test_suspension_invalida_sesion_inmediatamente(self):
-        """La suspensión debe invalidar token de sesión del admin"""
-        # Admin inicia sesión
-        admin_client = Client()
-        admin_client.login(username="admin_evento", password="admin123")
-        
-        # Verificar sesión activa
-        self.assertTrue(admin_client.session.get('_auth_user_id'))
-        
-        # Super Admin suspende
-        self.admin.estado = "Suspendido"
-        self.admin.save()
-        
-        # Verificar que admin fue suspendido
-        self.admin.refresh_from_db()
-        self.assertEqual(self.admin.estado, "Suspendido")
-
-    def test_admin_suspendido_no_puede_acceder(self):
-        """Admin suspendido no puede iniciar sesión"""
-        # Suspender admin
-        self.admin.estado = "Suspendido"
-        self.admin.save()
-        
-        # Intentar login
-        admin_client = Client()
-        result = admin_client.login(username="admin_evento", password="admin123")
-        
-        # Verificar estado
-        self.admin.refresh_from_db()
-        self.assertEqual(self.admin.estado, "Suspendido")
-
-    def test_solo_super_admin_puede_suspender(self):
-        """Solo Super Admin puede suspender administradores"""
-        # Admin normal intenta suspender a otro
-        otro_admin_user = Usuario.objects.create_user(
-            username="otro_admin",
-            password="otro123",
-            tipo_documento="CC",
-            documento_identidad="1111111111",
-            email="otro@test.com"
-        )
-        otro_admin = Administradores.objects.create(
-            usuario=otro_admin_user,
-            num_eventos=3,
-            estado="Activo"
+        # Crear super administrador
+        self.super_admin = User.objects.create_user(
+            username='superadmin',
+            email='superadmin@example.com',
+            password='testpass123'
         )
         
-        self.client.login(username="admin_evento", password="admin123")
-        
-        # Verificar que admin logueado NO es super admin
-        self.assertFalse(hasattr(self.admin_user, 'super_admin'))
-        self.assertTrue(hasattr(self.super_user, 'super_admin'))
-
-
-class RevocarCodigoAccesoTest(TestCase):
-    """HU-92: Revocar códigos de acceso no utilizados"""
-
-    def setUp(self):
-        self.client = Client()
-        
-        self.super_user = Usuario.objects.create_user(
-            username="superadmin",
-            password="super123",
-            tipo_documento="CC",
-            documento_identidad="1234567890",
-            email="super@test.com"
+        # Crear administradores para testing
+        self.admin_user1 = User.objects.create_user(
+            username='admin1',
+            email='admin1@example.com',
+            password='testpass123',
+            tipo_documento='CC',
+            documento_identidad='111111111'
         )
-        self.super_admin = SuperAdministradores.objects.create(usuario=self.super_user)
-        self.client.login(username="superadmin", password="super123")
-
-    def test_revocar_codigo_no_utilizado(self):
-        """Revocar código de acceso que no ha sido usado"""
-        codigo_acceso = {
-            'codigo': 'ABC123XYZ',
-            'utilizado': False,
-            'fecha_generacion': timezone.now(),
-            'estado': 'Activo'
+        
+        self.admin_user2 = User.objects.create_user(
+            username='admin2',
+            email='admin2@example.com', 
+            password='testpass123',
+            tipo_documento='CE',
+            documento_identidad='222222222'
+        )
+        
+        self.administrador1 = Administradores.objects.create(
+            usuario=self.admin_user1,
+            estado='Activo',
+            clave_acceso='CLAVE123'
+        )
+        
+        self.administrador2 = Administradores.objects.create(
+            usuario=self.admin_user2,
+            estado='Activo', 
+            clave_acceso='CLAVE456'
+        )
+        
+        # URL para los tests
+        self.url = reverse('super_admin:cancelar_administrador')  # Ajustar según tu URL name
+        
+        # Autenticar como super administrador
+        self.client.login(username='superadmin', password='testpass123')
+    
+    def test_eliminacion_administrador_existente(self):
+        """CA1: Eliminación exitosa de un administrador existente"""
+        # Verificar que el administrador existe antes de la eliminación
+        self.assertTrue(Administradores.objects.filter(id=self.administrador1.id).exists())
+        
+        # Realizar solicitud POST para eliminar
+        data = {
+            "admin_id": self.administrador1.id
         }
         
-        # Simular revocación
-        codigo_acceso['estado'] = 'Revocado'
+        response = self.client.post(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
         
-        self.assertEqual(codigo_acceso['estado'], 'Revocado')
-        self.assertFalse(codigo_acceso['utilizado'])
-
-    def test_no_revocar_codigo_ya_usado(self):
-        """No permitir revocar código que ya fue usado"""
-        codigo_usado = {
-            'codigo': 'XYZ789ABC',
-            'utilizado': True,
-            'estado': 'Activo'
+        # Verificar respuesta exitosa
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertTrue(response_data['success'])
+        
+        # Verificar que el administrador fue eliminado
+        self.assertFalse(Administradores.objects.filter(id=self.administrador1.id).exists())
+    
+    def test_eliminacion_administrador_inexistente(self):
+        """CA2: Manejo de error cuando el administrador no existe"""
+        admin_id_inexistente = 9999
+        
+        data = {
+            "admin_id": admin_id_inexistente
         }
         
-        # Verificar que está usado
-        self.assertTrue(codigo_usado['utilizado'])
-        # En implementación real, debe rechazarse la revocación
-
-    def test_revocar_requiere_justificacion(self):
-        """Revocación requiere justificación"""
-        justificacion = "Código generado por error"
-        
-        self.assertIsNotNone(justificacion)
-        self.assertGreater(len(justificacion), 5)
-
-
-class RegistroSuspensionesTest(TestCase):
-    """HU-92: Auditoría de suspensiones y revocaciones"""
-
-    def setUp(self):
-        self.client = Client()
-        
-        self.super_user = Usuario.objects.create_user(
-            username="superadmin",
-            password="super123",
-            tipo_documento="CC",
-            documento_identidad="1234567890",
-            email="super@test.com"
+        response = self.client.post(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
         )
-        self.super_admin = SuperAdministradores.objects.create(usuario=self.super_user)
         
-        self.admin_user = Usuario.objects.create_user(
-            username="admin_evento",
-            password="admin123",
-            tipo_documento="CC",
-            documento_identidad="9876543210",
-            email="admin@test.com"
-        )
-        self.admin = Administradores.objects.create(
-            usuario=self.admin_user,
-            num_eventos=5,
-            estado="Activo"
-        )
-
-    def test_registrar_suspension_con_datos(self):
-        """Registrar suspensión con todos los datos necesarios"""
-        log_suspension = {
-            'admin_suspendido': self.admin_user.username,
-            'suspendido_por': self.super_user.username,
-            'fecha_suspension': timezone.now(),
-            'justificacion': 'Incumplimiento de normas',
-            'tipo_accion': 'Suspensión'
+        # Verificar respuesta de error
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertFalse(response_data['success'])
+        self.assertIn('error', response_data)
+        self.assertIn('Administradores matching query does not exist', response_data['error'])
+    
+    def test_metodo_get_no_permitido(self):
+        """CA2: Método GET retorna error"""
+        response = self.client.get(self.url)
+        
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertFalse(response_data['success'])
+        self.assertEqual(response_data['error'], 'Método no permitido')
+    
+    def test_metodo_put_no_permitido(self):
+        """CA2: Método PUT retorna error"""
+        response = self.client.put(self.url)
+        
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertFalse(response_data['success'])
+        self.assertEqual(response_data['error'], 'Método no permitido')
+    
+    def test_usuario_no_autenticado(self):
+        """CA1: Usuario no autenticado es redirigido al login"""
+        client_no_auth = Client()
+        response = client_no_auth.post(self.url)
+        
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response.url)
+    
+    def test_estructura_respuesta_exitosa(self):
+        """CA3: Respuesta JSON tiene estructura correcta en caso de éxito"""
+        data = {
+            "admin_id": self.administrador2.id
         }
         
-        # Verificar estructura del log
-        self.assertIsNotNone(log_suspension['admin_suspendido'])
-        self.assertIsNotNone(log_suspension['suspendido_por'])
-        self.assertIsNotNone(log_suspension['justificacion'])
-        self.assertEqual(log_suspension['tipo_accion'], 'Suspensión')
-
-    def test_registrar_revocacion_codigo(self):
-        """Registrar revocación de código de acceso"""
-        log_revocacion = {
-            'codigo_revocado': 'ABC123',
-            'revocado_por': self.super_user.username,
-            'fecha_revocacion': timezone.now(),
-            'justificacion': 'Código duplicado',
-            'tipo_accion': 'Revocación'
+        response = self.client.post(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
+        
+        response_data = response.json()
+        
+        # Verificar estructura de respuesta exitosa
+        self.assertEqual(response_data['success'], True)
+        self.assertNotIn('error', response_data)  # No debe haber error en éxito
+    
+    def test_estructura_respuesta_error(self):
+        """CA3: Respuesta JSON tiene estructura correcta en caso de error"""
+        data = {
+            "admin_id": 9999  # ID inexistente
         }
         
-        self.assertIsNotNone(log_revocacion['codigo_revocado'])
-        self.assertIsNotNone(log_revocacion['revocado_por'])
-        self.assertEqual(log_revocacion['tipo_accion'], 'Revocación')
-
-    def test_historial_suspensiones_por_admin(self):
-        """Consultar historial de suspensiones de un administrador"""
-        # Simular múltiples suspensiones
-        historial = [
-            {'fecha': timezone.now(), 'estado': 'Suspendido', 'justificacion': 'Motivo 1'},
-            {'fecha': timezone.now(), 'estado': 'Activo', 'justificacion': 'Reactivación'},
-        ]
-        
-        self.assertEqual(len(historial), 2)
-        self.assertIn('Suspendido', [h['estado'] for h in historial])
-
-
-class ReactivarAdministradorTest(TestCase):
-    """HU-92: Reactivar administrador suspendido"""
-
-    def setUp(self):
-        self.client = Client()
-        
-        self.super_user = Usuario.objects.create_user(
-            username="superadmin",
-            password="super123",
-            tipo_documento="CC",
-            documento_identidad="1234567890",
-            email="super@test.com"
+        response = self.client.post(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
         )
-        self.super_admin = SuperAdministradores.objects.create(usuario=self.super_user)
         
-        self.admin_user = Usuario.objects.create_user(
-            username="admin_suspendido",
-            password="admin123",
-            tipo_documento="CC",
-            documento_identidad="9876543210",
-            email="admin@test.com"
+        response_data = response.json()
+        
+        # Verificar estructura de respuesta de error
+        self.assertEqual(response_data['success'], False)
+        self.assertIn('error', response_data)
+        self.assertIsInstance(response_data['error'], str)
+    
+    def test_datos_invalidos_json(self):
+        """CA2: Manejo de datos JSON malformados"""
+        # Enviar datos no JSON
+        response = self.client.post(
+            self.url,
+            data="esto no es json",
+            content_type='application/json'
         )
-        self.admin = Administradores.objects.create(
-            usuario=self.admin_user,
-            num_eventos=5,
-            estado="Suspendido"
+        
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertFalse(response_data['success'])
+        self.assertIn('error', response_data)
+    
+    def test_falta_admin_id(self):
+        """CA2: Manejo de solicitud sin admin_id"""
+        data = {}  # Sin admin_id
+        
+        response = self.client.post(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
         )
-
-    def test_reactivar_admin_suspendido(self):
-        """Reactivar administrador previamente suspendido"""
-        self.client.login(username="superadmin", password="super123")
         
-        # Verificar estado inicial
-        self.assertEqual(self.admin.estado, "Suspendido")
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertFalse(response_data['success'])
+        self.assertIn('error', response_data)
+    
+    def test_eliminacion_multiple_administradores(self):
+        """CA1: Eliminación secuencial de múltiples administradores"""
+        # Crear un tercer administrador para esta prueba
+        admin_user3 = User.objects.create_user(
+            username='admin3',
+            email='admin3@example.com',
+            password='testpass123'
+        )
+        administrador3 = Administradores.objects.create(
+            usuario=admin_user3,
+            estado='Activo',
+            clave_acceso='CLAVE789'
+        )
         
-        # Reactivar
-        self.admin.estado = "Activo"
-        self.admin.save()
+        # Verificar administradores iniciales
+        self.assertEqual(Administradores.objects.count(), 3)
         
-        self.admin.refresh_from_db()
-        self.assertEqual(self.admin.estado, "Activo")
-
-    def test_reactivar_requiere_justificacion(self):
-        """Reactivación también requiere justificación"""
-        justificacion_reactivacion = "Situación resuelta, se permite retorno"
+        # Eliminar primer administrador
+        data1 = {"admin_id": self.administrador1.id}
+        response1 = self.client.post(
+            self.url,
+            data=json.dumps(data1),
+            content_type='application/json'
+        )
+        self.assertTrue(response1.json()['success'])
+        self.assertEqual(Administradores.objects.count(), 2)
         
-        self.assertIsNotNone(justificacion_reactivacion)
-        self.assertGreater(len(justificacion_reactivacion), 10)
-
-    def test_admin_reactivado_puede_acceder(self):
-        """Admin reactivado puede iniciar sesión nuevamente"""
-        # Reactivar
-        self.admin.estado = "Activo"
-        self.admin.save()
+        # Eliminar segundo administrador
+        data2 = {"admin_id": administrador3.id}
+        response2 = self.client.post(
+            self.url,
+            data=json.dumps(data2),
+            content_type='application/json'
+        )
+        self.assertTrue(response2.json()['success'])
+        self.assertEqual(Administradores.objects.count(), 1)
+    
+    def test_csrf_exempt_funciona(self):
+        """Verificar que CSRF exempt permite la solicitud sin token CSRF"""
+        # Esta prueba verifica que @csrf_exempt funciona correctamente
+        data = {
+            "admin_id": self.administrador1.id
+        }
         
-        # Intentar login
-        admin_client = Client()
-        result = admin_client.login(username="admin_suspendido", password="admin123")
+        # El cliente de prueba normalmente manejaría CSRF, pero verificamos que no falle
+        response = self.client.post(
+            self.url,
+            data=json.dumps(data),
+            content_type='application/json'
+        )
         
-        self.admin.refresh_from_db()
-        self.assertEqual(self.admin.estado, "Activo")
+        # La solicitud debería procesarse sin errores CSRF
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertTrue(response_data['success'])

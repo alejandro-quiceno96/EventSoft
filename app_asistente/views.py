@@ -1,64 +1,81 @@
 from django.shortcuts import render,  get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, Http404, HttpResponseRedirect
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from .models import Asistentes
 from app_eventos.models import AsistentesEventos, Eventos, EventosCategorias
-from app_categorias.models import Categorias
-from django.http import HttpResponse, HttpResponseForbidden
-from django.core.mail import EmailMessage
+from app_usuarios.models import Usuario
+from django.db import IntegrityError
+from datetime import datetime
 import os
 
+
 def inicio_asistente(request):
+    # Verificar si el usuario está autenticado
+    if not request.user.is_authenticated:
+        return render(request, "app_asistente/eventos_asistentes.html", {
+            "eventos": [],
+            "cedula_participante": None
+        })
 
-        try:
-            # Buscar al participante por cédula
-            asistente = Asistentes.objects.get(usuario=request.user)
+    try:
+        # Buscar al asistente por usuario (usuario autenticado)
+        asistente = Asistentes.objects.get(usuario=request.user)
 
-            # Obtener eventos donde el participante está inscrito
-            participaciones = AsistentesEventos.objects.filter(
-                asi_eve_asistente_fk=asistente
-            ).select_related("asi_eve_evento_fk")
+        # Obtener eventos donde el asistente está inscrito
+        participaciones = AsistentesEventos.objects.filter(
+            asi_eve_asistente_fk=asistente
+        ).select_related("asi_eve_evento_fk")
 
-            eventos_data = []
+        eventos_data = []
 
-            for participacion in participaciones:
-                evento = participacion.asi_eve_evento_fk # acceso correcto a la relación
-                eventos_data.append({
-                    "eve_id": evento.id,
-                    "eve_nombre": evento.eve_nombre,
-                    "eve_fecha_inicio": evento.eve_fecha_inicio,
-                    "eve_fecha_fin": evento.eve_fecha_fin,
-                    "eve_imagen": evento.eve_imagen,
-                    "asi_eve_estado": participacion.asi_eve_estado,
-                    "eve_memorias": evento.eve_memorias
-                })
-                
-
-            return render(request, 'app_asistente/eventos_asistentes.html', {
-                "eventos": eventos_data,
-                "cedula_participante": asistente.id
+        for participacion in participaciones:
+            evento = participacion.asi_eve_evento_fk
+            eventos_data.append({
+                "eve_id": evento.id,
+                "eve_nombre": evento.eve_nombre,
+                "eve_fecha_inicio": evento.eve_fecha_inicio,
+                "eve_fecha_fin": evento.eve_fecha_fin,
+                "eve_imagen": evento.eve_imagen,
+                "asi_eve_estado": participacion.asi_eve_estado,
+                "eve_memorias": evento.eve_memorias
             })
 
-        except Exception as e:
-            print(e)
+        return render(request, 'app_asistente/eventos_asistentes.html', {
+            "eventos": eventos_data,
+            "cedula_participante": asistente.id
+        })
 
-    # Si no es POST, renderizar formulario o vista vacía
+    except Asistentes.DoesNotExist:
+        # El usuario está autenticado pero no tiene perfil de asistente
         return render(request, "app_asistente/eventos_asistentes.html", {
-        "eventos": [],
-        "cedula_participante": None
-        })          
+            "eventos": [],
+            "cedula_participante": None
+        })
+    except Exception as e:
+        # Log del error para debugging
+        print(f"Error en inicio_asistente: {e}")
+        return render(request, "app_asistente/eventos_asistentes.html", {
+            "eventos": [],
+            "cedula_participante": None
+        })
     
 def evento_asistentes(request, evento_id, asistente_id):
-    if request.method == 'GET':
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    
+    try:
         # Obtener el evento o devolver 404
         evento = get_object_or_404(Eventos, id=evento_id)
 
         # Obtener la clave de acceso si existe
-        clave_acceso = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_asistente_fk=asistente_id).first()
+        clave_acceso = AsistentesEventos.objects.filter(
+            asi_eve_evento_fk=evento_id, 
+            asi_eve_asistente_fk=asistente_id
+        ).first()
 
         # Convertir el evento a diccionario
         datos_evento = {
@@ -69,51 +86,72 @@ def evento_asistentes(request, evento_id, asistente_id):
             'eve_lugar': evento.eve_lugar,
             'eve_fecha_inicio': evento.eve_fecha_inicio,
             'eve_fecha_fin': evento.eve_fecha_fin,
-            'eve_imagen': evento.eve_imagen.url if evento.eve_imagen.url else None,
+            'eve_imagen': evento.eve_imagen.url if evento.eve_imagen else None,
             'eve_cantidad': evento.eve_capacidad if evento.eve_capacidad > 0 else 'Cupos ilimitados',
-            'eve_costo': 'Con Pago' if evento.eve_tienecosto == True else "Gratuito",
-            'eve_programacion':evento.eve_programacion.url if evento.eve_programacion.url else None,
+            'eve_costo': 'Con Pago' if evento.eve_tienecosto else "Gratuito",
+            'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
             'eve_clave_acceso': clave_acceso.asi_eve_clave if clave_acceso else None,
-            'codigo_qr': clave_acceso.asi_eve_qr.url if clave_acceso else None,
+            'codigo_qr': clave_acceso.asi_eve_qr.url if clave_acceso and clave_acceso.asi_eve_qr else None,
         }
 
-        # Obtener categoría si existe
-        evento_categoria = EventosCategorias.objects.get(eve_cat_evento_fk=evento_id)
-        categoria = Categorias.objects.get(id=evento_categoria.eve_cat_categoria_fk.id)
-        categoria_nombre = categoria.cat_nombre
-
-        datos_evento['eve_categoria'] = categoria_nombre if categoria else None
+        # Obtener categoría si existe (manejar caso de no existencia)
+        try:
+            evento_categoria = EventosCategorias.objects.get(eve_cat_evento_fk=evento_id)
+            categoria = evento_categoria.eve_cat_categoria_fk
+            datos_evento['eve_categoria'] = categoria.cat_nombre
+        except EventosCategorias.DoesNotExist:
+            datos_evento['eve_categoria'] = None
 
         return JsonResponse(datos_evento, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500)
     
 
 @login_required(login_url='login')
 @csrf_exempt 
 def cancelar_inscripcion(request, evento_id, asistente_id):
     if request.method == 'POST':
+        # VERIFICACIÓN DE PERMISOS - IMPORTANTE AÑADIR
+        try:
+            asistente = Asistentes.objects.get(id=asistente_id)
+            if request.user != asistente.usuario:
+                return JsonResponse({"success": False, "error": "No autorizado"}, status=403)
+        except Asistentes.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Asistente no encontrado"}, status=404)
 
         if not asistente_id:
-            return JsonResponse({"success": False, "error": "ID del participante faltante"}, status=400)
+            return JsonResponse({"success": False, "error": "ID del asistente faltante"}, status=400)
 
         try:
-            asistente_evento = AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_asistente_fk=asistente_id).first()
-            asistente = Asistentes.objects.get(id=asistente_id)
+            asistente_evento = AsistentesEventos.objects.filter(
+                asi_eve_evento_fk=evento_id, 
+                asi_eve_asistente_fk=asistente_id
+            ).first()
             
             if asistente_evento:
                 # Eliminar archivo de soporte si existe
                 if asistente_evento.asi_eve_soporte:
                     default_storage.delete(asistente_evento.asi_eve_soporte.path)
                 
+                # Eliminar también el archivo QR si existe
+                if asistente_evento.asi_eve_qr:
+                    default_storage.delete(asistente_evento.asi_eve_qr.path)
+                
                 # VERIFICAR ANTES DE ELIMINAR la inscripción
-                # Contar cuántas inscripciones tiene este asistente
-                inscripciones_count = AsistentesEventos.objects.filter(asi_eve_asistente_fk=asistente_id).count()
+                inscripciones_count = AsistentesEventos.objects.filter(
+                    asi_eve_asistente_fk=asistente_id
+                ).count()
                 
                 # Eliminar la inscripción
                 asistente_evento.delete()
                 
-                # Si era la única inscripción, eliminar el asistente
+                # MEJORA: Eliminar asistente si era la única inscripción
                 if inscripciones_count == 1:  # Era la única inscripción
+                    # Eliminar también el usuario asociado
+                    usuario = asistente.usuario
                     asistente.delete()
+                    usuario.delete()
                     
                 return JsonResponse({"success": True})
             else:
@@ -127,115 +165,97 @@ def cancelar_inscripcion(request, evento_id, asistente_id):
 
 
 
-@login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def editar_perfil(request):
-    user = request.user  # Es instancia de tu modelo Usuario
+    user = request.user
 
     if request.method == 'POST':
-        # Campos básicos
-        user.first_name = request.POST.get('first_name', '')
-        user.last_name = request.POST.get('last_name', '')
-        user.username = request.POST.get('username', '')
-        user.email = request.POST.get('email', '')
-
-        # Campos adicionales de tu modelo
-        user.segundo_nombre = request.POST.get('segundo_nombre', '')
-        user.segundo_apellido = request.POST.get('segundo_apellido', '')
-        user.telefono = request.POST.get('telefono', '')
-        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
-
-        
-        if request.POST.get('current_password'):
-            current_password = request.POST.get('current_password')
-            if user.check_password(current_password):
-                new_password = request.POST.get('new_password')
-                confirm_password = request.POST.get('confirm_password')
-                if new_password == confirm_password and new_password != '':
-                    user.set_password(new_password)
-                    update_session_auth_hash(request, user)  # Mantener sesión
-                    messages.success(request, 'Contraseña actualizada correctamente.')
-                else:
-                    messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+        try:
+            # Campos básicos - solo actualizar si tienen valor
+            if request.POST.get('first_name') is not None:
+                user.first_name = request.POST.get('first_name', '')
+            if request.POST.get('last_name') is not None:
+                user.last_name = request.POST.get('last_name', '')
+            
+            # Validar unicidad del username
+            nuevo_username = request.POST.get('username', '')
+            if nuevo_username and nuevo_username != user.username:
+                if Usuario.objects.filter(username=nuevo_username).exclude(id=user.id).exists():
+                    messages.error(request, 'El nombre de usuario ya está en uso.')
                     return redirect('app_asistente:inicio_asistente')
-            else:
-                messages.error(request, 'La contraseña actual es incorrecta.')
-                return redirect('app_asistente:inicio_asistente')
+                user.username = nuevo_username
+            
+            # Validar unicidad del email
+            nuevo_email = request.POST.get('email', '')
+            if nuevo_email and nuevo_email != user.email:
+                if Usuario.objects.filter(email=nuevo_email).exclude(id=user.id).exists():
+                    messages.error(request, 'El correo electrónico ya está en uso.')
+                    return redirect('app_asistente:inicio_asistente')
+                user.email = nuevo_email
 
-        user.save()
-        messages.success(request, 'Perfil actualizado correctamente.')
-        return redirect('app_asistente:inicio_asistente') # Redirige a la página de inicio del visitante
+            # Campos adicionales del modelo Usuario
+            if request.POST.get('segundo_nombre') is not None:
+                user.segundo_nombre = request.POST.get('segundo_nombre', '')
+            if request.POST.get('segundo_apellido') is not None:
+                user.segundo_apellido = request.POST.get('segundo_apellido', '')
+            if request.POST.get('telefono') is not None:
+                user.telefono = request.POST.get('telefono', '')
+            
+            # Manejo seguro de fecha de nacimiento
+            fecha_nacimiento_str = request.POST.get('fecha_nacimiento', '')
+            if fecha_nacimiento_str:
+                try:
+                    # Validar formato de fecha
+                    fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
+                    user.fecha_nacimiento = fecha_nacimiento
+                except ValueError:
+                    messages.error(request, 'Formato de fecha inválido. Use YYYY-MM-DD.')
+                    return redirect('app_asistente:inicio_asistente')
+            elif request.POST.get('fecha_nacimiento') is not None:
+                # Si se envía vacío, establecer como None
+                user.fecha_nacimiento = None
 
+            # Manejo de cambio de contraseña
+            current_password = request.POST.get('current_password', '')
+            if current_password:
+                # Validar contraseña actual
+                if not user.check_password(current_password):
+                    messages.error(request, 'La contraseña actual es incorrecta.')
+                    return redirect('app_asistente:inicio_asistente')
+                
+                new_password = request.POST.get('new_password', '')
+                confirm_password = request.POST.get('confirm_password', '')
+                
+                # Validar nuevas contraseñas
+                if not new_password or not confirm_password:
+                    messages.error(request, 'Las nuevas contraseñas no pueden estar vacías.')
+                    return redirect('app_asistente:inicio_asistente')
+                
+                if new_password != confirm_password:
+                    messages.error(request, 'Las contraseñas no coinciden.')
+                    return redirect('app_asistente:inicio_asistente')
+                
+                if len(new_password) < 8:
+                    messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+                    return redirect('app_asistente:inicio_asistente')
+                
+                # Cambiar contraseña
+                user.set_password(new_password)
+                update_session_auth_hash(request, user)  # Mantener sesión
+                messages.success(request, 'Contraseña actualizada correctamente.')
+
+            # Guardar cambios
+            user.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+            
+        except IntegrityError as e:
+            messages.error(request, 'Error de integridad de datos. Puede que el nombre de usuario o email ya estén en uso.')
+        except Exception as e:
+            messages.error(request, f'Error inesperado al actualizar perfil: {str(e)}')
+
+    # Redirigir siempre a la página de inicio del asistente
     return redirect('app_asistente:inicio_asistente')
 
-def inicio_visitante(request):
-    return render(request, 'app_visitante/inicio.html')
-
-
-def ver_programacion_evento(request, evento_id):
-    """Vista placeholder para visualización de programación."""
-    return render(request, "app_asistente/programacion_evento.html", {"evento_id": evento_id})
-
-def descargar_programacion_pdf(request, evento_id):
-    """Vista para descarga de programación en PDF (simulada)."""
-
-    # Verificar si hay un asistente autenticado o asociado en sesión (según tu lógica)
-    asistente_id = request.session.get("asistente_id")
-
-    # Bloquear si no está inscrito
-    if not AsistentesEventos.objects.filter(asi_eve_evento_fk=evento_id, asi_eve_asistente_fk=asistente_id).exists():
-        return HttpResponseForbidden("No estás inscrito en este evento.")
-
-    # Si pasa, devolver un PDF simulado
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="programacion_evento_{evento_id}.pdf"'
-    response.write(b"%PDF-1.4\n%PDF simulado\n")
-    return response
-
-def enviar_certificado_asistentes(request, evento_id):
-    """
-    Envío masivo de certificados a los asistentes admitidos de un evento.
-    """
-    evento = get_object_or_404(Eventos, pk=evento_id)
-    inscripciones = AsistentesEventos.objects.filter(
-        asi_eve_evento_fk=evento, asi_eve_estado='Admitido'
-    )
-
-    for inscripcion in inscripciones:
-        asistente = inscripcion.asi_eve_asistente_fk.usuario
-        correo = EmailMessage(
-            subject=f"Certificado de {evento.eve_nombre}",
-            body=f"Estimado {asistente.username},\n\nAdjunto encontrará su certificado.\n\nAtentamente,\nEquipo EventSoft",
-            to=[asistente.email],
-        )
-
-        # Adjuntar PDF simulado
-        contenido_pdf = b"Certificado de Asistencia: " + bytes(asistente.username, 'utf-8')
-        correo.attach("certificado.pdf", contenido_pdf, "application/pdf")
-        correo.send()
-
-    return HttpResponse("✅ Certificados enviados correctamente")
 
 
 
-def descargar_memorias(request, evento_id):
-    evento = get_object_or_404(Eventos, id=evento_id)
-
-    # Verificar que el usuario es asistente admitido
-    try:
-        asistente_evento = AsistentesEventos.objects.get(
-            asi_eve_asistente_fk__usuario=request.user,
-            asi_eve_evento_fk=evento
-        )
-        if asistente_evento.asi_eve_estado != "Admitido":
-            return HttpResponseForbidden("No tiene permiso para descargar las memorias")
-    except AsistentesEventos.DoesNotExist:
-        return HttpResponseForbidden("No tiene acceso a este evento")
-
-    # Verificar si hay memoria
-    if not evento.eve_memorias:
-        return render(request, 'app_asistente/memorias_no_disponibles.html', {
-            'mensaje': "Las memorias aún no están disponibles"
-        })
-
-    # Redirigir correctamente a la URL externa
-    return HttpResponseRedirect(evento.eve_memorias)

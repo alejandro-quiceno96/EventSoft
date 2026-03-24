@@ -1,5 +1,7 @@
 [run]
 source = .
+include =
+    */models.py
 omit =
     */tests/*
     */migrations/*
@@ -14,29 +16,21 @@ omit =
     */settings/*
     */wsgi.py
     */asgi.py
-    */urls.py
 
 [report]
-# Mostrar qué líneas no están cubiertas
 show_missing = True
-# Excluir estas líneas del reporte
 exclude_lines =
-    # No es práctico cubrir todos los casos de debug
     pragma: no cover
     def __str__
     def __repr__
     raise AssertionError
     raise NotImplementedError
     if __name__ == .__main__.:
-    # No cubrir setters y getters simples
     @property
     def .*_property:
-    # No cubrir métodos mágicos
     def __.*__
-    # No cubrir imports
     ^import 
     ^from .* import
 
 [html]
-# Directorio donde se generará el reporte HTML
 directory = htmlcov

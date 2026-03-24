@@ -31,6 +31,8 @@ import os
 import random, datetime
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
+from django.utils.dateparse import parse_date
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -692,7 +694,7 @@ def confirmar_rol(request):
         auth_login(request, usuario)
 
         if rol == 'Super Administrador':
-            return redirect('super_admin:index_super_admin')
+            return redirect('inicio_visitante')
         elif rol == 'Administrador de Eventos':
             return redirect('administrador:index_administrador')
         elif rol == 'Visitante':
@@ -702,45 +704,85 @@ def cerrar_sesion(request):
     logout(request)
     return redirect('inicio_visitante')
 
-login_required(login_url='login')  # Protege la vista para usuarios logueados
+@login_required(login_url='login')
 def editar_perfil(request):
-    user = request.user  # Es instancia de tu modelo Usuario
+    user = request.user
 
     if request.method == 'POST':
-        # Campos básicos
-        user.first_name = request.POST.get('first_name', '')
-        user.last_name = request.POST.get('last_name', '')
-        user.username = request.POST.get('username', '')
-        user.email = request.POST.get('email', '')
+        try:
+            # Solo actualizar campos si están presentes en el POST
+            if 'first_name' in request.POST:
+                user.first_name = request.POST.get('first_name', '')
+            if 'last_name' in request.POST:
+                user.last_name = request.POST.get('last_name', '')
+            if 'username' in request.POST:
+                nuevo_username = request.POST.get('username', '')
+                if nuevo_username != user.username:
+                    # Verificar unicidad del username
+                    if Usuario.objects.filter(username=nuevo_username).exclude(id=user.id).exists():
+                        messages.error(request, 'El nombre de usuario ya está en uso.')
+                        return redirect('inicio_visitante')
+                    user.username = nuevo_username
+            if 'email' in request.POST:
+                nuevo_email = request.POST.get('email', '')
+                if nuevo_email != user.email:
+                    # Verificar unicidad del email
+                    if Usuario.objects.filter(email=nuevo_email).exclude(id=user.id).exists():
+                        messages.error(request, 'El correo electrónico ya está en uso.')
+                        return redirect('inicio_visitante')
+                    user.email = nuevo_email
 
-        # Campos adicionales de tu modelo
-        user.segundo_nombre = request.POST.get('segundo_nombre', '')
-        user.segundo_apellido = request.POST.get('segundo_apellido', '')
-        user.telefono = request.POST.get('telefono', '')
-        user.fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
-
-        # Manejo de contraseña si el usuario desea cambiarla
-        if request.POST.get('current_password'):
-            current_password = request.POST.get('current_password')
-            if user.check_password(current_password):
-                new_password = request.POST.get('new_password')
-                confirm_password = request.POST.get('confirm_password')
-                if new_password == confirm_password and new_password != '':
-                    user.set_password(new_password)
-                    update_session_auth_hash(request, user)  # Mantener sesión
-                    messages.success(request, 'Contraseña actualizada correctamente.')
+            # Campos adicionales del modelo Usuario
+            if 'segundo_nombre' in request.POST:
+                user.segundo_nombre = request.POST.get('segundo_nombre', '')
+            if 'segundo_apellido' in request.POST:
+                user.segundo_apellido = request.POST.get('segundo_apellido', '')
+            if 'telefono' in request.POST:
+                user.telefono = request.POST.get('telefono', '')
+            
+            # Manejo seguro de fecha de nacimiento
+            if 'fecha_nacimiento' in request.POST:
+                fecha_nacimiento_str = request.POST.get('fecha_nacimiento', '')
+                if fecha_nacimiento_str:
+                    try:
+                        # Validar formato de fecha
+                        fecha_nacimiento = datetime.strptime(fecha_nacimiento_str, '%Y-%m-%d').date()
+                        user.fecha_nacimiento = fecha_nacimiento
+                    except ValueError:
+                        messages.error(request, 'Formato de fecha inválido. Use YYYY-MM-DD.')
+                        return redirect('inicio_visitante')
                 else:
-                    messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+                    # Si se envía vacío, establecer como None
+                    user.fecha_nacimiento = None
+
+            # Manejo de cambio de contraseña
+            current_password = request.POST.get('current_password', '')
+            if current_password:
+                if user.check_password(current_password):
+                    new_password = request.POST.get('new_password', '')
+                    confirm_password = request.POST.get('confirm_password', '')
+                    
+                    if new_password and confirm_password and new_password == confirm_password:
+                        if len(new_password) >= 8:  # Validar longitud mínima
+                            user.set_password(new_password)
+                            update_session_auth_hash(request, user)  # Mantener sesión
+                            messages.success(request, 'Contraseña actualizada correctamente.')
+                        else:
+                            messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+                            return redirect('inicio_visitante')
+                    else:
+                        messages.error(request, 'Las contraseñas no coinciden o están vacías.')
+                        return redirect('inicio_visitante')
+                else:
+                    messages.error(request, 'La contraseña actual es incorrecta.')
                     return redirect('inicio_visitante')
-            else:
-                messages.error(request, 'La contraseña actual es incorrecta.')
-                return redirect('inicio_visitante')
 
-        user.save()
-        messages.success(request, 'Perfil actualizado correctamente.')
-        return redirect('inicio_visitante')  # Redirige a la página de inicio del visitante
+            user.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+        except Exception as e:
+            messages.error(request, f'Error inesperado al actualizar perfil: {str(e)}')
 
-    return redirect('inicio_visitante')  # Redirige a la página de inicio si no es POST
+    return redirect('inicio_visitante')
 
 def buscar_proyecto(request, codigo):
     try:
