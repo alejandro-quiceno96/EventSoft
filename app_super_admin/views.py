@@ -18,6 +18,7 @@ from django.urls import reverse
 from app_areas.models import Areas
 from app_categorias.models import Categorias
 from django.utils import timezone
+from django.utils.html import strip_tags
 
 
 def crear_area(request):
@@ -77,12 +78,38 @@ def ver_evento_adm(request, evento_id):
     context = {'evento': evento}
     return render(request, 'app_super_admin/detalle_evento.html', context)
 
-login_required(login_url='login')  # Protege la vista para usuarios logueados
+login_required(login_url='login')
 def modificar_estado_evento(request, evento_id, nuevo_estado):
     evento = get_object_or_404(Eventos, pk=evento_id)
     evento.eve_estado = nuevo_estado
     evento.save()
-    # Redirigir con parámetro GET
+    color = '#198754' if nuevo_estado == 'activo' else '#dc3545'
+    texto_estado = 'ACEPTADO' if nuevo_estado == 'activo' else 'CANCELADO'
+    usuarioname = evento.eve_administrador_fk.usuario.username if evento.eve_administrador_fk else 'Administrador no asignado'
+    # 🔥 Preparar correo
+    asunto = f"Estado de tu evento {evento.eve_nombre}: {nuevo_estado}"
+
+    html_content = render_to_string('app_super_admin/correos/estado_evento.html', {
+        'evento_nombre': evento.eve_nombre,
+        'estado': texto_estado,
+        'color': color,
+        'usuarioname': usuarioname,
+    })
+
+    text_content = strip_tags(html_content)
+    correo_destino = evento.eve_administrador_fk.usuario.email
+
+    correo = EmailMultiAlternatives(
+        asunto,
+        text_content,
+        'tu_correo@gmail.com',  # remitente
+        [correo_destino]  # destinatario 🔥 ajusta esto
+    )
+
+    correo.attach_alternative(html_content, "text/html")
+    correo.send()
+
+    # 🔁 Redirección
     url = reverse('super_admin:index_super_admin') + '?modal_evento_activo=true'
     return redirect(url)
 
@@ -271,6 +298,33 @@ def cancelar_evento(request, evento_id):
     evento = get_object_or_404(Eventos, id=evento_id)
     evento.eve_estado = "Cancelado"
     evento.save()
+    color = '#dc3545'
+    texto_estado = 'CANCELADO'
+    usuarioname = evento.eve_administrador_fk.usuario.username if evento.eve_administrador_fk else 'Administrador no asignado'
+    # 🔥 Preparar correo
+    asunto = f"Estado de tu evento {evento.eve_nombre}: {texto_estado}"
+
+    html_content = render_to_string('app_super_admin/correos/estado_evento.html', {
+        'evento_nombre': evento.eve_nombre,
+        'estado': texto_estado,
+        'color': color,
+        'usuarioname': usuarioname,
+    })
+
+    text_content = strip_tags(html_content)
+    correo_destino = evento.eve_administrador_fk.usuario.email
+
+    correo = EmailMultiAlternatives(
+        asunto,
+        text_content,
+        'tu_correo@gmail.com',  # remitente
+        [correo_destino]  # destinatario 🔥 ajusta esto
+    )
+
+    correo.attach_alternative(html_content, "text/html")
+    correo.send()
+
+    # 🔁 Redirección
     
     # Redirigir con parámetro GET
     url = reverse('super_admin:index_super_admin') + '?modal_cancelar_evento=true'

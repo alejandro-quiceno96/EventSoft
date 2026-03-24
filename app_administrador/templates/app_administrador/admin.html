@@ -3,19 +3,20 @@
 
 {% block content %}
 <div class="contenedor-principal-de-eventos">
- 
+
   <div class="gestion-eventos-header">
     <div class="crear-eventos-section">
       <h2 class="titulo-seccion">Gestión de Eventos</h2>
       {% if administrador.num_eventos > 0 %}
-    <a href="{% url 'administrador:crear_evento' %}" class="btn-crear-evento">
-      <i class="fa-solid fa-plus"></i> Crear Nuevo Evento
-    </a>
-  {% else %}
-    <a class="btn-crear-evento btn-deshabilitado" title="Ya no puedes crear más eventos">
-      <i class="fa-solid fa-plus"></i> Crear Nuevo Evento
-    </a>
-  {% endif %}
+      <a href="{% url 'administrador:crear_evento' %}" class="btn-crear-evento">
+        <i class="fa-solid fa-plus"></i> Crear Nuevo Evento
+      </a>
+      {% else %}
+      <a class="btn-crear-evento btn-deshabilitado" title="Ya no puedes crear más eventos">
+        <i class="fa-solid fa-plus"></i> Crear Nuevo Evento
+      </a>
+      {% endif %}
+
     </div>
     <div class="info-admin-eventos">
       <p>
@@ -24,92 +25,91 @@
         <strong>{{ administrador.tiempo_limite }}</strong>.
       </p>
     </div>
-    
+
   </div>
-<div class="eventos-header">
-  <h1>Eventos</h1>
-</div>
+  <div class="eventos-header">
+    <h1>Eventos</h1>
+  </div>
 
-<div class="contenedor-eventos">
-{% for evento in eventos %}
-  <div class="card" style="width: 18rem;">
+  <div class="contenedor-eventos">
+    {% for evento in eventos %}
+    <div class="card" style="width: 18rem;">
 
-    <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
+      <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
 
-    <!-- Cuerpo de la Card -->
-    <div class="card-body">
-      <h5 class="card-title">{{ evento.eve_nombre }}</h5>
-      <h6 class="card-subtitle mb-2 text-body-secondary">
-        <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
-      </h6>
-      <p class="card-text">{{ evento.eve_descripcion|truncatechars:100 }}</p>
+      <!-- Cuerpo de la Card -->
+      <div class="card-body">
+        <h5 class="card-title">{{ evento.eve_nombre }}</h5>
+        <h6 class="card-subtitle mb-2 text-body-secondary">
+          <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
+        </h6>
+        <p class="card-text">{{ evento.eve_descripcion|truncatechars:100 }}</p>
 
-      <div class="d-flex flex-column gap-1">
-        <button class="btn-ver-mas" data-id="{{ evento.id }}">
-          <i class="fa-solid fa-eye"></i> Ver más
-        </button>
-
-        <a href="{% url 'administrador:ver_participantes' evento_id=evento.id %}?estado=Pendiente"
-          class="text-decoration-none">
-          <button class="btn-ver_participantes w-100">
-            <i class="fa-solid fa-users"></i> Expositores
+        <div class="d-flex flex-column gap-1">
+          <button class="btn-ver-mas" data-id="{{ evento.id }}">
+            <i class="fa-solid fa-eye"></i> Ver más
           </button>
-        </a>
 
-        <a href="{% url 'administrador:ver_asistentes' evento_id=evento.id %}?estado=Pendiente"
-          class="text-decoration-none">
-          <button class="btn-ver_participantes w-100">
-            <i class="fa-solid fa-users"></i> Asistentes
+          <a href="{% url 'administrador:ver_participantes' evento_id=evento.id %}?estado=Pendiente"
+            class="text-decoration-none">
+            <button class="btn-ver_participantes w-100">
+              <i class="fa-solid fa-users"></i> Expositores
+            </button>
+          </a>
+
+          <a href="{% url 'administrador:ver_asistentes' evento_id=evento.id %}?estado=Pendiente"
+            class="text-decoration-none">
+            <button class="btn-ver_participantes w-100">
+              <i class="fa-solid fa-users"></i> Asistentes
+            </button>
+          </a>
+
+          <a href="{% url 'administrador:ver_evaluadores' evento_id=evento.id %}?estado=Pendiente"
+            class="text-decoration-none">
+            <button class="btn-ver_participantes w-100">
+              <i class="fa-solid fa-chalkboard-user"></i> Evaluadores
+            </button>
+          </a>
+
+
+
+          <a href="{% url 'administrador:tabla_calificaciones' evento_id=evento.id %}" class="text-decoration-none">
+            <button class="btn-ver_participantes w-100">
+              <i class="fa-solid fa-trophy"></i> Tabla de Posiciones
+            </button>
+          </a>
+
+          <a href="{% url 'administrador:enviar_correo' evento.id %}" class="text-decoration-none">
+            <button class="btn-ver_participantes w-100">
+              <i class="fa-regular fa-envelope"></i> Enviar Correo
+            </button>
+          </a>
+
+          <!-- Botón Ver Estadística del Evento -->
+          <button class="action-btn-outline btn-estadisticas btn-ver-estadisticas-evento w-100" type="button"
+            data-evento-id="{{ evento.id }}" data-evento-nombre="{{ evento.eve_nombre }}"
+            data-inscritos="{{ evento.total_inscritos }}" data-asistentes="{{ evento.total_asistentes }}"
+            data-participantes="{{ evento.total_participantes }}" data-evaluadores="{{ evento.total_evaluadores }}"
+            data-fecha-inicio="{{ evento.eve_fecha_inicio }}" data-fecha-fin="{{ evento.eve_fecha_fin }}"
+            data-lugar="{{ evento.eve_lugar }}" data-ciudad="{{ evento.eve_ciudad }}">
+            <i class="fa-solid fa-magnifying-glass"></i> Ver estadística del Evento
           </button>
-        </a>
+          <a href="{% url 'administrador:lector_qr' evento.id %}" class="text-decoration-none">
+            <button class="btn-ver_participantes w-100">
+              <i class="fa-solid fa-qrcode"></i> Lector QR Entradas
+            </button>
+          </a>
 
-        <a href="{% url 'administrador:ver_evaluadores' evento_id=evento.id %}?estado=Pendiente"
-          class="text-decoration-none">
-          <button class="btn-ver_participantes w-100">
-            <i class="fa-solid fa-chalkboard-user"></i> Evaluadores
-          </button>
-        </a>  
-        
-
-
-        <a href="{% url 'administrador:tabla_calificaciones' evento_id=evento.id %}" class="text-decoration-none">
-          <button class="btn-ver_participantes w-100">
-            <i class="fa-solid fa-trophy"></i> Tabla de Posiciones
-          </button>
-        </a>
-
-        <a href="{% url 'administrador:enviar_correo' evento.id %}" class="text-decoration-none">
-          <button class="btn-ver_participantes w-100">
-            <i class="fa-regular fa-envelope"></i> Enviar Correo
-          </button>
-        </a>
-
-        <!-- Botón Ver Estadística del Evento --> 
-       <button class="action-btn-outline btn-estadisticas btn-ver-estadisticas-evento w-100" 
-        type="button" 
-        data-evento-id="{{ evento.id }}"
-        data-evento-nombre="{{ evento.eve_nombre }}"
-        data-inscritos="{{ evento.total_inscritos }}" 
-        data-asistentes="{{ evento.total_asistentes }}"
-        data-participantes="{{ evento.total_participantes }}" 
-        data-evaluadores="{{ evento.total_evaluadores }}"
-        data-fecha-inicio="{{ evento.eve_fecha_inicio }}" 
-        data-fecha-fin="{{ evento.eve_fecha_fin }}"
-        data-lugar="{{ evento.eve_lugar }}" 
-        data-ciudad="{{ evento.eve_ciudad }}">
-    <i class="fa-solid fa-magnifying-glass"></i> Ver estadística del Evento
-</button>
-        
+        </div>
       </div>
     </div>
+    {% empty %}
+    <div class="col-12 text-center">
+      <p class="text-muted">No hay eventos disponibles.</p>
+    </div>
+    {% endfor %}
   </div>
-  {% empty %}
-  <div class="col-12 text-center">
-    <p class="text-muted">No hay eventos disponibles.</p>
-  </div>
-  {% endfor %}
-</div>
-  
+
 </div>
 
 
@@ -123,7 +123,7 @@
         <h5 class="modal-title" id="eventoModalLabel">Detalles del Evento</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      
+
 
       <div class="modal-body">
         <h5 id="modalNombre"></h5>
@@ -136,7 +136,7 @@
         <p><strong>Inscripción:</strong> <span id="modalInscripcion"></span></p>
         <p><strong>Participantes:</strong> <span id="modalParticipantes"></span></p>
         <p><strong>Asistentes:</strong> <span id="modalAsistentes"></span></p>
-        
+
         <img id="modalImagen" src="" alt="Imagen del evento" class="img-fluid"
           style="width: 100%; height: 300px; object-fit: contain;" />
       </div>
@@ -144,22 +144,18 @@
         <a type="button" id="btnModificar" class="btn-ver-mas" data-bs-dismiss="modal">Modificar información</a>
         <button type="button" id="btnCriterios" class="btn-ver_participantes" data-bs-dismiss="modal">Criterios de
           Evaluación</button>
-        <button type="button" id="btnConfigCertificados" class="btn-ver_participantes" data-bs-dismiss="modal"><i class="fas fa-cog"></i> Configuración de
+        <button type="button" id="btnConfigCertificados" class="btn-ver_participantes" data-bs-dismiss="modal"><i
+            class="fas fa-cog"></i> Configuración de
           Certificados</button>
-        <button 
-          type="button" 
-          id="btnConfigInscripciones" 
-          class="btn-ver_participantes" 
-          data-bs-toggle="modal" 
+        <button type="button" id="btnConfigInscripciones" class="btn-ver_participantes" data-bs-toggle="modal"
           data-bs-target="#configModal">
           <i class="fas fa-cog"></i> Configuración de Inscripciones
         </button>
         <button type="button" class="btn-memorias" id="btnSubirMemorias">
           <i class="fa-solid fa-upload"></i> Subir memorias del evento
         </button>
-        <button class="btn-ver_participantes w-100" 
-        data-bs-toggle="modal" 
-        data-bs-target="#modalSubirInfoTecnica" id="SubirFichaTecnica">
+        <button class="btn-ver_participantes w-100" data-bs-toggle="modal" data-bs-target="#modalSubirInfoTecnica"
+          id="SubirFichaTecnica">
           <i class="fa-solid fa-upload"></i> Subir Información Técnica
         </button>
         <button type="button" id="btnAccion" class="btn-eliminar" data-bs-dismiss="modal">Eliminar Evento</button>
@@ -198,7 +194,7 @@
         </button>
 
       </div>
-      
+
     </div>
   </div>
 </div>
@@ -214,22 +210,14 @@
       </div>
       <div class="modal-body">
         <div class="form-check form-switch mb-3">
-  <input 
-    class="form-check-input toggle-switch" 
-    type="checkbox" 
-    id="switchEvaluador" 
-    data-role="Evaluador">
-  <label class="form-check-label" for="switchEvaluador">Inscripción de Evaluador</label>
-</div>
+          <input class="form-check-input toggle-switch" type="checkbox" id="switchEvaluador" data-role="Evaluador">
+          <label class="form-check-label" for="switchEvaluador">Inscripción de Evaluador</label>
+        </div>
 
-<div class="form-check form-switch">
-  <input 
-    class="form-check-input toggle-switch" 
-    type="checkbox" 
-    id="switchExpositor" 
-    data-role="Expositor">
-  <label class="form-check-label" for="switchExpositor">Inscripción de Expositor</label>
-</div>
+        <div class="form-check form-switch">
+          <input class="form-check-input toggle-switch" type="checkbox" id="switchExpositor" data-role="Expositor">
+          <label class="form-check-label" for="switchExpositor">Inscripción de Expositor</label>
+        </div>
 
       </div>
     </div>
@@ -323,7 +311,8 @@
 
 
 <!-- Modal Estadísticas con diseño Bootstrap -->
-<div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalEstadisticasLabel" aria-hidden="true">
+<div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalEstadisticasLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
 
@@ -382,10 +371,11 @@
   </div>
 </div>
 <!-- Modal Subir Información Técnica -->
-<div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel" aria-hidden="true">
+<div class="modal fade" id="modalSubirInfoTecnica" tabindex="-1" aria-labelledby="modalSubirInfoTecnicaLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 shadow border-0">
-      
+
       <!-- Header -->
       <div class="modal-header bg-success text-white rounded-top-4">
         <h5 class="modal-title fw-bold" id="modalSubirInfoTecnicaLabel">
@@ -396,7 +386,7 @@
 
       <!-- Contenido -->
       <div class="modal-body">
-        
+
         <!-- Estado de la ficha técnica -->
         <div id="fichaTecnicaSubida" class="mb-4">
         </div>
@@ -406,11 +396,12 @@
           {% csrf_token %}
           <div class="mb-3">
             <label for="inputFichaTecnica" class="form-label fw-bold">Seleccionar archivo</label>
-            <input type="file" id="inputFichaTecnica" name="eve_informacion_tecnica" accept=".pdf,.doc,.docx" class="form-control" required>
+            <input type="file" id="inputFichaTecnica" name="eve_informacion_tecnica" accept=".pdf,.doc,.docx"
+              class="form-control" required>
             <div class="form-text">Formatos permitidos: PDF, DOC, DOCX</div>
           </div>
           <input type="hidden" name="evento_id" id="eventoIdInput">
-          
+
           <div class="d-flex justify-content-end gap-2 mt-4">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               <i class="fa-solid fa-xmark me-1"></i> Cancelar
@@ -446,32 +437,33 @@
 </div>
 <!-- Modal Estadísticas -->
 <div id="modal-estadisticas-evento" class="modal-estadisticas-evento">
-    <div class="modal-estadisticas-evento-content">
-        <span class="modal-estadisticas-evento-close">&times;</span>
-        <h2 id="modal-estadisticas-evento-titulo"></h2>
-        <p><strong>📍 Lugar:</strong> <span id="modal-estadisticas-evento-lugar"></span> - <span id="modal-estadisticas-evento-ciudad"></span></p>
-        <p><strong>🗓 Fecha inicio:</strong> <span id="modal-estadisticas-evento-fecha-inicio"></span></p>
-        <p><strong>🗓 Fecha fin:</strong> <span id="modal-estadisticas-evento-fecha-fin"></span></p>
+  <div class="modal-estadisticas-evento-content">
+    <span class="modal-estadisticas-evento-close">&times;</span>
+    <h2 id="modal-estadisticas-evento-titulo"></h2>
+    <p><strong>📍 Lugar:</strong> <span id="modal-estadisticas-evento-lugar"></span> - <span
+        id="modal-estadisticas-evento-ciudad"></span></p>
+    <p><strong>🗓 Fecha inicio:</strong> <span id="modal-estadisticas-evento-fecha-inicio"></span></p>
+    <p><strong>🗓 Fecha fin:</strong> <span id="modal-estadisticas-evento-fecha-fin"></span></p>
 
-        <div class="modal-estadisticas-evento-stats">
-            <div class="stat-card">
-                <h3>Inscritos</h3>
-                <p id="modal-estadisticas-evento-inscritos"></p>
-            </div>
-            <div class="stat-card">
-                <h3>Asistentes</h3>
-                <p id="modal-estadisticas-evento-asistentes"></p>
-            </div>
-            <div class="stat-card">
-                <h3>Participantes</h3>
-                <p id="modal-estadisticas-evento-participantes"></p>
-            </div>
-            <div class="stat-card">
-                <h3>Evaluadores</h3>
-                <p id="modal-estadisticas-evento-evaluadores"></p>
-            </div>
-        </div>
+    <div class="modal-estadisticas-evento-stats">
+      <div class="stat-card">
+        <h3>Inscritos</h3>
+        <p id="modal-estadisticas-evento-inscritos"></p>
+      </div>
+      <div class="stat-card">
+        <h3>Asistentes</h3>
+        <p id="modal-estadisticas-evento-asistentes"></p>
+      </div>
+      <div class="stat-card">
+        <h3>Participantes</h3>
+        <p id="modal-estadisticas-evento-participantes"></p>
+      </div>
+      <div class="stat-card">
+        <h3>Evaluadores</h3>
+        <p id="modal-estadisticas-evento-evaluadores"></p>
+      </div>
     </div>
+  </div>
 </div>
 
 
@@ -492,56 +484,56 @@
   const baseConfigInscripcionUrl = "{% url 'administrador:configurar_inscripcion' 0 %}";
 
 
-    // Manejar formulario memorias con modal cargando
-    const formMemorias = document.getElementById('form-guardar-memorias');
-    if (formMemorias) {
-      formMemorias.addEventListener('submit', function (e) {
-        e.preventDefault();
+  // Manejar formulario memorias con modal cargando
+  const formMemorias = document.getElementById('form-guardar-memorias');
+  if (formMemorias) {
+    formMemorias.addEventListener('submit', function (e) {
+      e.preventDefault();
 
-        const modalCargando = new bootstrap.Modal(document.getElementById('modalGuardandoMemorias'));
-        modalCargando.show();
+      const modalCargando = new bootstrap.Modal(document.getElementById('modalGuardandoMemorias'));
+      modalCargando.show();
 
-        setTimeout(() => {
-          this.submit();
-        }, 1000);
-      });
-    }
+      setTimeout(() => {
+        this.submit();
+      }, 1000);
+    });
+  }
 
-    // Mostrar modal éxito memorias si aplicable
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("exito_memorias")) {
-      const modalEl = document.getElementById('modalMemoriasGuardadas');
-      const modal = new bootstrap.Modal(modalEl);
-      modal.show();
+  // Mostrar modal éxito memorias si aplicable
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("exito_memorias")) {
+    const modalEl = document.getElementById('modalMemoriasGuardadas');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
 
-      modalEl.addEventListener('hidden.bs.modal', function () {
-        const url = new URL(window.location);
-        url.searchParams.delete('exito_memorias');
-        window.history.replaceState({}, document.title, url.toString());
-      });
-    }
+    modalEl.addEventListener('hidden.bs.modal', function () {
+      const url = new URL(window.location);
+      url.searchParams.delete('exito_memorias');
+      window.history.replaceState({}, document.title, url.toString());
+    });
+  }
   document.addEventListener('DOMContentLoaded', function () {
-  const botonesVerMas = document.querySelectorAll('.btn-ver-mas');
-  
-  botonesVerMas.forEach(btn => {
-    btn.addEventListener('click', function () {
-      const eventoId = btn.getAttribute('data-id');
+    const botonesVerMas = document.querySelectorAll('.btn-ver-mas');
 
-      // Establecer dinámicamente los enlaces
-      const linkParticipantes = document.getElementById('linkHabilitarParticipantes');
-      const linkEvaluadores = document.getElementById('linkHabilitarEvaluadores');
+    botonesVerMas.forEach(btn => {
+      btn.addEventListener('click', function () {
+        const eventoId = btn.getAttribute('data-id');
 
-      if (linkParticipantes && linkEvaluadores) {
-        linkParticipantes.href = `/administrador/habilitar_participantes/${eventoId}/`;
-        linkEvaluadores.href = `/administrador/habilitar_evaluadores/${eventoId}/`;
-      }
+        // Establecer dinámicamente los enlaces
+        const linkParticipantes = document.getElementById('linkHabilitarParticipantes');
+        const linkEvaluadores = document.getElementById('linkHabilitarEvaluadores');
 
-      // Aquí puedes abrir el modal si no lo haces aún
-      const modal = new bootstrap.Modal(document.getElementById('eventoModal'));
-      modal.show();
+        if (linkParticipantes && linkEvaluadores) {
+          linkParticipantes.href = `/administrador/habilitar_participantes/${eventoId}/`;
+          linkEvaluadores.href = `/administrador/habilitar_evaluadores/${eventoId}/`;
+        }
+
+        // Aquí puedes abrir el modal si no lo haces aún
+        const modal = new bootstrap.Modal(document.getElementById('eventoModal'));
+        modal.show();
+      });
     });
   });
-});
 
 </script>
 

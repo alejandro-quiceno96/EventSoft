@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Escáner QR - Eventos</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-principal: #007832;
+            --color-secundario: #00a859;
+            --color-fondo: #f4f6f8;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: var(--color-fondo);
+            margin: 0;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+        }
+
+        /* Contenedor */
+        .container {
+            max-width: 420px;
+            margin: -20px auto 20px;
+            padding: 20px;
+        }
+
+        /* Card scanner */
+        .scanner-card {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Lector */
+        #reader {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Card info */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-top: 20px;
+            display: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nombre {
+            font-size: 22px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .rol {
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* Botón */
+        .btn {
+            background: linear-gradient(135deg, var(--color-principal), var(--color-secundario));
+            color: white;
+            padding: 12px;
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.03);
+        }
+
+        /* Estado */
+        .estado {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* Indicador */
+        .scan-indicator {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--color-principal);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #eee;
+            border-top: 5px solid #007832;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .flash-success {
+            animation: flashGreen 0.4s;
+        }
+
+        @keyframes flashGreen {
+            0% {
+                background: #00a85933;
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h2>🎫 Escanear QR</h2>
+        <p style="margin:5px 0 0; font-size:13px;">Control de asistencia</p><br>
+        <h2 style="margin:5px 0 0;">{{evento.eve_nombre}}</h2>
+    </div>
+
+    <div class="container">
+
+        <div class="scanner-card">
+            <div id="reader"></div>
+            <div class="scan-indicator">Apunta la cámara al código QR</div>
+        </div>
+
+        <div id="infoCard" class="card">
+            <div class="nombre" id="nombre"></div>
+            <div class="rol" id="rol"></div>
+            <div class="rol" id="documento"></div>
+
+            <button class="btn" onclick="registrarAsistencia()">
+                Registrar asistencia
+            </button>
+
+            <div class="estado" id="estado"></div>
+        </div>
+
+    </div>
+
+    <!-- Modal Resultado -->
+    <div class="modal fade" id="modalResultado" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 15px;">
+
+                <div class="modal-body text-center p-4">
+                    <div id="iconoModal" style="font-size: 50px; margin-bottom: 10px;"></div>
+
+                    <h5 id="tituloModal"></h5>
+                    <p id="mensajeModal" class="text-muted"></p>
+
+                    <button class="btn btn-success mt-3" onclick="recargarPagina()">
+                        Aceptar
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Loader -->
+    <div id="loader" style="
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(255,255,255,0.85);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+">
+
+        <div class="spinner"></div>
+        <p style="margin-top:15px; color:#007832; font-weight:600;">
+            Procesando...
+        </p>
+
+    </div>
+
+    <script>
+        let html5QrCode;
+        let qrData = null;
+        let eventoId = "{{ evento.id }}";
+        let urlConsultar = "{% url 'administrador:consultar_qr' 'DATA' %}";
+        let urlRegistrar = "{% url 'administrador:registrar_asistencia' evento.id %}";
+        let urlLector = "{url 'administrador:lector_qr' 123}".replace('123', eventoId);
+
+        function mostrarModal(exito, mensaje) {
+
+            let icono = document.getElementById("iconoModal");
+            let titulo = document.getElementById("tituloModal");
+            let texto = document.getElementById("mensajeModal");
+
+
+            if (exito == true) {
+                icono.innerHTML = "✅";
+                titulo.innerText = "Registro exitoso";
+                texto.innerText = mensaje;
+            } else if (exito == "confirmada") {
+                icono.innerHTML = "ℹ️";
+                titulo.innerText = "Entrada usada anteriormente";
+                texto.innerText = mensaje;
+            } else {
+                icono.innerHTML = "❌";
+                titulo.innerText = "Error";
+                texto.innerText = mensaje;
+            }
+
+            let modal = new bootstrap.Modal(document.getElementById('modalResultado'));
+            modal.show();
+        }
+
+        function recargarPagina() {
+            window.location.href = "";
+        }
+
+        /* Escaneo */
+        function onScanSuccess(decodedText) {
+
+            if (qrData) return;
+
+            qrData = decodedText;
+
+            document.body.classList.add("flash-success");
+            setTimeout(() => {
+                document.body.classList.remove("flash-success");
+            }, 400);
+            // 🔥 Vibrar al escanear
+            if (navigator.vibrate) {
+                navigator.vibrate(200);
+            }
+
+            html5QrCode.stop();
+
+            mostrarLoader(); // 🔥 AQUÍ
+
+            let dataFinal = `${eventoId}|${qrData}`;
+            let urlFinal = urlConsultar.replace('DATA', encodeURIComponent(dataFinal));
+
+            fetch(urlFinal)
+                .then(res => res.json())
+                .then(data => {
+
+                    ocultarLoader(); // 🔥 AQUÍ
+
+                    if (data.success) {
+                        mostrarModal('confirmada', data.message);
+                    } else {
+                        document.getElementById("nombre").innerText = data.nombre || "Sin nombre";
+                        document.getElementById("rol").innerText = "Rol: " + (data.rol || "N/A");
+                        document.getElementById("documento").innerText = "Documento de identidad: " + (data.documento || "N/A");
+                        document.getElementById("estado").innerText = "Listo para registrar asistencia";
+                        document.getElementById("infoCard").style.display = "block";
+                    }
+
+                })
+                .catch(error => {
+                    ocultarLoader(); // 🔥 IMPORTANTE
+                    console.error(error);
+                    alert("QR no válido");
+                });
+        }
+
+        /* 🔥 Forzar cámara trasera */
+        async function iniciarScanner() {
+            try {
+                const devices = await Html5Qrcode.getCameras();
+
+                let camaraTrasera = devices.find(device =>
+                    device.label.toLowerCase().includes('back') ||
+                    device.label.toLowerCase().includes('rear') ||
+                    device.label.toLowerCase().includes('environment')
+                );
+
+                let cameraId = camaraTrasera ? camaraTrasera.id : devices[devices.length - 1].id;
+
+                html5QrCode = new Html5Qrcode("reader"); // 🔥 GLOBAL
+
+                await html5QrCode.start(
+                    cameraId,
+                    { fps: 10, qrbox: 250 },
+                    onScanSuccess
+                );
+
+            } catch (error) {
+                console.error(error);
+                alert("Error al acceder a la cámara");
+            }
+        }
+
+        iniciarScanner();
+
+        /* Registrar asistencia */
+        function registrarAsistencia() {
+
+            if (!qrData) {
+                alert("Primero escanea un QR");
+                return;
+            }
+
+            mostrarLoader(); // 🔥 AQUÍ
+
+            fetch(urlRegistrar, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    clave: qrData
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+
+                    ocultarLoader(); // 🔥 AQUÍ
+
+                    if (data.success) {
+                        mostrarModal(true, data.message);
+                    } else {
+                        mostrarModal(false, data.error || "Error al registrar");
+                    }
+
+                })
+                .catch(() => {
+                    ocultarLoader(); // 🔥 IMPORTANTE
+                    mostrarModal(false, "Error de conexión");
+                });
+        }
+
+        function mostrarLoader() {
+            document.getElementById("loader").style.display = "flex";
+        }
+
+        function ocultarLoader() {
+            document.getElementById("loader").style.display = "none";
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

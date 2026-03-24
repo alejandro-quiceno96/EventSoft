@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado del Evento</title>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family: Arial, sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:20px;">
+<tr>
+<td align="center">
+
+<!-- CONTENEDOR -->
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+
+    <!-- HEADER -->
+    <tr>
+        <td style="background:#007832; color:#ffffff; padding:20px; text-align:center;">
+            <h2 style="margin:0;">Gestión de Eventos</h2>
+        </td>
+    </tr>
+
+    <!-- CONTENIDO -->
+    <tr>
+        <td style="padding:30px; text-align:center;">
+
+            <h3 style="margin-bottom:10px;">Hola, {{usuarioname}}👋</h3>
+
+            <p style="font-size:16px; color:#555;">
+                El evento:
+            </p>
+
+            <h2 style="color:#333; margin:10px 0;">
+                {{ evento_nombre }}
+            </h2>
+
+            <!-- ESTADO DINÁMICO -->
+            {% if estado == "ACEPTADO" %}
+                <p style="font-size:18px; color:#007832; font-weight:bold;">
+                    ✅ Ha sido ACEPTADO, ahora lo puedes encontrar en la pagina web.
+                </p>
+            {% elif estado == "CANCELADO" %}
+                <p style="font-size:18px; color:#dc3545; font-weight:bold;">
+                    ❌ Ha sido CANCELADO. Si crees que esto es un error, por favor contacta con el soporte.
+                </p>
+            {% endif %}
+
+            <p style="font-size:14px; color:#777; margin-top:20px;">
+                Este mensaje es automático, por favor no respondas a este correo. Si tienes alguna pregunta, contacta con el soporte.
+            </p>
+
+        </td>
+    </tr>
+
+    <!-- FOOTER -->
+    <tr>
+        <td style="background:#f1f1f1; padding:15px; text-align:center; font-size:12px; color:#888;">
+            © 2026 Gestión de Eventos - Todos los derechos reservados
+        </td>
+    </tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

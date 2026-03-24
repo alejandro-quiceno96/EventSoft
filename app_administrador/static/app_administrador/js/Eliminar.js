@@ -11,10 +11,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
    document.getElementById("btnConfirmarEliminar").addEventListener("click", function () {
     if (eventoIdAEliminar) {
-        let url = baseEliminarUrl + eventoIdAEliminar; // Importante terminar con "/"
-        console.log("Eliminando evento en URL:", url);
+        let url = baseEliminarUrl + eventoIdAEliminar;
 
-        fetch(url)
+        fetch(url, {
+            method: 'POST' // 🔥 solo esto basta
+        })
         .then(response => response.json())
         .then(data => {
             alert(data.mensaje);
@@ -25,6 +26,6 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Hubo un error al eliminar el evento");
         });
     }
-    });
+});
 
 });

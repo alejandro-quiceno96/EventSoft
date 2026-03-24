@@ -24,7 +24,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
 import locale
 from django.utils.timezone import now
-
+from urllib.parse import unquote
 from datetime import date
 
 from app_eventos.models import Eventos, EventosCategorias, ParticipantesEventos, AsistentesEventos, EvaluadoresEventos, Proyecto
@@ -421,8 +421,8 @@ def actualizar_estado_proyecto(request, proyecto_id, nuevo_estado):
             participante = expositor.par_eve_participante_fk
 
             # Generar QR y clave por expositor
-            qr_expositor = generar_pdf(participante.id, "expositor", evento_id, tipo="expositor")
             clave_acceso = generar_clave_acceso()
+            qr_expositor = generar_pdf(participante.id, "expositor", evento_id, tipo="expositor", clave_acceso=clave_acceso)
 
             expositor.par_eve_estado = "Admitido"
             expositor.par_eve_qr = qr_expositor
@@ -554,8 +554,9 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
 
     # ✅ Verificar límite de aforo antes de admitir
     if nuevo_estado == 'Admitido':
-        qr_participante = generar_pdf(asistente_id, "Asistente", evento_id, tipo="asistente")
         clave_acceso = generar_clave_acceso()
+        qr_participante = generar_pdf(asistente_id, "Asistente", evento_id, tipo="asistente", clave_acceso=clave_acceso)
+        
     else:
         qr_participante = None
         clave_acceso = 0
@@ -906,8 +907,9 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
 
         # Generar PDF y clave de acceso si es admitido
         if nuevo_estado == 'Admitido':
-            qr_evaluador = generar_pdf(evaluador_id, "Evaluador", evento_id, tipo="evaluador")
             clave_acceso = generar_clave_acceso()
+            qr_evaluador = generar_pdf(evaluador_id, "Evaluador", evento_id, tipo="evaluador", clave_acceso=clave_acceso)
+            
         else:
             qr_evaluador = None
             clave_acceso = 0
@@ -925,6 +927,7 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
         evaluador_evento.eva_estado = nuevo_estado
         evaluador_evento.eva_eve_qr = qr_evaluador
         evaluador_evento.eva_clave_acceso = clave_acceso
+        evaluador_evento.asistencia_confirmada = False
         evaluador_evento.save()
 
         # Si fue admitido, enviar correo con clave y QR
@@ -1627,3 +1630,112 @@ def config_inscripcion(request, evento_id):
 
         return JsonResponse({"success": True, "message": f"{tipo} actualizado a {estado}"})
     return JsonResponse({"success": False, "message": "Método no permitido"}, status=405)
+
+def lector_qr(request, evento_id):
+    evento = get_object_or_404(Eventos, id=evento_id)
+    return render(request, 'app_administrador/lectorQr.html', {'evento': evento})
+
+def consultar_qr(request, data):
+    try:
+        data = unquote(data)
+
+        evento_id, clave = data.split("|")
+
+        # 🔥 Buscar en asistentes
+        asistente = AsistentesEventos.objects.filter(
+            asi_eve_evento_fk_id=evento_id,
+            asi_eve_clave=clave
+        ).first()
+        
+
+        if asistente:
+            if asistente.asistencia_confirmada == True:
+                return JsonResponse({'success': True, 'message': 'El Asistente ya ingresó al evento'})
+            else:
+                
+                return JsonResponse({
+                    'nombre': asistente.asi_eve_asistente_fk.usuario.first_name + " " + asistente.asi_eve_asistente_fk.usuario.last_name,
+                    'rol': 'Asistente',
+                    'tipo': 'asistente',
+                    'documento': asistente.asi_eve_asistente_fk.usuario.tipo_documento + "  "+ asistente.asi_eve_asistente_fk.usuario.documento_identidad
+                })
+
+        # 🔥 Buscar en participantes
+        participante = ParticipantesEventos.objects.filter(
+            par_eve_evento_fk_id=evento_id,
+            par_eve_clave=clave
+        ).first()
+
+        if participante:
+            return JsonResponse({
+                'nombre': participante.par_eve_participante_fk.usuario.first_name + " " + participante.par_eve_participante_fk.usuario.last_name,
+                'rol': 'Expositor',
+                'tipo': 'participante',
+                'documento': participante.par_eve_participante_fk.usuario.tipo_documento + " " + participante.par_eve_participante_fk.usuario.documento_identidad
+            })
+
+        # 🔥 Buscar en evaluadores
+        evaluador = EvaluadoresEventos.objects.filter(
+            eva_eve_evento_fk_id=evento_id,
+            eva_clave_acceso=clave
+        ).first()
+
+        if evaluador:
+            
+            if evaluador.asistencia_confirmada:
+                return JsonResponse({'success': True, 'message': 'Evaluador ya ingresó al evento.'})
+            return JsonResponse({
+                'nombre': evaluador.eva_eve_evaluador_fk.usuario.first_name + " " + evaluador.eva_eve_evaluador_fk.usuario.last_name,
+                'rol': 'Evaluador',
+                'tipo': 'evaluador',
+                'documento': evaluador.eva_eve_evaluador_fk.usuario.tipo_documento + " " + evaluador.eva_eve_evaluador_fk.usuario.documento_identidad
+            })
+
+        return JsonResponse({'error': 'No encontrado'}, status=404)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@login_required(login_url='login')
+def registrar_asistencia(request, evento_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        clave = data.get('clave')
+
+        # Buscar en asistentes
+        asistente_evento = AsistentesEventos.objects.filter(
+            asi_eve_evento_fk_id=evento_id,
+            asi_eve_clave=clave
+        ).first()
+
+        if asistente_evento:
+            asistente_evento.asistencia_confirmada = True
+            asistente_evento.save()
+            return JsonResponse({'success': True, 'message': 'Asistencia registrada para asistente.'})
+
+        # Buscar en participantes
+        participante_evento = ParticipantesEventos.objects.filter(
+            par_eve_evento_fk_id=evento_id,
+            par_eve_clave=clave
+        ).first()
+
+        if participante_evento:
+            participante_evento.asistencia_confirmada = True
+            participante_evento.save()
+            return JsonResponse({'success': True, 'message': 'Asistencia registrada para Expositor.'})
+
+        # Buscar en evaluadores
+        evaluador_evento = EvaluadoresEventos.objects.filter(
+            eva_eve_evento_fk_id=evento_id,
+            eva_clave_acceso=clave
+        ).first()
+
+        if evaluador_evento:
+            evaluador_evento.asistencia_confirmada = True
+            evaluador_evento.save()
+            return JsonResponse({'success': True, 'message': 'Asistencia registrada para evaluador.'})
+
+        return JsonResponse({'error': 'Clave no encontrada'}, status=404)
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

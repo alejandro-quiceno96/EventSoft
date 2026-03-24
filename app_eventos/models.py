@@ -32,6 +32,7 @@ class AsistentesEventos(models.Model):
     asi_eve_soporte = models.FileField(upload_to='pdf/comprobantes/')
     asi_eve_qr = models.FileField(upload_to='pdf/qr_asistentes/')
     asi_eve_clave = models.CharField(max_length=45)
+    asistencia_confirmada = models.BooleanField(default=False, null=True, blank=True)
     
 class ParticipantesEventos(models.Model):
     par_eve_participante_fk = models.ForeignKey('app_participante.Participantes', on_delete=models.CASCADE)
@@ -44,6 +45,7 @@ class ParticipantesEventos(models.Model):
     par_eve_calificacion_final = models.FloatField(null=True, blank=True)
     par_eve_proyecto = models.ForeignKey('Proyecto', on_delete=models.CASCADE, null=True, blank=True)
     habilitado = models.BooleanField(default=True)
+    asistencia_confirmada = models.BooleanField(default=False, null=True, blank=True)
     
 class EvaluadoresEventos(models.Model):
     eva_eve_evaluador_fk = models.ForeignKey('app_evaluador.Evaluadores', on_delete=models.CASCADE)
@@ -56,6 +58,7 @@ class EvaluadoresEventos(models.Model):
     eva_clave_acceso = models.CharField(max_length=45, null=True, blank=True)
     habilitado = models.BooleanField(default=True)
     criterios_modificables = models.BooleanField(default=False, null=True, blank=True)
+    asistencia_confirmada = models.BooleanField(default=False, null=True, blank=True)
     
 class Proyecto(models.Model):
     pro_evento_fk = models.ForeignKey('Eventos', on_delete=models.CASCADE)

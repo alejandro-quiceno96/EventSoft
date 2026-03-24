@@ -22,13 +22,15 @@ from datetime import datetime
 import locale
 
 
-def generar_pdf(id_participante, usuario, id_evento, tipo="expositor"):
-    qr_data = f"{id_participante}{id_evento}"
+def generar_pdf(id_participante, usuario, id_evento, tipo="expositor", clave_acceso=None):
+    qr_data = clave_acceso
     qr_img = qrcode.make(qr_data)
 
     buffer = io.BytesIO()
     qr_img.save(buffer, format="PNG")
     qr_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    
+    evento = get_object_or_404(Eventos, id=id_evento)
     
     if tipo == "evaluador":
         evaluador = Evaluadores.objects.get(id=id_participante)
@@ -48,6 +50,7 @@ def generar_pdf(id_participante, usuario, id_evento, tipo="expositor"):
         "id_participante": id_participante,
         "id_evento": id_evento,
         "qr_base64": qr_base64,
+        "evento": evento,
     })
 
     if tipo == "asistente":

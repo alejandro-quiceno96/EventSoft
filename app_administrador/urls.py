@@ -60,6 +60,11 @@ urlpatterns=[
 
 
     path('evento/subir-info-tecnica/<int:evento_id>/', views.subir_info_tecnica, name='subir_info_tecnica'),
+    
+    #Lector Qr
+    path('evento/lector-qr/<int:evento_id>', views.lector_qr, name='lector_qr'),
+    path('consultar_qr/<str:data>/', views.consultar_qr, name='consultar_qr'),
+    path('registrar_asistencia/<int:evento_id>/', views.registrar_asistencia, name='registrar_asistencia')
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
