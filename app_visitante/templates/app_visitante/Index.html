@@ -542,30 +542,48 @@
         function toggleChatbotModal() {
             document.getElementById("chatbotModal").classList.toggle("open");
         }
+        function getCSRFToken() {
+            return document.cookie.split('; ')
+                .find(row => row.startsWith('csrftoken'))
+                .split('=')[1];
+        }
 
         function enviarPregunta(pregunta) {
             const log = document.getElementById("chatLog");
 
+            if (!pregunta.trim()) return;
+
+            // Usuario
             const userMsg = document.createElement("p");
             userMsg.className = "user-msg";
             userMsg.textContent = "Tú: " + pregunta;
             log.appendChild(userMsg);
 
-            fetch(`/chatbot/?q=${encodeURIComponent(pregunta)}`)
-                .then(response => response.json())
-                .then(data => {
-                    const botMsg = document.createElement("p");
-                    botMsg.className = "bot-msg";
-                    botMsg.textContent = "Bot: " + data.respuesta;
-                    log.appendChild(botMsg);
-                    log.scrollTop = log.scrollHeight;
-                })
-                .catch(() => {
-                    const botMsg = document.createElement("p");
-                    botMsg.className = "bot-msg";
-                    botMsg.textContent = "Bot: Lo siento, ocurrió un error.";
-                    log.appendChild(botMsg);
-                });
+            // Bot escribiendo
+            const loading = document.createElement("p");
+            loading.className = "bot-msg";
+            loading.textContent = "Bot: escribiendo...";
+            log.appendChild(loading);
+
+            fetch("/chatbot/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken()
+                },
+                body: JSON.stringify({ mensaje: pregunta })
+            })
+            .then(res => res.json())
+            .then(data => {
+                loading.remove();
+
+                const botMsg = document.createElement("p");
+                botMsg.className = "bot-msg";
+                botMsg.innerHTML = "<b>Bot:</b><br>" + data.respuesta.replace(/\n/g, "<br>");
+                log.appendChild(botMsg);
+
+                log.scrollTop = log.scrollHeight;
+            });
         }
 
         function filterEvents() {
@@ -682,48 +700,6 @@
             }
         });
    </script>
-   <script>
-    function toggleChatbotModal() {
-        const modal = document.getElementById("chatbotModal");
-        modal.classList.toggle("open");
-    }
-
-    function enviarPregunta(pregunta) {
-        const log = document.getElementById("chatLog");
-
-        const userMsg = document.createElement("p");
-        userMsg.className = "user-msg";
-        userMsg.textContent = "Tú: " + pregunta;
-        log.appendChild(userMsg);
-
-        fetch("{% url 'chatbot' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": getCSRFToken(),
-            },
-            body: JSON.stringify({ mensaje: pregunta })
-        })
-        .then(res => res.json())
-        .then(data => {
-            const botMsg = document.createElement("p");
-            botMsg.className = "bot-msg";
-            botMsg.textContent = "Bot: " + data.respuesta;
-            log.appendChild(botMsg);
-            log.scrollTop = log.scrollHeight;
-        })
-        .catch(() => {
-            const errorMsg = document.createElement("p");
-            errorMsg.className = "bot-msg";
-            errorMsg.textContent = "Bot: Ocurrió un error al contactar al servidor.";
-            log.appendChild(errorMsg);
-        });
-    }
-
-    function getCSRFToken() {
-        return document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
-    }
-</script>
 <script>
     const UrlValidaradministrador = "{% url 'validar_clave_admin' %}";
     const UrlAdministrador = "{% url 'administrador:index_administrador' %}";

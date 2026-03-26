@@ -33,6 +33,7 @@ from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.utils.dateparse import parse_date
 from django.core.exceptions import ValidationError
+from openai import OpenAI
 
 User = get_user_model()
 
@@ -661,26 +662,56 @@ def registrar_evaluador(request, evento_id):
 
 
 
-respuestas = {
-    "hola": "¡Hola! Soy el asistente virtual de EventSoft. ¿En qué puedo ayudarte?",
-    "que hace un participante?": "Un participante puede asistir a conferencias, talleres y recibir certificados de participación.",
-    "que hace un visitante?": "Un visitante puede recorrer el evento, conocer los stands, pero no participa en las actividades certificadas.",
-    "cómo me inscribo?": "Puedes inscribirte desde la página principal, usando el botón de inscripción o accediendo con tu número de documento.",
-    "cuáles son los eventos disponibles?": "Puedes ver los eventos disponibles en la sección principal o usar los filtros por categoría y área.",
-    "documentos": "Para participar solo necesitas tu documento de identidad y, si aplica, la invitación del evento.",
-}
-
 @csrf_exempt
 def chatbot(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        mensaje = data.get("mensaje", "").lower()
+    if request.method != "POST":
+        return JsonResponse({"respuesta": "Método no permitido"}, status=405)
 
-        for clave, respuesta in respuestas.items():
-            if clave in mensaje:
-                return JsonResponse({"respuesta": respuesta})
+    data = json.loads(request.body)
+    mensaje = data.get("mensaje", "").lower()
 
-        return JsonResponse({"respuesta": "Lo siento, no entendí tu pregunta. ¿Podrías reformularla?"})
+    # 🧠 RESPUESTAS
+    if any(p in mensaje for p in ["hola", "buenas", "hey"]):
+        return JsonResponse({"respuesta": "¡Hola! 👋 Soy el asistente de EventSoft. ¿En qué puedo ayudarte?"})
+
+    if "participante" in mensaje:
+        return JsonResponse({"respuesta": "Un participante puede inscribirse a eventos, asistir y recibir certificados."})
+
+    if "visitante" in mensaje:
+        return JsonResponse({"respuesta": "Un visitante puede explorar eventos y ver información general."})
+
+    if any(p in mensaje for p in ["inscrib", "registro"]):
+        return JsonResponse({"respuesta": "Puedes inscribirte entrando a un evento y dando clic en 'Ver más'."})
+
+    if "documento" in mensaje:
+        return JsonResponse({"respuesta": "Necesitas documento de identidad y en algunos casos invitación."})
+
+    # 📅 EVENTOS DINÁMICOS
+    if any(p in mensaje for p in ["evento", "disponibles", "hay"]):
+        eventos = Eventos.objects.filter(eve_estado="activo")
+
+        if eventos.exists():
+            respuesta = "📅 Eventos disponibles:\n"
+            for e in eventos:
+                respuesta += f"- {e.eve_nombre} ({e.eve_fecha_inicio})\n"
+        else:
+            respuesta = "No hay eventos disponibles actualmente."
+
+        return JsonResponse({"respuesta": respuesta})
+
+    # 🔍 BUSCAR EVENTO POR NOMBRE
+    eventos = Eventos.objects.filter(eve_nombre__icontains=mensaje)
+
+    if eventos.exists():
+        e = eventos.first()
+        return JsonResponse({
+            "respuesta": f"📌 {e.eve_nombre} inicia el {e.eve_fecha_inicio} y termina el {e.eve_fecha_fin}"
+        })
+
+    # ❌ NO ENTENDIDO
+    return JsonResponse({
+        "respuesta": "No entendí 😅 Puedes preguntarme por eventos, inscripciones o fechas."
+    })
 
 def confirmar_rol(request):
     if request.method == 'POST':

@@ -113,9 +113,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'app_usuarios.Usuario'
 LOGIN_URL = 'login' 
-
-
-# Internationalization
+OPENAI_API_KEY = os.getenv('API_OPENAI_KEY')
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
