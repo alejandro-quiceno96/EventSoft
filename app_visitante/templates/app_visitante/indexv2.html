@@ -1,0 +1,75 @@
+
+<!-- Contenido Principal -->
+    <main class="content">
+        <section class="contenedor-principal-de-eventos">
+            <input type="text" class="buscador-movil" id="searchMovil" placeholder="Busca tu evento..." oninput="filterEvents()">
+            {% if eventos %}
+                {% for evento in eventos %}
+                    {% if evento.eve_estado == "activo" %}
+                        
+                        <div class="card" style="width: 18rem; margin: 10px; display: inline-block; vertical-align: top;">
+                            <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" style="height: 200px; object-fit: contain; width: 100%;">
+                            <div class="card-body">
+                                <h5 class="evento-titulo">{{ evento.eve_nombre }}</h5>
+                                <h6 class="evento-fechas">
+                                    <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
+                                </h6>
+                                <p class="evento-descripcion">{{ evento.eve_descripcion|truncatechars:100 }}</p>
+                                {% if evento.eve_estado == "Terminado" %}
+                                    <button class="btn btn-primary" disabled style="background-color: #007832;">
+                                        <i class="fa-solid fa-circle-check"></i> Evento Terminado
+                                    </button>
+                                {% else %}
+                                    <a href="{% url 'detalle_evento' evento.id %}" class="btn" style="background-color: #007832; color: white;">Ver más</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="alerta">
+                    <i class="fa-solid fa-triangle-exclamation"></i> No hay eventos disponibles.
+                </div>
+            {% endif %}
+        </section>
+
+<header class="header">
+        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <div class="header-logo-nombre">
+            {% if request.user.is_authenticated %}
+                <button class="abrir-menu" onclick="openMenu()">
+                    <i class="fa-solid fa-bars"></i>
+                    <span class="tooltiptext">Menú</span>
+                </button>
+            {% endif %}
+            <img class="logo-sena" src="{% static 'image/logo_eventsoft.png'%}" alt="Logo Eventsof">
+        </div>
+
+       <div class="search-section">
+    <div class="search-input-group">
+        <input type="text" id="search" placeholder="Busca tu evento..." oninput="filterEvents()">
+    </div>
+
+    <button class="search-icon-btn" onclick="toggleSearchBar()" style="display: none;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+    <button class="filter-btn" onclick="openFilterEventsModal()">
+        <i class="fa-solid fa-filter"></i>
+        <span class="filter-text"> Filtrar eventos</span>
+    </button>
+
+    {% if request.user.is_authenticated %}
+        <button class="filter-btn" style="text-decoration: none;"  data-bs-toggle="offcanvas" data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
+            <i class="fa-solid fa-user"></i>
+            <span class="filter-text"> Mi Perfil</span>
+        </button>
+    {% else %}
+        <a href="{% url 'login' %}" class="filter-btn" style="text-decoration: none;">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            <span class="filter-text"> Iniciar Sesión</span>
+        </a>
+    {% endif %}
+</div>
+
+    </header>

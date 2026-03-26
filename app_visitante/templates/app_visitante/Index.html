@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{% static 'app_administrador/css/sidebarderecha.css'%}">
     <link rel="stylesheet" href="{% static 'app_administrador/css/modaleditarperfil.css'%}">
     <link rel="stylesheet" href="{% static 'app_visitante/css/modal_validacion.css' %}" />
+    <link rel="stylesheet" href="{% static 'app_visitante/css/index.css' %}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"> 
@@ -39,47 +40,68 @@
 
 <body>
 
-    <!-- Header -->
     <header class="header">
-        <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
-        <div class="header-logo-nombre">
-            {% if request.user.is_authenticated %}
-                <button class="abrir-menu" onclick="openMenu()">
-                    <i class="fa-solid fa-bars"></i>
-                    <span class="tooltiptext">Menú</span>
-                </button>
-            {% endif %}
-            <img class="logo-sena" src="{% static 'image/logo_eventsoft.png'%}" alt="Logo Eventsof">
-        </div>
-
-       <div class="search-section">
-    <div class="search-input-group">
-        <input type="text" id="search" placeholder="Busca tu evento..." oninput="filterEvents()">
+    <div class="header-logo-nombre">
+        {% if request.user.is_authenticated %}
+            <button class="abrir-menu" onclick="openMenu()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        {% endif %}
+        <img class="logo-sena" src="{% static 'image/logo_eventsoft.png' %}" alt="Logo EventSoft">
     </div>
 
-    <button class="search-icon-btn" onclick="toggleSearchBar()" style="display: none;">
-        <i class="fa-solid fa-magnifying-glass"></i>
-    </button>
+    <div class="search-section">
+        <div class="search-input-group">
+            <i class="fa-solid fa-magnifying-glass search-icon-inner"></i>
+            <input type="text" id="search" placeholder="Busca tu evento..." oninput="filterEvents()">
+        </div>
 
-    <button class="filter-btn" onclick="openFilterEventsModal()">
-        <i class="fa-solid fa-filter"></i>
-        <span class="filter-text"> Filtrar eventos</span>
-    </button>
-
-    {% if request.user.is_authenticated %}
-        <button class="filter-btn" style="text-decoration: none;"  data-bs-toggle="offcanvas" data-bs-target="#perfilSidebar" aria-controls="perfilSidebar">
-            <i class="fa-solid fa-user"></i>
-            <span class="filter-text"> Mi Perfil</span>
+        <button class="filter-btn" onclick="openFilterEventsModal()">
+            <i class="fa-solid fa-filter"></i>
+            <span class="filter-text">Filtrar</span>
         </button>
-    {% else %}
-        <a href="{% url 'login' %}" class="filter-btn" style="text-decoration: none;">
-            <i class="fa-solid fa-right-to-bracket"></i>
-            <span class="filter-text"> Iniciar Sesión</span>
-        </a>
-    {% endif %}
-</div>
 
-    </header>
+        {% if request.user.is_authenticated %}
+            <button class="filter-btn filter-btn--solid" data-bs-toggle="offcanvas" data-bs-target="#perfilSidebar">
+                <i class="fa-solid fa-user"></i>
+                <span class="filter-text">Mi Perfil</span>
+            </button>
+        {% else %}
+            <a href="{% url 'login' %}" class="filter-btn filter-btn--solid" style="text-decoration: none;">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span class="filter-text">Iniciar Sesión</span>
+            </a>
+        {% endif %}
+    </div>
+</header>
+
+<!-- HERO SECTION — agregar justo después del </header> -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+
+    <div class="hero-content">
+        <div class="hero-eyebrow">Plataforma de eventos</div>
+        <h1 class="hero-title">
+            Tu evento.<br>
+            <span class="hero-accent">Nuestra</span><br>
+            plataforma.
+        </h1>
+        <p class="hero-subtitle">
+            Descubre, regístrate y participa en los eventos que transforman
+            tu aprendizaje y carrera profesional.
+        </p>
+        <div class="hero-ctas">
+            <a href="#eventos" class="hero-cta-primary" onclick="irAEventos()">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Explorar eventos
+            </a>
+        </div>
+    </div>
+
+    <div class="hero-scroll-indicator">
+        <div class="scroll-ring"><div class="scroll-dot"></div></div>
+    </div>
+</section>
 
     <!-- Overlay -->
     <div id="overlay" class="overlay" onclick="closeMenu()"></div>
@@ -360,36 +382,75 @@
     <!-- Contenido Principal -->
     <main class="content">
         <section class="contenedor-principal-de-eventos">
-            <input type="text" class="buscador-movil" id="searchMovil" placeholder="Busca tu evento..." oninput="filterEvents()">
+
+               <div class="contenedor-buscador" id="searchMovil">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input 
+                        type="text" 
+                        class="buscador-movil" 
+                        placeholder="Buscar eventos..."
+                        onkeyup="filterEventsMovil()"
+                        id="searchM"
+                    >
+                </div>
+        <div class="eventos-section-header">
+            <h2 class="eventos-titulo-seccion">Eventos disponibles</h2>
+            <div id="emptyState" class="contenedor-vacio-8" style="display: none;">
+                <div class="card-vacio">
+                    <i class="fa-regular fa-calendar-xmark"></i>
+                    <h2>No hay eventos disponibles</h2>
+                    <p>En este momento no hay eventos programados.  
+                    Te invitamos a volver pronto para ver nuevas actividades.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="eventos-grid" id="eventosDisponibles">
             {% if eventos %}
                 {% for evento in eventos %}
                     {% if evento.eve_estado == "activo" %}
-                        
-                        <div class="card" style="width: 18rem; margin: 10px; display: inline-block; vertical-align: top;">
-                            <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento" style="height: 200px; object-fit: contain; width: 100%;">
-                            <div class="card-body">
+                        <div class="evento-card">
+                            <div class="evento-card-img">
+                                <img src="{{ evento.eve_imagen.url }}" alt="{{ evento.eve_nombre }}">
+                                <span class="evento-badge">Activo</span>
+                            </div>
+                            <div class="evento-card-body">
                                 <h5 class="evento-titulo">{{ evento.eve_nombre }}</h5>
-                                <h6 class="evento-fechas">
-                                    <i class="fa-solid fa-calendar"></i> {{ evento.eve_fecha_inicio }} - {{ evento.eve_fecha_fin }}
-                                </h6>
+                                <p class="evento-fechas">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    {{ evento.eve_fecha_inicio }} — {{ evento.eve_fecha_fin }}
+                                </p>
                                 <p class="evento-descripcion">{{ evento.eve_descripcion|truncatechars:100 }}</p>
-                                {% if evento.eve_estado == "Terminado" %}
-                                    <button class="btn btn-primary" disabled style="background-color: #007832;">
-                                        <i class="fa-solid fa-circle-check"></i> Evento Terminado
-                                    </button>
-                                {% else %}
-                                    <a href="{% url 'detalle_evento' evento.id %}" class="btn" style="background-color: #007832; color: white;">Ver más</a>
-                                {% endif %}
+                                <div class="evento-card-footer">
+                                    {% if evento.eve_estado == "Terminado" %}
+                                        <span class="evento-tag">Terminado</span>
+                                        <button class="btn-ver-mas" disabled>
+                                            <i class="fa-solid fa-circle-check"></i> Finalizado
+                                        </button>
+                                    {% else %}
+                                        <span class="evento-tag">{{ evento.eve_categoria }}</span>
+                                        <a href="{% url 'detalle_evento' evento.id %}" class="btn-ver-mas">
+                                            Ver más <i class="fa-solid fa-arrow-right"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     {% endif %}
                 {% endfor %}
             {% else %}
-                <div class="alerta">
-                    <i class="fa-solid fa-triangle-exclamation"></i> No hay eventos disponibles.
+                <div class="contenedor-vacio">
+                    <div class="card-vacio">
+                        <i class="fa-regular fa-calendar-xmark"></i>
+                        <h2>No hay eventos disponibles</h2>
+                        <p>En este momento no hay eventos programados.  
+                        Te invitamos a volver pronto para ver nuevas actividades.</p>
+                    </div>
                 </div>
             {% endif %}
-        </section>
+        </div>
+    </section>
+
 
         <!-- Chatbot -->
         
@@ -446,6 +507,8 @@
     <button onclick="cerrarModalError()" class="modal-button" style="background-color: #c0392b;">Cerrar</button>
   </div>
 </div>
+
+
 
 
    <script>
@@ -506,16 +569,59 @@
         }
 
         function filterEvents() {
+            console.log("hola")
             const input = document.getElementById("search");
             const filter = input.value.toLowerCase();
-            const cards = document.querySelectorAll(".card");
+            const cards = document.querySelectorAll(".evento-card");
+            const emptyState = document.getElementById("emptyState");
+
+            let visibleCount = 0;
 
             cards.forEach(card => {
                 const titulo = card.querySelector(".evento-titulo").textContent.toLowerCase();
-                card.style.display = titulo.includes(filter) ? "inline-block" : "none";
-            });
-        }
 
+                if (titulo.includes(filter)) {
+                    card.style.display = "inline-block";
+                    visibleCount++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Mostrar u ocultar el mensaje
+            if (visibleCount === 0) {
+                emptyState.style.display = "flex";
+            } else {
+                emptyState.style.display = "none";
+            }
+        }
+        function filterEventsMovil() {
+            console.log("hola")
+            const input = document.getElementById("searchM");
+            const filter = input.value.toLowerCase();
+            const cards = document.querySelectorAll(".evento-card");
+            const emptyState = document.getElementById("emptyState");
+
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const titulo = card.querySelector(".evento-titulo").textContent.toLowerCase();
+
+                if (titulo.includes(filter)) {
+                    card.style.display = "inline-block";
+                    visibleCount++;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Mostrar u ocultar el mensaje
+            if (visibleCount === 0) {
+                emptyState.style.display = "flex";
+            } else {
+                emptyState.style.display = "none";
+            }
+        }
         function toggleSearchBar() {
             const inputGroup = document.querySelector("#searchMovil");
             inputGroup.style.display = inputGroup.style.display === "inline-block" ? "none" : "inline-block";
@@ -695,6 +801,11 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("editProfileForm").submit();
     });
 });
+function irAEventos() {
+    document.getElementById("eventosDisponibles").scrollIntoView({
+        behavior: "smooth"
+    });
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{% static 'app_administrador/js/sidebarderecha.js' %}"></script>
