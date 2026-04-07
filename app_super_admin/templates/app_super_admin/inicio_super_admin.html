@@ -71,7 +71,7 @@
     {% if evento.eve_estado == 'activo' or evento.eve_estado == 'Cancelado' %}
 
     <div class="event-card card shadow-sm" style="width: 280px;">
-      <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="Imagen evento"
+      <img src="{{ evento.eve_imagen }}" class="card-img-top" alt="Imagen evento"
            style="height: 160px; object-fit: cover;">
       <div class="card-body text-start">
         <h5 class="card-title">{{ evento.eve_nombre }}</h5>

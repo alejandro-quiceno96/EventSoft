@@ -1,0 +1,333 @@
+:root {
+  --primary-color: #007832;
+  --secondary-color: #ffffff;
+  --font-family: 'Work Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+}
+
+body {
+  background: #f7f7f7;
+  color: #333;
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* centra el contenido horizontalmente */
+  position: relative; /* para posicionar el botón absoluto */
+  height: 60px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0 1rem;
+}
+
+/* Contenedor del botón "Volver" */
+.user-section {
+  position: absolute;
+  left: 1rem;
+}
+
+.btn-volver {
+    color: var(--primary-color);
+    padding: 8px 15px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-volver:hover {
+    background-color: #ffffff;
+}
+
+/* Formulario */
+.form-container {
+  flex: 1;
+  display: flex;
+flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+form {
+  background: var(--secondary-color);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+}
+
+form h2 {
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+.text-info {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+/* Inputs */
+label {
+  display: block;
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+}
+
+input[type="text"],
+textarea,
+input[type="file"] {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+textarea {
+  resize: none;
+}
+
+/* File input */
+.file-label {
+  display: inline-block;
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s;
+}
+
+.file-label:hover {
+  background: #005a25;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.file-name {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Botón */
+.btn-submit {
+  margin-top: 2rem;
+  width: 100%;
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  padding: 1rem;
+  border: none;
+  border-radius: 0.7rem;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.btn-submit:hover {
+  background: #005a25;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  form {
+    padding: 1.5rem;
+  }
+}
+.hidden {
+  display: none;
+}
+
+.radio-options {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.radio-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Work Sans", sans-serif;
+  font-size: 1rem;
+  color: #333;
+  background: #f5f5f5;
+  padding: 0.8rem 1.2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+/* Hover */
+.radio-options label:hover {
+  background: #e9f6ef;
+  border-color: #007832;
+  color: #007832;
+}
+
+/* Ocultamos el input original */
+.radio-options input[type="radio"] {
+  display: none;
+}
+
+/* Círculo antes del texto */
+.radio-options label span::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  border: 2px solid #007832;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+/* Cuando está seleccionado */
+.radio-options input[type="radio"]:checked + span::before {
+  background: #007832;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+
+
+.codigo-proyecto-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.codigo-proyecto-group input {
+  flex: 1;
+}
+
+.btn-buscar {
+  background: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.btn-buscar:hover {
+  background: #005a25;
+}
+
+
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+/* Contenedor del contenido del modal */
+.modal-content {
+  background: #fff;
+  margin: 10% auto;
+  padding: 25px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  text-align: center;
+  animation: slideDown 0.4s ease;
+  border: 3px solid transparent; /* base */
+}
+
+
+/* Estilo de éxito */
+.modal-exito {
+  border: 3px solid var(--primary-color);
+}
+
+/* Título */
+.modal-title {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  text-align: center;
+}
+
+/* Contenido */
+.modal-detalles p {
+  margin: 8px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.modal-detalles strong {
+  color: #111;
+}
+
+/* Footer */
+.modal-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Botón */
+.btn-cerrar {
+  padding: 8px 18px;
+  border: none;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s ease-in-out;
+}
+
+.btn-cerrar:hover {
+  background: #218838;
+}
+
+/* Animación */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+

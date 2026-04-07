@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import update_session_auth_hash
+from pr_eventsoft.supabase_cliente import subir_imagen_supabase
 from django.contrib.auth.decorators import login_required
 from app_eventos.models import Eventos, AsistentesEventos
 from app_categorias.models import Categorias
@@ -417,6 +418,7 @@ def preinscripcion_participante(request, evento_id):
 
 @login_required(login_url='login')
 def preinscripcion_asistente(request, evento_id):
+    print("Ya entré")
     evento = get_object_or_404(Eventos, id=evento_id)
 
     if not evento.eve_tienecosto:
@@ -456,7 +458,7 @@ def submit_preinscripcion_participante(request):
     if opcion == "inscribir":
         pro_nombre = request.POST.get('pro_nombre')
         pro_descripcion = request.POST.get('pro_descripcion')
-        pro_documentos = request.FILES.get('pro_documentos')
+        pro_documentos = subir_imagen_supabase(request.FILES.get('pro_documentos'), "pdf/proyectos")
         
         if not pro_documentos:
             return redirect(reverse('detalle_evento', args=[evento.id]))
@@ -515,34 +517,30 @@ def submit_preinscripcion_participante(request):
 
 @login_required(login_url='login')
 def registrar_asistente(request, evento_id):
-    evento = get_object_or_404(Eventos, pk=evento_id)
-
-    # ✅ Validar cupos disponibles antes de registrar
-    inscritos = AsistentesEventos.objects.filter(
-        asi_eve_evento_fk=evento,
-        asi_eve_estado__in=['Admitido', 'Pendiente']
-    ).count()
-    
-    if evento.eve_capacidad != 0:
-        if inscritos >= evento.eve_capacidad:
-            messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
-            return redirect(reverse('detalle_evento', args=[evento.id]))
-        
-        evento.eve_capacidad -= 1
-        evento.save()
-    else:
-        return redirect(reverse('detalle_evento', args=[evento.id]))
-    
+    evento = get_object_or_404(Eventos, id=evento_id)
 
     if request.method == 'POST':
-        soporte = request.FILES.get('comprobante_pago', None)  # Soporte opcional
+        # ✅ Validar cupos disponibles antes de registrar
+        inscritos = AsistentesEventos.objects.filter(
+            asi_eve_evento_fk=evento,
+            asi_eve_estado__in=['Admitido', 'Pendiente']
+        ).count()
+        
+        if evento.eve_capacidad != 0:
+            if inscritos >= evento.eve_capacidad:
+                messages.error(request, "⚠️ No hay más cupos disponibles para este evento.")
+                return redirect(reverse('detalle_evento', args=[evento.id]))
+            
+            evento.eve_capacidad -= 1
+            evento.save()
+        soporte = subir_imagen_supabase(request.FILES.get('comprobante_pago', None), "pdf/comprobantes") # Soporte opcional
 
         # Verificar si el usuario ya es un asistente registrado
         try:
             asistente = Asistentes.objects.get(usuario_id=request.user.id)
         except Asistentes.DoesNotExist:
             asistente = Asistentes.objects.create(usuario_id=request.user.id)
-
+        print("voy bien")
         # Crear la inscripción del asistente al evento
         if evento.eve_tienecosto:
             estado = 'Pendiente'
@@ -550,8 +548,9 @@ def registrar_asistente(request, evento_id):
             clave = ''
         else:
             estado = 'Admitido'
-            qr = generar_pdf(asistente.id, "Asistente", evento_id, tipo="asistente")
             clave = generar_clave_acceso()
+            qr = generar_pdf(asistente.id, "Asistente", evento_id, tipo="asistente", clave_acceso=clave)
+            
 
         # 🔹 Enviar correo solo si está admitido
         if estado == 'Admitido':
@@ -582,7 +581,7 @@ def registrar_asistente(request, evento_id):
                 asi_eve_evento_fk=evento,
                 asi_eve_asistente_fk=asistente,
                 asi_eve_estado=estado,
-                asi_eve_qr=qr,
+                asi_eve_qr=subir_imagen_supabase(qr, "pdf/qr_asistentes"),
                 asi_eve_clave=clave,
                 asi_eve_soporte=None,
                 asi_eve_fecha_hora=timezone.now(),
@@ -610,7 +609,7 @@ def registrar_evaluador(request, evento_id):
     Valida que no esté ya inscrito para evitar duplicados
     """
     if request.method == 'POST':
-        documento = request.FILES.get('documento')
+        documento = subir_imagen_supabase(request.FILES.get('documento'), "pdf/soporte_evaluador")
         area = request.POST.get('area')
         
         try:

@@ -21,7 +21,7 @@
       <!-- Imagen del evento -->
       <div class="col-md-6">
         {% if evento.eve_imagen %}
-          <img src="{{ evento.eve_imagen.url }}" alt="Imagen del evento"
+          <img src="{{ evento.eve_imagen }}" alt="Imagen del evento"
                class="img-fluid rounded-start" style="object-fit: cover; height: 100%;">
         {% elif evento.imagen_url %}
           <img src="{{ evento.imagen_url }}" alt="Imagen del evento"
@@ -63,7 +63,7 @@
           <li>
             <i class="bi bi-file-earmark-text-fill text-info"></i>
             <strong>Programación:</strong>
-            <a href="{{ evento.eve_programacion.url }}" class="btn btn-outline-success btn-sm ms-2" target="_blank">
+            <a href="{{ evento.eve_programacion }}" class="btn btn-outline-success btn-sm ms-2" target="_blank">
               Ver programación
             </a>
           </li>

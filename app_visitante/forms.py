@@ -27,3 +27,10 @@ class RegistroUsuarioForm(UserCreationForm):
             'last_name', 'segundo_apellido', 'telefono', 'email', 'fecha_nacimiento',
             'password1', 'password2'
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Eliminar help_text auto-generado por Django para usar las reglas visuales del frontend
+        self.fields['password1'].help_text = ''
+        self.fields['password2'].help_text = ''
+        self.fields['username'].help_text = ''

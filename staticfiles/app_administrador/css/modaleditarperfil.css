@@ -1,0 +1,290 @@
+/* Variables CSS */
+:root {
+    --color-naranja: #007832;
+    --color-texto: #ffffff;
+    --color-bg: #f8f9fa;
+    --color-shadow: rgba(0, 120, 50, 0.15);
+    --color-hover: rgba(0, 120, 50, 0.1);
+}
+
+/* Estilos del Modal */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--color-naranja) 0%, #28a745 100%);
+    color: var(--color-texto);
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+.modal-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.modal-body {
+    padding: 2rem;
+    background: #fff;
+}
+
+/* Formulario */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+}
+
+.form-control:focus {
+    border-color: var(--color-naranja);
+    box-shadow: 0 0 0 0.2rem rgba(0, 120, 50, 0.25);
+    outline: none;
+}
+
+.form-control:hover {
+    border-color: #ced4da;
+}
+
+/* Sección de contraseña */
+.password-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.password-toggle {
+    margin-bottom: 1rem;
+}
+
+.form-check-input {
+    width: 1.2em;
+    height: 1.2em;
+    margin-top: 0.1em;
+    border-radius: 0.25em;
+    border: 2px solid #ced4da;
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background-color: var(--color-naranja);
+    border-color: var(--color-naranja);
+    box-shadow: 0 0 0 0.2rem rgba(0, 120, 50, 0.25);
+}
+
+.form-check-input:focus {
+    border-color: var(--color-naranja);
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 120, 50, 0.25);
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #333;
+    margin-left: 0.5rem;
+    cursor: pointer;
+}
+
+/* Botones */
+.btn-primary {
+    background: linear-gradient(45deg, var(--color-naranja), #28a745);
+    border: none;
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #005a26, #1e7e34);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 15px rgba(0, 120, 50, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 2px solid #6c757d;
+    background: transparent;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Botón de editar perfil */
+.edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(45deg, var(--color-naranja), #28a745);
+    color: var(--color-texto);
+    font-size: 0.95rem;
+    width: 100%;
+    margin-bottom: 5px;
+
+}
+
+.edit-btn:hover {
+    background: linear-gradient(45deg, #005a26, #1e7e34);
+    color: var(--color-texto);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--color-shadow);
+}
+
+.edit-btn i {
+    margin-right: 0.5rem;
+}
+
+/* Grid responsive */
+.row {
+    margin: 0 -0.5rem;
+}
+
+.col-md-6 {
+    padding: 0 0.5rem;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease;
+}
+
+/* Estados de carga */
+.btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Toast notifications */
+.toast {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.toast-success {
+    background: linear-gradient(45deg, #28a745, #20c997) !important;
+}
+
+.toast-error {
+    background: linear-gradient(45deg, #dc3545, #e74c3c) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+    
+    .modal-body {
+        padding: 1.5rem;
+    }
+    
+    .password-section {
+        padding: 1rem;
+    }
+    
+    .row {
+        margin: 0;
+    }
+    
+    .col-md-6 {
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+    
+    .modal-header {
+        padding: 1rem;
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    .form-control {
+        padding: 0.6rem;
+    }
+}

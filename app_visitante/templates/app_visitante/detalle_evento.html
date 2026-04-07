@@ -148,7 +148,7 @@
 
       <!-- Imagen -->
       <div class="info-image">
-        <img src="{{ evento.eve_imagen.url }}" alt="{{ evento.eve_nombre }}" />
+        <img src="{{ evento.eve_imagen }}" alt="{{ evento.eve_nombre }}" />
       </div>
 
       <!-- Detalles -->
@@ -167,7 +167,7 @@
         </div>
 
         {% if evento.eve_programacion %}
-        <a href="{{ evento.eve_programacion.url }}" target="_blank" rel="noopener" class="programacion-link">
+        <a href="{{ evento.eve_programacion }}" target="_blank" rel="noopener" class="programacion-link">
           <i class="fas fa-file-alt"></i> Ver programación
         </a>
         {% else %}
@@ -217,7 +217,7 @@
                   </a>
                 {% else %}
                   <button class="action-btn disabled" disabled>
-                    <i class="fas fa-pen"></i> Inscripción como Expositordeshabilitada
+                    <i class="fas fa-pen"></i> Inscripción como Expositor deshabilitada
                   </button>
                 {% endif %}
 

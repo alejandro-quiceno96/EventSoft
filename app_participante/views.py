@@ -119,15 +119,15 @@ def evento_detalle_participante(request, evento_id, participante_id):
         'eve_fecha_inicio': evento.eve_fecha_inicio.strftime('%Y-%m-%d'),
         'eve_fecha_fin': evento.eve_fecha_fin.strftime('%Y-%m-%d'),
         'eve_estado': evento.eve_estado,
-        'eve_imagen': evento.eve_imagen.url if evento.eve_imagen else None,
+        'eve_imagen': evento.eve_imagen if evento.eve_imagen else None,
         'eve_cantidad': evento.eve_capacidad if evento.eve_capacidad is not None else 'Cupos ilimitados',
         'eve_costo':'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
-        'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
+        'eve_programacion': evento.eve_programacion if evento.eve_programacion else None,
         'eve_categoria': categoria_nombre,
         'eve_clave': clave_acceso.par_eve_clave,
-        'codigo_qr': clave_acceso.par_eve_qr.url,
+        'codigo_qr': clave_acceso.par_eve_qr,
         'cedula': participante_id,
-        "eve_informacion_tecnica": evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else None,
+        "eve_informacion_tecnica": evento.eve_informacion_tecnica if evento.eve_informacion_tecnica else None,
         'proyecto': clave_acceso.par_eve_proyecto.pro_codigo if clave_acceso.par_eve_proyecto else 'No asignado',
         
         
@@ -157,19 +157,17 @@ def obtener_datos_participante(request, participante_id, evento_id):
     try:
         if participante_id is None:
             return JsonResponse({"error": "Falta el parámetro 'participante_id'"}, status=400)
-
         # Relación participante-evento
         participante_evento = ParticipantesEventos.objects.filter(
             par_eve_participante_fk=participante_id, 
             par_eve_evento_fk=evento_id
         ).select_related('par_eve_proyecto').first()
-
         if participante_evento:
             proyecto = participante_evento.par_eve_proyecto
             datos = {
                 "nombre": proyecto.pro_nombre,
                 "descripcion": proyecto.pro_descripcion,
-                "documento": proyecto.pro_documentos.url if proyecto.pro_documentos else None
+                "documento": proyecto.pro_documentos if proyecto.pro_documentos else None
             }
             return JsonResponse(datos)
         else:
@@ -197,9 +195,8 @@ def modificar_inscripcion(request, evento_id, participante_id):
 
             if not participante_evento:
                 return JsonResponse({"success": False, "error": "Inscripción al evento no encontrada"})
-
             # ✅ Solo permitir editar si está pendiente de revisión
-            if participante_evento.par_eve_estado != "Pendiente de Revisión":
+            if participante_evento.par_eve_estado not in ["Pendiente", "Admitido"] :
                 return JsonResponse({"success": False, "error": "No se puede editar, estado no permitido"})
 
             # Obtener el proyecto relacionado
@@ -227,7 +224,6 @@ def modificar_inscripcion(request, evento_id, participante_id):
             return JsonResponse({"success": True})
 
         except Exception as e:
-            print("Error al modificar inscripción:", e)
             return JsonResponse({"success": False, "error": str(e)})
 
     return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
@@ -268,14 +264,7 @@ def cancelar_inscripcion(request, evento_id, participante_id):
                 par_eve_participante_fk=participante_id
             ).count()
             
-            # Eliminar el documento asociado si existe
-            if participante_evento.par_eve_documentos:
-                try:
-                    # Eliminar el archivo físico de la carpeta media
-                    default_storage.delete(participante_evento.par_eve_documentos.path)
-                except Exception as e:
-                    pass
-                    # Continuar aunque falle la eliminación del archivo
+            # Los documentos ahora están en Supabase, no los eliminamos localmente.
             
             expositores = ParticipantesEventos.objects.filter(par_eve_proyecto=participante_evento.par_eve_proyecto).count()
             if expositores == 1:

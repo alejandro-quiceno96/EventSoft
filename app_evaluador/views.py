@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
 from django.db.models import Sum
 from decimal import Decimal
+from pr_eventsoft.supabase_cliente import subir_imagen_supabase
 
 
 @login_required(login_url='login')
@@ -348,7 +349,7 @@ def participantes_por_evaluar(request, evaluador_cedula, evento_id):  # CORRECCI
                 'par_telefono': participante.par_telefono,
                 'estado_inscripcion': par_evento.par_eve_estado,
                 'ya_evaluado': ya_evaluado,
-                'documento_url': par_evento.par_eve_documentos.url if par_evento.par_eve_documentos else None
+                'documento_url': par_evento.par_eve_documentos if par_evento.par_eve_documentos else None
             })
         
         return JsonResponse({
@@ -426,17 +427,17 @@ def detalle_evento(request, cedula, evento_id):
         'eve_fecha_inicio': evento.eve_fecha_inicio.strftime('%Y-%m-%d'),
         'eve_fecha_fin': evento.eve_fecha_fin.strftime('%Y-%m-%d'),
         'eve_estado': evento.eve_estado,
-        'eve_imagen': evento.eve_imagen.url if evento.eve_imagen else None,
+        'eve_imagen': evento.eve_imagen if evento.eve_imagen else None,
         'eve_cantidad': evento.eve_capacidad if evento.eve_capacidad is not None else 'Cupos ilimitados',
         'eve_costo': 'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
-        'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
+        'eve_programacion': evento.eve_programacion if evento.eve_programacion else None,
         'eve_categoria': categoria_nombre, 
         'eve_clave': clave_acceso.eva_clave_acceso if clave_acceso else '',
-        'codigo_qr': clave_acceso.eva_eve_qr.url if clave_acceso and clave_acceso.eva_eve_qr else '',
+        'codigo_qr': clave_acceso.eva_eve_qr if clave_acceso and clave_acceso.eva_eve_qr else '',
         'cedula': cedula,
         'participantes': participantes_evento,
-        'documento': clave_acceso.eva_eve_documentos.url if clave_acceso and clave_acceso.eva_eve_documentos else None,
-        'informacion_tecnica': evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else None,
+        'documento': clave_acceso.eva_eve_documentos if clave_acceso and clave_acceso.eva_eve_documentos else None,
+        'informacion_tecnica': evento.eve_informacion_tecnica if evento.eve_informacion_tecnica else None,
     }
 
     return render(request, 'app_evaluador/detalle_evento.html', {
@@ -451,7 +452,6 @@ def inicio_evaluador(request):
 
 
 def subir_info_tecnica(request, pk):
-    print("Archivos recibidos:", request.FILES)
 
     if request.method == 'POST':
         evento = get_object_or_404(Eventos, pk=pk)
@@ -466,7 +466,7 @@ def subir_info_tecnica(request, pk):
             return JsonResponse({'success': False, 'message': 'Evaluador no encontrado.'})
 
         if 'eve_informacion_tecnica' in request.FILES:
-            evento.eve_informacion_tecnica = request.FILES['eve_informacion_tecnica']
+            evento.eve_informacion_tecnica = subir_imagen_supabase(request.FILES['eve_informacion_tecnica'], "pdf/info_tecnica")
             evento.save()
             return redirect('app_evaluador:detalle_evento_evaluador', evento_id=evento.id, cedula=evaluador.id)
         else:
@@ -549,7 +549,7 @@ def modificar_criterios_evaluacion(request, evento_id):
 def obtener_datos_preinscripcion(request, evento_id, evaluador_id):
     evaluador = EvaluadoresEventos.objects.filter(eva_eve_evento_fk = evento_id, eva_eve_evaluador_fk = evaluador_id).first()
     if evaluador:
-        documento_url = evaluador.eva_eve_documentos.url if evaluador.eva_eve_documentos else None
+        documento_url = evaluador.eva_eve_documentos if evaluador.eva_eve_documentos else None
         return JsonResponse({
             'documento': documento_url
         })

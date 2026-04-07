@@ -65,7 +65,7 @@
     <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
     <div class="menu-content">
         <a class="btn-menu" href="{% url 'app_participante:ver_info_participante' %}">
-            <i class="fa-solid fa-user"></i> Mis inscripciones como participante
+            <i class="fa-solid fa-user"></i> Mis inscripciones como expositor
         </a>
         <a class="btn-menu" href="{% url 'app_asistente:inicio_asistente' %}">
             <i class="fa-solid fa-user"></i> Mis inscripciones como asistente
@@ -298,7 +298,7 @@
         {% if eventos %}
         {% for evento in eventos %}
         <div class="card" style="width: 18rem;">
-            <img src="{{ evento.eve_imagen.url }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
+            <img src="{{ evento.eve_imagen }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
             <div class="card-body">
                 <h5 class="card-title">{{ evento.eve_nombre }}</h5>
                 <h6 class="card-subtitle mb-2 text-body-secondary">
@@ -333,7 +333,7 @@
             '{{ evento.eve_nombre|escapejs }}',
             '{{ evento.eve_fecha_inicio }}',
             '{{ evento.eve_fecha_fin }}',
-            '{{ request.build_absolute_uri }}'
+            '{{ evento.eve_id}}'
         )">
     <i class="fa-solid fa-share-nodes"></i> Compartir
 </button>
@@ -479,6 +479,7 @@
 <script>
     const urlDetalleEvento = "{% url 'app_asistente:evento_asistentes' 123 456 %}";
     const urlEliminarInscripcion = "{% url 'app_asistente:cancelar_inscripcion' 123 456 %}";
+    const urlDetalle = "{% url 'detalle_evento' 123 %}";
 </script>
 <script>
     function openMenu() {

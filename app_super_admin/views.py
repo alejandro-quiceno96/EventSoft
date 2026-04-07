@@ -71,7 +71,7 @@ def ver_evento_adm(request, evento_id):
         id=evento_id,
     )
     if evento.eve_imagen:
-        evento.imagen_url = request.build_absolute_uri(evento.eve_imagen.url)
+        evento.imagen_url = request.build_absolute_uri(evento.eve_imagen)
     else:
         evento.imagen_url = None
 

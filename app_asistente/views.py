@@ -86,12 +86,12 @@ def evento_asistentes(request, evento_id, asistente_id):
             'eve_lugar': evento.eve_lugar,
             'eve_fecha_inicio': evento.eve_fecha_inicio,
             'eve_fecha_fin': evento.eve_fecha_fin,
-            'eve_imagen': evento.eve_imagen.url if evento.eve_imagen else None,
+            'eve_imagen': evento.eve_imagen if evento.eve_imagen else None,
             'eve_cantidad': evento.eve_capacidad if evento.eve_capacidad > 0 else 'Cupos ilimitados',
             'eve_costo': 'Con Pago' if evento.eve_tienecosto else "Gratuito",
-            'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
+            'eve_programacion': evento.eve_programacion if evento.eve_programacion else None,
             'eve_clave_acceso': clave_acceso.asi_eve_clave if clave_acceso else None,
-            'codigo_qr': clave_acceso.asi_eve_qr.url if clave_acceso and clave_acceso.asi_eve_qr else None,
+            'codigo_qr': clave_acceso.asi_eve_qr if clave_acceso and clave_acceso.asi_eve_qr else None,
         }
 
         # Obtener categoría si existe (manejar caso de no existencia)
@@ -130,14 +130,7 @@ def cancelar_inscripcion(request, evento_id, asistente_id):
             ).first()
             
             if asistente_evento:
-                # Eliminar archivo de soporte si existe
-                if asistente_evento.asi_eve_soporte:
-                    default_storage.delete(asistente_evento.asi_eve_soporte.path)
-                
-                # Eliminar también el archivo QR si existe
-                if asistente_evento.asi_eve_qr:
-                    default_storage.delete(asistente_evento.asi_eve_qr.path)
-                
+                # Los archivos de soporte y QR ahora están en Supabase, por lo que no los eliminamos localmente.
                 # VERIFICAR ANTES DE ELIMINAR la inscripción
                 inscripciones_count = AsistentesEventos.objects.filter(
                     asi_eve_asistente_fk=asistente_id
@@ -149,9 +142,7 @@ def cancelar_inscripcion(request, evento_id, asistente_id):
                 # MEJORA: Eliminar asistente si era la única inscripción
                 if inscripciones_count == 1:  # Era la única inscripción
                     # Eliminar también el usuario asociado
-                    usuario = asistente.usuario
                     asistente.delete()
-                    usuario.delete()
                     
                 return JsonResponse({"success": True})
             else:

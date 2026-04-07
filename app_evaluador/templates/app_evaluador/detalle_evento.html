@@ -155,7 +155,7 @@
                 <div class="info-label">Información técnica</div>
                 <div class="info-value">
                     {% if evento_obj.eve_informacion_tecnica %}
-                <a href="{{ evento_obj.eve_informacion_tecnica.url }}" target="_blank">Ver archivo</a>
+                <a href="{{ evento_obj.eve_informacion_tecnica }}" target="_blank">Ver archivo</a>
                 {% endif %}
 
                 </div>
@@ -232,7 +232,7 @@
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ proyecto.pro_nombre }}</td>
                                 <td>{{ proyecto.expositores|join:", " }}</td>
-                                <td><a href="{{ proyecto.pro_documentos.url }}" class="btn btn-primary btn-sm" target="_blank">Ver Proyecto</a></td>
+                                <td><a href="{{ proyecto.pro_documentos }}" class="btn btn-primary btn-sm" target="_blank">Ver Proyecto</a></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -274,7 +274,7 @@
                     {% if evento.eve_informacion_tecnica %}
                     <div class="alert alert-info mt-3">
                         Ya hay un archivo subido:
-                        <a href="{{ evento.eve_informacion_tecnica.url }}" target="_blank">Ver archivo actual</a>
+                        <a href="{{ evento.eve_informacion_tecnica }}" target="_blank">Ver archivo actual</a>
                     </div>
                     {% endif %}
                 </div>

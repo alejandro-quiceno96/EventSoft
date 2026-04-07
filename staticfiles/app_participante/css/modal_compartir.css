@@ -1,0 +1,29 @@
+/* Estilo personalizado para el modal de compartir */
+.modal-compartir {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-compartir .modal-header {
+  background: #007832;
+  color: white;
+  border-bottom: none;
+}
+
+.modal-compartir .modal-title i {
+  margin-right: 8px;
+}
+
+.modal-compartir .btn {
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.modal-compartir .btn:hover {
+  transform: scale(1.03);
+}
+
+#btnCopiar {
+  background-color: #555;
+  border: none;
+}

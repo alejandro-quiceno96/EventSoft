@@ -1,0 +1,101 @@
+:root {
+    --color-naranja: #007832;
+    --color-texto: #ffffff;
+}
+
+.card input:disabled {
+    color: #555;
+}
+.card input:disabled:hover {
+    cursor: not-allowed;
+}
+
+.contenedor-botones{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.titulo-card{
+    color: var(--color-naranja);
+}
+
+.btn-modificar-criterios{
+    width: 100%;
+    background-color: var(--color-naranja);
+    border-radius: 10px;
+    color: var(--color-texto);
+    border: none;
+    text-align: center;
+    margin-top: 5px;
+}
+
+.btn-modificar-criterios:hover {
+    background-color: #007832;
+    transition: 5.s ease;
+    cursor: pointer;
+}
+
+.btn-eliminar-criterios {
+    width: 100%;
+    background-color: var(--color-naranja);
+    border-radius: 10px;
+    color: var(--color-texto);
+    border: none;
+    text-align: center;
+    margin-top: 5px;
+}
+.btn-eliminar-criterios:hover {
+    background-color: #007832;
+    transition: 5.s ease;
+    cursor: pointer;
+}
+
+.input-group{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.porcentaje-total{
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+
+.porcentaje{
+    background-color: var(--color-naranja);
+    color: var(--color-texto);
+    padding: 5px;
+    margin-right: 55px;
+    border-radius: 10px;
+}
+
+.card-eliminada {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: all 0.3s ease-in-out;
+}
+
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 12px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+.btn-detalle-calificacion{
+        border: 1px solid var(--color-verde);
+        color: var(--color-verde);
+        background-color: transparent;
+}
+
+.btn-detalle-calificacion:hover{
+        background-color: var(--color-verde);
+        color: var(--color-texto);
+        transition: .5 ease-in-out;
+}

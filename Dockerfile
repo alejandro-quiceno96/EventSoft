@@ -1,50 +1,44 @@
-# Imagen base slim (última estable de Debian Trixie)
+# Imagen base
 FROM python:3.11-slim
 
-# Evitar buffer en logs
 ENV PYTHONUNBUFFERED=1
 
-# Instalar dependencias necesarias para mysqlclient, weasyprint, pillow, qrcode
+# Instalar dependencias necesarias
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        gcc \
        build-essential \
-       default-libmysqlclient-dev \
+       libpq-dev \
        pkg-config \
-       libmariadb-dev \
        curl \
        netcat-traditional \
-       # Dependencias de WeasyPrint y renderizado
+       # 🔥 claves para que no falle pip
+       libssl-dev \
+       libffi-dev \
+       python3-dev \
+       # WeasyPrint
        libpango-1.0-0 \
        libpangoft2-1.0-0 \
        libcairo2 \
        libgdk-pixbuf-2.0-0 \
-       libffi-dev \
        libxml2 \
        libxslt1.1 \
        shared-mime-info \
        fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
-
-# Directorio de trabajo
 WORKDIR /app
 
-# Copiar requirements e instalarlos
-COPY requirements.txt /app/
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar todo el proyecto
-COPY . /app/
+COPY . .
 
-# Exponer puerto Django
 EXPOSE 8000
 
-# Copiar entrypoint.sh
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-# Arrancar el servidor Django
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["gunicorn", "pr_eventsoft.wsgi:application", "--bind", "0.0.0.0:8000"]

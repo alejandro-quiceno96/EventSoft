@@ -16,7 +16,7 @@
     {% if eventos %}
     {% for evento in eventos %}
     <div class="card" style="width: 18rem;">
-      <img src="{{ evento.eve_imagen.url  }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
+      <img src="{{ evento.eve_imagen  }}" class="card-img-top" alt="{{ evento.eve_nombre }}">
       <div class="card-body">
         <h5 class="card-title">{{ evento.eve_nombre }}</h5>
         <h6 class="card-subtitle mb-2 text-body-secondary">
@@ -57,7 +57,7 @@
         {% endif %}
         
         <button class="btn-compartir" 
-        onclick="abrirCompartir('{{ evento.eve_nombre|escapejs }}', '{{ evento.eve_fecha_inicio }}', '{{ evento.eve_fecha_fin }}', '{{ request.build_absolute_uri }}')">
+        onclick="abrirCompartir('{{ evento.eve_nombre|escapejs }}', '{{ evento.eve_fecha_inicio }}', '{{ evento.eve_fecha_fin }}', '{{ evento.eve_id}}')">
   <i class="fa-solid fa-share-nodes"></i> Compartir
 </button>
 
@@ -139,17 +139,17 @@
 
 
         <div class="modal-programacion">
-          <p><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
+          <p id="modalProgramacionLabel"><strong><i class="fa-solid fa-file"></i> Programación:</strong></p>
           <a id="modalProgramacion" target="_blank"><i class="fa-solid fa-eye"></i></a>
           <a id="modalProgramacionDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
         </div>
         <div class="modal-programacion">
-          <p><strong><i class="fa-solid fa-qrcode"></i> Codigo Qr:</strong></p>
+          <p id="modalCodigoQrLabel"><strong><i class="fa-solid fa-qrcode"></i> Codigo Qr:</strong></p>
           <a id="modalCodigoQr" target="_blank"><i class="fa-solid fa-eye"></i></a>
           <a id="modalCodigoQrDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
         </div>
         <div class="modal-programacion">
-          <p><strong><i class="fa-solid fa-file"></i> Informacion Técnica</strong></p>
+          <p id="modalTecnicaLabel"><strong><i class="fa-solid fa-file"></i> Informacion Técnica</strong></p>
           <a id="modalTecnica" target="_blank"><i class="fa-solid fa-eye"></i></a>
           <a id="modalTecnicaDescargar" target="_blank" download><i class="fa-solid fa-download"></i></a>
         </div>
@@ -223,7 +223,7 @@
           <!-- Proyecto actual -->
           <div class="mb-3">
             <p><strong><i class="fa-solid fa-file-pdf me-2"></i> Documento actual:</strong></p>
-            <a id="modalProyecto" href="#" target="_blank" class="btn btn-ver-documento">
+            <a id="btn-ver-documento" href="#" target="_blank" class="btn btn-ver-documento">
               <i class="fa-solid fa-eye"></i> Ver documento
             </a>
           </div>
@@ -287,6 +287,7 @@
   const urlModificarInscripcion = "{% url 'app_participante:obtener_datos_participante' 123 456 %}";
   const urlModificarParticipante = "{% url 'app_participante:modificar_inscripcion' 123 456 %}";
   const urlCriterios = "{% url 'app_participante:generar_pdf_criterios' 123%}".replace("123", '');
+  const urlDetalle = "{% url 'detalle_evento' 123 %}";
 
 </script>
 

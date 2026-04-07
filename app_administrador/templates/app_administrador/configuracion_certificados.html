@@ -47,7 +47,7 @@
   {%if certificado.diseño %}
   <div class="form-group">
     <label for="id_diseno_actual">Diseño actual:</label>
-    <img src="{{ certificado.diseño.url }}" alt="Diseño Actual" class="img-thumbnail" style="max-width: 200px;">
+    <img src="{{ certificado.diseño }}" alt="Diseño Actual" class="img-thumbnail" style="max-width: 200px;">
   </div>
   {%endif%}
 
@@ -73,7 +73,7 @@
     {% if certificado.firma %}
     <div class="form-group">
       <label for="id_firma_actual">Firma actual:</label>
-      <img src="{{ certificado.firma.url }}" alt="Firma Actual" class="img-thumbnail" style="max-width: 200px;">
+      <img src="{{ certificado.firma }}" alt="Firma Actual" class="img-thumbnail" style="max-width: 200px;">
     </div>
     {%endif%}
     <div class="form-group">
@@ -118,9 +118,9 @@
     <button type="submit" id="btn-guardar">Guardar configuración</button>
   </div>
 
-  <input type="hidden" id="diseñoModificar" value="{{ certificado.diseño.url|default:'' }}">
+  <input type="hidden" id="diseñoModificar" value="{{ certificado.diseño|default:'' }}">
   {% if certificado.firma %}
-    <input type="hidden" id="firmaModificar" value="{{ certificado.firma.url }}">
+    <input type="hidden" id="firmaModificar" value="{{ certificado.firma }}">
   {% else %}
     <input type="hidden" id="firmaModificar" value="">
   {% endif %}

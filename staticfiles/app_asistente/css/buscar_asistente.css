@@ -1,0 +1,110 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Work Sans';
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    height: 100vh;
+    background-color: #007832;
+}
+
+header {
+    width: 100%;
+    padding: 15px;
+    background: #007832;
+    color: white;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+header button {
+    position: absolute;
+    left: 15px;
+    top: 10px;
+    padding: 8px 15px;
+    background: white;
+    color: #007832;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+header button:hover {
+    background: #e0e0e0;
+}
+
+main {
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+label {
+    font-size: 18px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+button[type="submit"] {
+    background: #007832;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button[type="submit"]:hover {
+    background: #007832;
+}
+
+/* Estilos para el botón "Volver" */
+.btn-volver {
+    display: inline-block;
+    padding: 10px 20px; /* Espaciado interno */
+    font-size: 16px; /* Tamaño de fuente */
+    color: #ffffff; /* Color del texto */
+    background-color: #007bff; /* Fondo del botón */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    text-decoration: none; /* Sin subrayado en el enlace */
+    transition: background-color 0.3s ease; /* Transición suave al cambiar el fondo */
+}
+
+/* Estilos para el ícono */
+.btn-volver .fas {
+    margin-right: 5px; /* Espacio entre el ícono y el texto */
+}
+
+/* Estilos al pasar el mouse sobre el botón */
+.btn-volver:hover {
+    background-color: #0056b3; /* Cambio de color de fondo al pasar el mouse */
+    cursor: pointer; /* Cambiar el cursor a un puntero */
+}
+
+/* Estilos al hacer clic en el botón */
+.btn-volver:active {
+    background-color: #003d82; /* Cambio de color de fondo al hacer clic */
+}

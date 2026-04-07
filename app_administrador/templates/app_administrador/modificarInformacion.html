@@ -186,7 +186,7 @@
         <img id="previewImagen" 
              class="preview-imagen"
              {% if evento.eve_imagen %}
-                 src="{{ evento.eve_imagen.url }}"
+                 src="{{ evento.eve_imagen }}"
                  style="display:block;"
              {% else %}
                  style="display:none;"
@@ -198,7 +198,7 @@
 <div class="archivo-item">
     <label for="documento_evento">Programación del Evento (PDF):</label>
     {% if evento.eve_programacion %}
-       <a class="btn-ver-doc " href="{{evento.eve_programacion.url}}" target="_blank" download="{{evento.eve_programacion.name}}">Ver PDF</a>
+       <a class="btn-ver-doc " href="{{evento.eve_programacion}}" target="_blank" download="{{evento.eve_programacion.name}}">Ver PDF</a>
     {% else %}
        <span class="no-doc">No hay documento cargado</span>
     {% endif %}
@@ -210,7 +210,7 @@
         </div>
         <iframe id="previewDocumento" class="preview-documento"
             {% if evento.eve_programacion %}
-                src="{{ evento.eve_programacion.url }}"
+                src="{{ evento.eve_programacion }}"
                 style="display:block;"
             {% else %}
                 style="display:none;"

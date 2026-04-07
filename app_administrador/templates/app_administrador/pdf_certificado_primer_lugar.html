@@ -19,7 +19,7 @@
     {% endif %}
   </style>
 </head>
-<body style="background-image: url('{{ certificado.diseño.url }}'); font-family: {{ certificado.tipografia }}; background-size: cover;">
+<body style="background-image: url('{{ certificado.diseño }}'); font-family: {{ certificado.tipografia }}; background-size: cover;">
   <div class="preview-certificado">
     <div id="nombre_genera_certificado">{{ certificado.certifica }}</div>
 
@@ -43,7 +43,7 @@
 
     {% if certificado.firma %}
     <div class="preview-firma-container">
-      <img src="{{ certificado.firma.url }}" class="preview-firma" style="display: block;">
+      <img src="{{ certificado.firma }}" class="preview-firma" style="display: block;">
       <div class="preview-nombre">{{ certificado.firma_nombre }}</div>
       <div class="preview-cargo">{{ certificado.firma_cargo }}</div>
     </div>

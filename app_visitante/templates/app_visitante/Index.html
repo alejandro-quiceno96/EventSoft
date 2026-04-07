@@ -111,7 +111,7 @@
         <button class="close-btn" onclick="closeMenu()"><i class="fa-solid fa-xmark"></i></button>
         <div class="menu-content">
             <a class="btn-menu" href="{% url 'app_participante:ver_info_participante' %}">
-                <i class="fa-solid fa-user"></i> Mis inscripciones como participante
+                <i class="fa-solid fa-user"></i> Mis inscripciones como Expositor
             </a>
             <a class="btn-menu" href="{% url 'app_asistente:inicio_asistente' %}">
                 <i class="fa-solid fa-user"></i> Mis inscripciones como asistente
@@ -411,7 +411,7 @@
                     {% if evento.eve_estado == "activo" %}
                         <div class="evento-card">
                             <div class="evento-card-img">
-                                <img src="{{ evento.eve_imagen.url }}" alt="{{ evento.eve_nombre }}">
+                                <img src="{{ evento.eve_imagen }}" alt="{{ evento.eve_nombre }}">
                                 <span class="evento-badge">Activo</span>
                             </div>
                             <div class="evento-card-body">
@@ -681,7 +681,7 @@
                 modal.style.display = 'block';
 
                 // Cerrar al hacer clic en (x)
-                document.querySelector('.modal .close').onclick = () => {
+                document.querySelector('#registroModal .close').onclick = () => {
                     modal.style.display = 'none';
                     const url = new URL(window.location);
                     url.searchParams.delete('registro');

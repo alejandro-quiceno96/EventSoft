@@ -38,7 +38,7 @@ from app_evaluador.models import Evaluadores
 from app_certificados.models import Certificado
 
 from app_super_admin.models import SuperAdministradores
-
+from pr_eventsoft.supabase_cliente import subir_imagen_supabase
 
 # Obtener áreas disponibles
 def obtener_areas_eventos():
@@ -78,7 +78,8 @@ def crear_evento(request):
             archivo_programacion = request.FILES.get('documento_evento')
 
             administrador = Administradores.objects.get(usuario=request.user)
-
+            
+            print("Vy bien")
             # Crear evento
             evento = Eventos.objects.create(
                 eve_nombre=nombre,
@@ -88,13 +89,13 @@ def crear_evento(request):
                 eve_fecha_inicio=datetime.strptime(fecha_inicio, "%Y-%m-%d").date(),
                 eve_fecha_fin=datetime.strptime(fecha_fin, "%Y-%m-%d").date(),
                 eve_estado="Pendiente",
-                eve_imagen=archivo_imagen,
-                eve_capacidad=int(aforo) if aforo else 0,
+                eve_imagen=subir_imagen_supabase(archivo_imagen, "image"),
+                eve_capacidad=int(aforo) if aforo else 9999999,
                 eve_tienecosto=True if inscripcion == 'Si' else False,
-                eve_programacion=archivo_programacion,
+                eve_programacion=subir_imagen_supabase(archivo_programacion, "pdf/programacion"),
                 eve_administrador_fk_id=administrador.id,
             )
-
+            print("Voy bien")
             EventosCategorias.objects.create(
                 eve_cat_evento_fk=evento,
                 eve_cat_categoria_fk_id=categoria
@@ -125,11 +126,13 @@ def crear_evento(request):
                 )
                 email.attach_alternative(mensaje_html, "text/html")
                 email.send(fail_silently=False)
+                
+                print("YA cree el evento, chauuuuu")
 
             return redirect(reverse('administrador:crear_evento') + '?revision=evento')
 
         except Exception as e:
-            pass
+            print(e)
 
     context = {
         'areas': obtener_areas_eventos(),
@@ -144,7 +147,7 @@ def subir_info_tecnica(request, evento_id):
 
     if request.method == 'POST' and request.FILES.get('eve_informacion_tecnica'):
         archivo = request.FILES['eve_informacion_tecnica']
-        evento.eve_informacion_tecnica = archivo
+        evento.eve_informacion_tecnica = subir_imagen_supabase(archivo, "pdf/info_tecnica")
         evento.save()
         return JsonResponse({'success': True})
 
@@ -205,16 +208,16 @@ def obtener_evento(request, evento_id):
         'eve_fecha_inicio': evento.eve_fecha_inicio.strftime('%Y-%m-%d'),
         'eve_fecha_fin': evento.eve_fecha_fin.strftime('%Y-%m-%d'),
         'eve_estado': evento.eve_estado,
-        'eve_imagen': evento.eve_imagen.url if evento.eve_imagen else None,
+        'eve_imagen': evento.eve_imagen if evento.eve_imagen else None,
         'eve_cantidad': evento.eve_capacidad if evento.eve_capacidad is not None else 'Cupos ilimitados',
         'eve_costo':'Con Pago' if evento.eve_tienecosto else 'Sin Pago',
-        'eve_programacion': evento.eve_programacion.url if evento.eve_programacion else None,
+        'eve_programacion': evento.eve_programacion if evento.eve_programacion else None,
         'eve_categoria': categoria_nombre,
         'cantidad_participantes': participantes,
         'cantidad_asistentes': asistentes,
         'memorias': evento.eve_memorias if evento.eve_memorias else False,
         'certificado': certificado,
-        'ficha_tecnica': evento.eve_informacion_tecnica.url if evento.eve_informacion_tecnica else False,
+        'ficha_tecnica': evento.eve_informacion_tecnica if evento.eve_informacion_tecnica else False,
         'inscripcion_expositor': evento.eve_habilitar_participantes,
         'inscripcion_evaluador': evento.eve_habilitar_evaluadores,
     }
@@ -238,15 +241,7 @@ def eliminar_evento(request, evento_id):
                 status=403
             )
 
-        # 🔹 Eliminar imagen asociada
-        if evento.eve_imagen and evento.eve_imagen.name:
-            if os.path.isfile(evento.eve_imagen.path):
-                evento.eve_imagen.delete(save=False)
-
-        # 🔹 Eliminar archivo de programación asociado
-        if evento.eve_programacion and evento.eve_programacion.name:
-            if os.path.isfile(evento.eve_programacion.path):
-                evento.eve_programacion.delete(save=False)
+        # (Se omiten los borrados locales de os.path porque ahora son URL de Supabase)
 
         # 🔹 Eliminar el evento
         evento.delete()
@@ -288,16 +283,10 @@ def editar_evento(request, evento_id):
         documento = request.FILES.get('documento_evento')
 
         if imagen:
-            if evento.eve_imagen and evento.eve_imagen.name:
-                if os.path.isfile(evento.eve_imagen.path):
-                    evento.eve_imagen.delete(save=False)
-            evento.eve_imagen = imagen
+            evento.eve_imagen = subir_imagen_supabase(imagen, "image")
 
         if documento:
-            if evento.eve_programacion and evento.eve_programacion.name:
-                if os.path.isfile(evento.eve_programacion.path):
-                    evento.eve_programacion.delete(save=False)
-            evento.eve_programacion = documento
+            evento.eve_programacion = subir_imagen_supabase(documento, "pdf/programacion")
 
         # Validar fechas
         fecha_inicio_obj = parse_date(fecha_inicio)
@@ -425,7 +414,7 @@ def actualizar_estado_proyecto(request, proyecto_id, nuevo_estado):
             qr_expositor = generar_pdf(participante.id, "expositor", evento_id, tipo="expositor", clave_acceso=clave_acceso)
 
             expositor.par_eve_estado = "Admitido"
-            expositor.par_eve_qr = qr_expositor
+            expositor.par_eve_qr = subir_imagen_supabase(qr_expositor, "pdf/qr_participante")
             expositor.par_eve_clave = clave_acceso
             expositor.save()
 
@@ -514,7 +503,7 @@ def ver_asistentes(request: HttpRequest, evento_id):
             'asi_nombre': a.usuario.first_name + ' ' + a.usuario.last_name,
             'asi_correo': a.usuario.email,
             'asi_telefono': a.usuario.telefono,
-            'documentos': ae.asi_eve_soporte.url if ae.asi_eve_soporte else None,
+            'documentos': ae.asi_eve_soporte if ae.asi_eve_soporte else None,
             'estado': ae.asi_eve_estado,
             'hora_inscripcion': ae.asi_eve_fecha_hora.strftime('%Y-%m-%d %H:%M:%S') if ae.asi_eve_fecha_hora else None,
         })
@@ -563,7 +552,7 @@ def actualizar_estado_asistente(request, asistente_id, nuevo_estado):
 
     # ✅ Actualizar los valores
     asistente_evento.asi_eve_estado = nuevo_estado
-    asistente_evento.asi_eve_qr = qr_participante
+    asistente_evento.asi_eve_qr = subir_imagen_supabase(qr_participante, "pdf/qr_asistentes")
     asistente_evento.asi_eve_clave = clave_acceso
     asistente_evento.save()
 
@@ -925,7 +914,7 @@ def actualizar_estado_evaluador(request, evaluador_id, nuevo_estado):
 
         # Actualizar datos
         evaluador_evento.eva_estado = nuevo_estado
-        evaluador_evento.eva_eve_qr = qr_evaluador
+        evaluador_evento.eva_eve_qr = subir_imagen_supabase(qr_evaluador, "pdf/qr_evaluador")
         evaluador_evento.eva_clave_acceso = clave_acceso
         evaluador_evento.asistencia_confirmada = False
         evaluador_evento.save()
@@ -1230,7 +1219,7 @@ def configuracion_certificados(request, evento_id):
         if con_diseno == 'si' and 'diseno' in request.FILES:
             if certificado.diseño and os.path.isfile(certificado.diseño.path) and not is_default_design(certificado.diseño.path):
                 os.remove(certificado.diseño.path)
-            certificado.diseño = request.FILES['diseno']
+            certificado.diseño = subir_imagen_supabase(request.FILES['diseno'], "pdf/certificados/disenio")
         elif con_diseno == 'no':
             if certificado.diseño and os.path.isfile(certificado.diseño.path) and not is_default_design(certificado.diseño.path):
                 os.remove(certificado.diseño.path)
@@ -1246,7 +1235,7 @@ def configuracion_certificados(request, evento_id):
             if 'firma' in request.FILES:
                 if certificado.firma and os.path.isfile(certificado.firma.path):
                     os.remove(certificado.firma.path)
-                certificado.firma = request.FILES['firma']
+                certificado.firma = subir_imagen_supabase(request.FILES['firma'], "pdf/certificados/firma")
         else:
             if certificado.firma and os.path.isfile(certificado.firma.path):
                 os.remove(certificado.firma.path)
@@ -1318,7 +1307,7 @@ def enviar_certificado_participantes(request, evento_id):
     participantes = Participantes.objects.filter(
         id__in=ParticipantesEventos.objects.filter(
             par_eve_evento_fk=evento_id,
-            par_eve_estado__iexact='Admitido'
+           asistencia_confirmada=True
         ).values_list('par_eve_participante_fk_id', flat=True)
     )
     
@@ -1371,7 +1360,7 @@ def enviar_certificado_asistentes(request, evento_id):
     participantes = Asistentes.objects.filter(
         id__in=AsistentesEventos.objects.filter(
             asi_eve_evento_fk=evento_id,
-            asi_eve_estado__iexact='Admitido'
+            asistencia_confirmada=True
         ).values_list('asi_eve_asistente_fk_id', flat=True)
     )
 
@@ -1417,7 +1406,7 @@ def enviar_certificado_evaluadores(request, evento_id):
     participantes =Evaluadores.objects.filter(
         id__in=EvaluadoresEventos.objects.filter(
             eva_eve_evento_fk=evento_id,
-            eva_estado__iexact='Admitido'
+            asistencia_confirmada=True,
         ).values_list('eva_eve_evaluador_fk_id', flat=True)
     )
 
