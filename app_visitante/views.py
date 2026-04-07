@@ -110,7 +110,7 @@ def recuperar_contraseña(request):
                     send_mail(
                         "Recuperación de contraseña",
                         f"Tu código de verificación es: {codigo}\nTienes 5 minutos para usarlo.",
-                        "tucorreo@gmail.com",  # remitente
+                        settings.DEFAULT_FROM_EMAIL,  # remitente dinámico desde las variables
                         [email],
                         fail_silently=False,
                     )

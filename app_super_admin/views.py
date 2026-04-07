@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
 from django.contrib import messages
 from collections import defaultdict
 from app_eventos.models import Eventos, EvaluadoresEventos, AsistentesEventos, ParticipantesEventos
@@ -102,8 +103,8 @@ def modificar_estado_evento(request, evento_id, nuevo_estado):
     correo = EmailMultiAlternatives(
         asunto,
         text_content,
-        'tu_correo@gmail.com',  # remitente
-        [correo_destino]  # destinatario 🔥 ajusta esto
+        settings.DEFAULT_FROM_EMAIL,  # remitente dinámico
+        [correo_destino]  # destinatario
     )
 
     correo.attach_alternative(html_content, "text/html")
@@ -248,10 +249,9 @@ def asignar_admin_evento(request):
         })
 
         subject = 'Asignación de rol como Administrador de Eventos'
-        from_email = 'eventsoft3@gmail.com'
         to = [usuario.email]
 
-        msg = EmailMultiAlternatives(subject, '', from_email, to)
+        msg = EmailMultiAlternatives(subject, '', settings.DEFAULT_FROM_EMAIL, to)
         msg.attach_alternative(html_content, "text/html")
         msg.send()
 
@@ -317,8 +317,8 @@ def cancelar_evento(request, evento_id):
     correo = EmailMultiAlternatives(
         asunto,
         text_content,
-        'tu_correo@gmail.com',  # remitente
-        [correo_destino]  # destinatario 🔥 ajusta esto
+        settings.DEFAULT_FROM_EMAIL,  # remitente dinámico
+        [correo_destino]  # destinatario
     )
 
     correo.attach_alternative(html_content, "text/html")
