@@ -110,7 +110,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'app_usuarios.Usuario'
-LOGIN_URL = 'login' 
 OPENAI_API_KEY = os.getenv('API_OPENAI_KEY')
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -127,8 +126,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise: usar versión simple para evitar errores de manifest en producción
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
@@ -139,9 +140,6 @@ STATICFILES_DIRS = [
     BASE_DIR / 'app_evaluador' / 'static',
     BASE_DIR / 'app_visitante' / 'static',
 ]
-
-
-STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -152,10 +150,33 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
-# Redirección al login por defecto
-LOGIN_URL = '/admin/login/'
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
 
 # Configuración para pruebas de correo
 if 'test' in sys.argv:
     EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
+# Logging para ver errores en Render
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
 
