@@ -1,3 +1,6 @@
+import base64
+import os
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -299,38 +302,39 @@ def cancelar_inscripcion(request, evento_id, participante_id):
 
 def generar_pdf_comentarios_participante(request, evento_id):
     """
-    Vista para descargar PDF con las calificaciones de un participante usando WeasyPrint
+    Genera un PDF con las calificaciones de un participante
+    mostrando una tabla por evaluador
     """
-    # Obtener el participante
-    participante = get_object_or_404(ParticipantesEventos, par_eve_participante_fk__usuario=request.user)
-    
-    # Obtener todas las calificaciones del participante
+
+    # 🔹 Obtener participante
+    participante = get_object_or_404(
+        ParticipantesEventos,
+        par_eve_participante_fk__usuario=request.user
+    )
+
+    # 🔹 Obtener evento
+    evento = get_object_or_404(Eventos, id=evento_id)
+
+    # 🔹 Obtener criterios del evento
+    criterios = Criterios.objects.filter(
+        cri_evento_fk=evento
+    ).order_by('id')
+
+    # 🔹 Obtener calificaciones del proyecto
     calificaciones = Calificaciones.objects.filter(
         clas_proyecto_fk=participante.par_eve_proyecto
     ).select_related(
         'cal_evaluador_fk__usuario',
         'cal_criterio_fk'
-    ).order_by('cal_evaluador_fk', 'cal_criterio_fk')
-    
-    # Agrupar calificaciones por evaluador
-    evaluadores_data = {}
-    criterios_pesos = {}
-    
-    for calificacion in calificaciones:
-        evaluador = calificacion.cal_evaluador_fk
-        criterio = calificacion.cal_criterio_fk
-        
-        # Guardar pesos de criterios para cálculo final
-        criterios_pesos[criterio.id] = criterio.cri_peso
-        
-        if evaluador.id not in evaluadores_data:
-            evaluadores_data[evaluador.id] = {
-                'evaluador':  evaluador,
-                'calificaciones': []
-            }
-        
-        evaluadores_data[evaluador.id]['calificaciones'].append(calificacion)
-    
+    )
+
+    # 🔹 Evaluadores únicos
+    evaluadores = sorted(
+        {cal.cal_evaluador_fk for cal in calificaciones},
+        key=lambda e: e.usuario.first_name
+    )
+
+    # 🔹 Nota final
     try:
         participante_evento = ParticipantesEventos.objects.get(
             par_eve_participante_fk=participante.par_eve_participante_fk,
@@ -338,37 +342,88 @@ def generar_pdf_comentarios_participante(request, evento_id):
         )
         nota_final = participante_evento.par_eve_calificacion_final
     except ParticipantesEventos.DoesNotExist:
-        nota_final = None  # o lo que desees manejar en caso de que no exista
-    
-    expositores = ParticipantesEventos.objects.filter(par_eve_proyecto=participante.par_eve_proyecto)
+        nota_final = None
+
+    # 🔹 Expositores del proyecto
+    expositores = ParticipantesEventos.objects.filter(
+        par_eve_proyecto=participante.par_eve_proyecto
+    )
+
     nombres_expositores = [
-            f"{exp.par_eve_participante_fk.usuario.first_name} {exp.par_eve_participante_fk.usuario.last_name}"
-            for exp in expositores
-        ]
-    
-    # Preparar contexto para el template
+        f"{exp.par_eve_participante_fk.usuario.first_name} {exp.par_eve_participante_fk.usuario.last_name}"
+        for exp in expositores
+    ]
+
+    # 🔥 OPTIMIZACIÓN: Diccionario de calificaciones
+    cal_dict = {
+        (cal.cal_criterio_fk_id, cal.cal_evaluador_fk_id): cal
+        for cal in calificaciones
+    }
+
+    # 🔹 Agrupar por evaluador
+    evaluadores_data = []
+
+    for evaluador in evaluadores:
+        criterios_evaluador = []
+
+        for criterio in criterios:
+            cal = cal_dict.get((criterio.id, evaluador.id))
+
+            criterios_evaluador.append({
+                'criterio': criterio,
+                'calificacion': cal
+            })
+
+        evaluadores_data.append({
+            'evaluador': evaluador,
+            'criterios_evaluador': criterios_evaluador
+        })
+
+    # 🔹 Logo en base64
+    logo_path = os.path.join(
+        settings.BASE_DIR,
+        'static',
+        'image',
+        'logo_eventsoft.png'
+    )
+
+    logo_base64 = ""
+
+    if os.path.exists(logo_path):
+        with open(logo_path, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+            logo_base64 = f"data:image/png;base64,{encoded_string}"
+
+    # 🔹 Contexto
     context = {
         'expositores': nombres_expositores,
         'evaluadores_data': evaluadores_data,
+        'evaluadores': evaluadores,
         'nota_final': nota_final,
         'fecha_reporte': datetime.now(),
         'tiene_calificaciones': calificaciones.exists(),
         'proyecto': participante.par_eve_proyecto,
+        'logo_base64': logo_base64,
     }
-    
-    # Renderizar HTML
-    html_string = render_to_string('app_participantes/comentarios_pdf.html', context)
-    
-    # Crear el PDF
+
+    # 🔹 Render HTML
+    html_string = render_to_string(
+        'app_participantes/comentarios_pdf.html',
+        context
+    )
+
+    # 🔹 Generar PDF
     html = HTML(string=html_string)
-    
-    # Crear el response
+
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="calificaciones_{participante.par_eve_participante_fk.usuario.documento_identidad}_{datetime.now().strftime("%Y%m%d")}.pdf"'
-    
-    # Generar PDF y escribir al response
+    response['Content-Disposition'] = (
+        f'attachment; filename="calificaciones_'
+        f'{participante.par_eve_participante_fk.usuario.documento_identidad}_'
+        f'{datetime.now().strftime("%Y%m%d")}.pdf"'
+    )
+
     html.write_pdf(response)
-    
+
     return response
 
 @login_required(login_url='login')  # Protege la vista para usuarios logueados
