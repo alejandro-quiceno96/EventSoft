@@ -107,16 +107,22 @@ def recuperar_contraseña(request):
                     request.session.modified = True  # Asegurar que se guarde la sesión
 
                     # Enviar correo
-                    send_mail(
-                        "Recuperación de contraseña",
-                        f"Tu código de verificación es: {codigo}\nTienes 5 minutos para usarlo.",
-                        settings.DEFAULT_FROM_EMAIL,  # remitente dinámico desde las variables
-                        [email],
-                        fail_silently=False,
-                    )
-
-                    messages.success(request, "✅ Se envió un código a tu correo.")
-                    paso = 2
+                    try:
+                        send_mail(
+                            "Recuperación de contraseña",
+                            f"Tu código de verificación es: {codigo}\nTienes 5 minutos para usarlo.",
+                            settings.DEFAULT_FROM_EMAIL,  # remitente dinámico desde las variables
+                            [email],
+                            fail_silently=False,
+                        )
+                        messages.success(request, "✅ Se envió un código a tu correo.")
+                        paso = 2
+                    except Exception as e:
+                        # Identificar si es un problema de conexión o credenciales
+                        error_msg = str(e)
+                        print(f"ERROR SMTP: {error_msg}")
+                        messages.error(request, f"⚠️ Error al enviar el correo: {error_msg}. Por favor, contacta al soporte.")
+                        paso = 1
 
         # 📌 Paso 2: verificar código ingresado
         elif "codigo" in request.POST:

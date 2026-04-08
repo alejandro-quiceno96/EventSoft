@@ -158,6 +158,7 @@ else:
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 
+EMAIL_TIMEOUT = 10  # segundos de espera antes de fallar
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='eventsoft3@gmail.com')
 
 LOGIN_URL = 'login'
