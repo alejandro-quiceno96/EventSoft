@@ -106,7 +106,8 @@ def ver_participantes(request, evento_id):
 
     # Ranking
     ranking = []
-    proyectos_ranking =  Proyecto.objects.filter(pro_evento_fk=evento).order_by('-pro_calificación_final')
+    # Usamos nulls_last=True para que los proyectos sin calificar aparezcan al final
+    proyectos_ranking = Proyecto.objects.filter(pro_evento_fk=evento).order_by(F('pro_calificación_final').desc(nulls_last=True))
     for proyecto in proyectos_ranking:
         # Todos los expositores del proyecto
         expositores = ParticipantesEventos.objects.filter(

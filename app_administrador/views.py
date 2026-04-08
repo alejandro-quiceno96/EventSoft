@@ -344,11 +344,11 @@ def ver_proyectos(request: HttpRequest, evento_id):
     # Obtener el evento
     evento = get_object_or_404(Eventos, pk=evento_id)
 
-    # Filtrar proyectos según evento y estado
+    # Filtrar proyectos según evento y estado, ordenando por calificación final descendente
     proyectos_eventos = Proyecto.objects.filter(
         pro_evento_fk=evento,
         pro_estado=estado
-    )
+    ).order_by(F('pro_calificación_final').desc(nulls_last=True))
     # Construir lista de diccionarios con datos para la plantilla
     proyectos = []
     for p in proyectos_eventos:

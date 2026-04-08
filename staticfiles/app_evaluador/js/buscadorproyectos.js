@@ -42,3 +42,33 @@
     // Inicializar contador al cargar
     actualizarContador(totalProyectos);
 })();
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+ 
+  function actualizarCalificaciones() {
+    const btn  = document.getElementById('btn-actualizar');
+    const icon = document.getElementById('icon-actualizar');
+ 
+    // Estado de carga visual
+    btn.classList.add('loading');
+    icon.classList.remove('fa-rotate');
+    icon.classList.add('fa-spinner', 'fa-spin-custom');
+    btn.lastChild.textContent = ' Actualizando...';
+ 
+    // Recargar la página para obtener los datos reales del ranking
+    setTimeout(() => {
+        window.location.reload();
+    }, 800);
+  }
+ 
+  // Helper para obtener el CSRF token de Django
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }

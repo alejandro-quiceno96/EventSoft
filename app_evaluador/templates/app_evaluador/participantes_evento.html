@@ -96,52 +96,72 @@
 </div>
 
  
-<!-- Ranking -->
-<div class="mt-5">
-    <div class="d-flex justify-content-end mt-3 p-2">
-        <a href="{% url 'administrador:descargar_ranking_pdf' evento.id %}" class="btn btn-outline-success" target="_blank">
-            <i class="fa-solid fa-file-pdf"></i> Descargar Ranking (PDF)
-        </a>
+<section class="ranking-section">
+ 
+  <!-- Cabecera -->
+  <div class="ranking-header">
+    <h3 class="ranking-title">
+      <i class="fa-solid fa-trophy"></i>
+      Ranking de Proyectos
+    </h3>
+    <div class="btn-group">
+      <button class="btn btn-update" id="btn-actualizar" onclick="actualizarCalificaciones()">
+        <i class="fa-solid fa-rotate" id="icon-actualizar"></i>
+        Actualizar calificaciones
+      </button>
+      <a href="{% url 'administrador:descargar_ranking_pdf' evento.id %}" class="btn btn-pdf" target="_blank">
+        <i class="fa-solid fa-file-pdf"></i>
+        Descargar Ranking (PDF)
+      </a>
     </div>
-    <h3 class="text-orange"><span class="ranking-icon">🏆</span> Ranking de Proyectos</h3>
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped mt-3">
-            <thead class="table-orange text-white text-center">
-                <tr>
-                    <th>Posición</th>
-                    <th>Código</th>
-                    <th>Nombre del proyecto</th>
-                    <th>Expositores</th>
-                    <th>Calificacion</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for proyecto in ranking %}
-                <tr>
-                    <td class="text-center">
-                        {% if forloop.counter == 1 %}
-                            <span class="badge bg-warning text-dark">🥇 {{ forloop.counter }}</span>
-                        {% elif forloop.counter == 2 %}
-                            <span class="badge bg-secondary">🥈 {{ forloop.counter }}</span>
-                        {% elif forloop.counter == 3 %}
-                            <span class="badge" style="background-color: #cd7f32;">🥉 {{ forloop.counter }}</span>
-                        {% else %}
-                            {{ forloop.counter }}
-                        {% endif %}
-                    </td>
-                    <td>{{proyecto.pro_codigo }}</td>
-                    <td class="text-center">{{ proyecto.pro_nombre}}</td>
-                    <td>{{ proyecto.expositores|join:", " }}</td>
-                    <td class="text-center">{{ proyecto.pro_calificacion_final }}</td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center text-muted">Aún no hay calificaciones registradas.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+  </div>
+ 
+  <!-- Tabla -->
+  <div class="ranking-card">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:100px;">Posición</th>
+          <th style="width:100px;">Código</th>
+          <th class="left">Nombre del proyecto</th>
+          <th class="left">Expositores</th>
+          <th style="width:115px;">Calificación</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for proyecto in ranking %}
+        <tr>
+          <td>
+            {% if forloop.counter == 1 %}
+              <span class="badge badge-gold">🥇 {{ forloop.counter }}</span>
+            {% elif forloop.counter == 2 %}
+              <span class="badge badge-silver">🥈 {{ forloop.counter }}</span>
+            {% elif forloop.counter == 3 %}
+              <span class="badge badge-bronze">🥉 {{ forloop.counter }}</span>
+            {% else %}
+              <span class="pos-number">{{ forloop.counter }}</span>
+            {% endif %}
+          </td>
+          <td class="codigo">{{ proyecto.pro_codigo }}</td>
+          <td class="nombre">{{ proyecto.pro_nombre }}</td>
+          <td class="expositores">{{ proyecto.expositores|join:", " }}</td>
+          <td><span class="score">{{ proyecto.pro_calificacion_final }}</span></td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row">
+          <td colspan="5">Aún no hay calificaciones registradas.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+ 
+</section>
+ 
+<!-- Toast notificación -->
+<div class="toast" id="toast">
+  <i class="fa-solid fa-circle-check"></i>
+  <span id="toast-msg"></span>
 </div>
 
 <!-- Modal de Calificaciones -->
