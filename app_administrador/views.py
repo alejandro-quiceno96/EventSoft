@@ -5,7 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Avg
+from django.db.models import Avg, F
 from django.template.loader import render_to_string
 from django.contrib.auth import update_session_auth_hash
 from datetime import datetime
