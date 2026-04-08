@@ -8,100 +8,104 @@
 {% block url_volver %}{% url 'app_evaluador:ver_participantes' evento.id %}{% endblock %}
 
 {% block content %}
-<style>
-    .card-criterio {
-        transition: box-shadow 0.3s, border 0.3s;
-        border: 2px solid transparent;
-    }
+<link rel="stylesheet" href="{% static 'app_evaluador/css/evaluacionproyectos.css' %}">
 
-    .card-criterio.active {
-        border-color: #007832;
-        box-shadow: 0 0 10px rgba(255, 88, 0, 0.3);
-    }
-</style>
+<div class="eval-page">
 
-<div class="container">
-    
-    <h2 class="text-center mb-4 text-orange">Evaluar Proyecto</h2>
-    <h5 class="text-center mb-4">{{ proyecto.pro_nombre }} - {{ evento.eve_nombre }}</h5>
-
-    <div class="alert alert-info">
-        <strong>Importante:</strong> Cada puntaje debe estar entre 0 y 100. El comentario es opcional.
+    <!-- Header del proyecto -->
+    <div class="eval-hero">
+        <div class="eval-hero-left">
+            <div class="eval-hero-tag">Evaluación de proyecto</div>
+            <div class="eval-hero-title">{{ proyecto.pro_nombre }}</div>
+            <div class="eval-hero-sub">{{ evento.eve_nombre }}</div>
+        </div>
+        <div class="eval-hero-badge">
+            <div class="eval-hero-badge-label">Criterios</div>
+            <div class="eval-hero-badge-val">{{ criterios|length }}</div>
+        </div>
     </div>
 
-    <form id="form-evaluacion" method="POST" action="{% url 'app_evaluador:evaluar_participante' evento.id proyecto.id evaluador.id %}">
+    <!-- Aviso -->
+    <div class="eval-notice">
+        <i class="fa-solid fa-circle-info"></i>
+        Cada puntaje debe estar entre 0 y 100. El comentario es opcional.
+    </div>
+
+    <!-- Error -->
+    <div class="eval-error" id="error-message">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Corrige los puntajes antes de guardar. Deben estar entre 0 y 100.
+    </div>
+
+    <form id="form-evaluacion" method="POST"
+          action="{% url 'app_evaluador:evaluar_participante' evento.id proyecto.id evaluador.id %}">
         {% csrf_token %}
 
-        <div class="row g-4">
+        <div class="eval-grid">
             {% for criterio in criterios %}
-            <div class="col-md-6 col-lg-4">
-                <div class="card card-criterio h-100 shadow-sm">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-orange">{{ criterio.cri_descripcion }}</h5>
-                        <p class="card-subtitle mb-2 text-muted">Peso: {{ criterio.cri_peso }}%</p>
-
-                        <label class="mt-2">Puntaje (0-100):</label>
-                        <input 
-                            type="number" 
-                            name="puntaje_{{ criterio.id }}" 
-                            class="form-control puntaje-input mb-2" 
-                            min="0" max="100" required 
-                            placeholder="Ingrese puntaje" />
-
-                        <label>Comentario:</label>
-                        <textarea 
-                            name="comentario_{{ criterio.id }}" 
-                            class="form-control comentario-input mb-2" 
-                            placeholder="Comentario opcional..." 
-                            rows="3"></textarea>
-                    </div>
+            <div class="eval-card" id="card-{{ forloop.counter0 }}">
+                <div class="eval-card-header">
+                    <div class="eval-card-name">{{ criterio.cri_descripcion }}</div>
+                    <span class="eval-card-peso">{{ criterio.cri_peso }}%</span>
                 </div>
+
+                <div class="eval-score-wrap">
+                    <div class="eval-score-label">
+                        Puntaje
+                        <span class="eval-score-display" id="disp-{{ forloop.counter0 }}">0</span>
+                    </div>
+                    <input type="range"
+                           class="eval-slider"
+                           min="0" max="100" value="0"
+                           data-idx="{{ forloop.counter0 }}"
+                           data-target="puntaje_{{ criterio.id }}">
+                    <input type="number"
+                           name="puntaje_{{ criterio.id }}"
+                           id="num-{{ forloop.counter0 }}"
+                           class="eval-number-input puntaje-input"
+                           min="0" max="100"
+                           value="0"
+                           required
+                           data-idx="{{ forloop.counter0 }}"
+                           placeholder="0 – 100">
+                </div>
+
+                <div class="eval-comment-label">
+                    <i class="fa-regular fa-comment fa-xs"></i>
+                    Comentario opcional
+                </div>
+                <textarea name="comentario_{{ criterio.id }}"
+                          class="eval-textarea comentario-input"
+                          placeholder="Escribe un comentario..."
+                          rows="2"
+                          data-card="{{ forloop.counter0 }}"></textarea>
             </div>
             {% endfor %}
         </div>
 
-        <div id="error-message" class="alert alert-danger mt-4" style="display: none;">
-            Cada puntaje debe estar entre 0 y 100. Corrige los valores antes de guardar.
+        <!-- Footer con progreso y acciones -->
+        <div class="eval-footer">
+            <div class="eval-progress-wrap">
+                <span class="eval-progress-label">Completado</span>
+                <div class="eval-progress-bar-bg">
+                    <div class="eval-progress-bar" id="progressBar"></div>
+                </div>
+                <span class="eval-progress-pct" id="progressPct">0 / {{ criterios|length }}</span>
+            </div>
+            <div class="eval-actions">
+                <a href="{% url 'app_evaluador:ver_participantes' evento.id %}"
+                   class="btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn-guardar">
+                    <i class="fa-solid fa-check"></i>
+                    Guardar calificación
+                </button>
+            </div>
         </div>
 
-        <div class="mt-4 d-flex justify-content-between m-2">
-            <a href="{% url 'app_evaluador:ver_participantes' evento.id %}" class="btn btn-danger">Cancelar</a>
-            <button type="submit" class="btn-orange">Guardar Calificación</button>
-        </div>
     </form>
 </div>
+<script src="{% static 'app_evaluador/js/evaluacionproyecto.js' %}"></script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Validación al enviar
-        document.getElementById('form-evaluacion').addEventListener('submit', function (e) {
-            let valid = true;
-            document.querySelectorAll('.puntaje-input').forEach(input => {
-                const value = parseFloat(input.value);
-                if (isNaN(value) || value < 0 || value > 100) {
-                    valid = false;
-                }
-            });
-
-            if (!valid) {
-                e.preventDefault();
-                document.getElementById('error-message').style.display = 'block';
-            } else {
-                document.getElementById('error-message').style.display = 'none';
-            }
-        });
-
-        // Activar borde naranja en foco
-        const inputs = document.querySelectorAll('.puntaje-input, .comentario-input');
-        inputs.forEach(input => {
-            input.addEventListener('focus', function () {
-                this.closest('.card-criterio').classList.add('active');
-            });
-
-            input.addEventListener('blur', function () {
-                this.closest('.card-criterio').classList.remove('active');
-            });
-        });
-    });
-</script>
 {% endblock %}
+
+

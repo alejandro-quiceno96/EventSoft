@@ -9,14 +9,41 @@
 {% block content %}
 
 <link rel="stylesheet" href="{% static 'app_administrador/css/criteriosadmin.css' %}">
+<link rel="stylesheet" href="{% static 'app_evaluador/css/evaluarparticipante.css' %}">
 <a href="{% url 'app_evaluador:principal_evaluador' %}" class="btn btn-detalle-calificacion mb-2">
             <i class="fa-solid fa-arrow-left"></i></i> Volver al panel principal
     </a>
 <h2 class="text-center my-4 text-orange">Proyectos admitidos del evento: {{ evento.eve_nombre }}</h2>
 
 <div class="row g-4 justify-content-center">
+    <div class="buscador-proyectos-wrap">
+    <div class="buscador-proyectos-inner">
+        <div class="buscador-input-wrap">
+            <i class="fa-solid fa-magnifying-glass buscador-icon"></i>
+            <input
+                type="text"
+                id="buscadorProyectos"
+                class="buscador-input"
+                placeholder="Buscar por nombre o código..."
+                oninput="filtrarProyectos()"
+                autocomplete="off"
+            >
+            <button class="buscador-clear" id="btnLimpiar" onclick="limpiarBuscador()" style="display:none;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <span class="buscador-contador" id="contadorProyectos"></span>
+    </div>
+</div>
+
+<div id="sinResultados" class="buscador-sin-resultados" style="display:none;">
+    <i class="fa-solid fa-folder-open"></i>
+    <p>No se encontró ningún proyecto con ese criterio.</p>
+</div>
     {% for proyecto in proyectos %}
-    <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+    <div class="col-lg-4 col-md-6 col-sm-12 mb-4"
+    data-nombre="{{ proyecto.pro_nombre }}"
+     data-codigo="{{ proyecto.pro_codigo }}">
   <div class="card proyecto-card shadow-lg border-0 h-100">
     <div class="card-body d-flex flex-column justify-content-between">
       
@@ -146,6 +173,48 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('buscadorProyectos');
+    const btnLimpiar = document.getElementById('btnLimpiar');
+    const contador = document.getElementById('contadorProyectos');
+    const sinResultados = document.getElementById('sinResultados');
+    const cards = document.querySelectorAll('[data-nombre]');
+    const total = cards.length;
+
+    function actualizar(visibles) {
+        contador.textContent = visibles === total
+            ? total + ' proyectos'
+            : visibles + ' de ' + total;
+    }
+
+    function filtrar() {
+        const termino = input.value.trim().toLowerCase();
+        let visibles = 0;
+
+        cards.forEach(function (card) {
+            const nombre = card.getAttribute('data-nombre').toLowerCase();
+            const codigo = card.getAttribute('data-codigo').toLowerCase();
+            const coincide = nombre.includes(termino) || codigo.includes(termino);
+
+            card.style.display = coincide ? '' : 'none';
+            if (coincide) visibles++;
+        });
+
+        btnLimpiar.style.display = termino.length > 0 ? 'flex' : 'none';
+        sinResultados.style.display = visibles === 0 ? 'block' : 'none';
+        actualizar(visibles);
+    }
+
+    input.addEventListener('input', filtrar);
+
+    btnLimpiar.addEventListener('click', function () {
+        input.value = '';
+        input.focus();
+        filtrar();
+    });
+
+    actualizar(total);
+});
+    document.addEventListener('DOMContentLoaded', function () {
         const params = new URLSearchParams(window.location.search);
         const tipoRegistro = params.get('calificacion');
         const modal = document.getElementById('registroModal');
@@ -225,5 +294,7 @@
     });
 
 </script>
+
+<script src="{% static 'app_evaluador/js/buscadorproyectos.js' %}"></script>
 
 {% endblock %}

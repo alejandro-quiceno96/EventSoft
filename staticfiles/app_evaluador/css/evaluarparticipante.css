@@ -1,0 +1,109 @@
+/* ── Buscador de proyectos ── */
+.buscador-proyectos-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    padding: 0 1rem;
+    max-width: 600px;
+}
+
+.buscador-proyectos-inner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.buscador-input-wrap {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.buscador-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 14px;
+    color: #888;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.buscador-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 44px 0 40px;
+    border-radius: 24px;
+    border: 1.5px solid #d4e8d4;
+    background: #fff;
+    font-size: 14px;
+    font-family: 'Work Sans', sans-serif;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.buscador-input:focus {
+    border-color: #007832;
+    box-shadow: 0 0 0 3px rgba(0, 120, 50, 0.10);
+}
+
+.buscador-input::placeholder {
+    color: #aaa;
+}
+
+.buscador-clear {
+    position: absolute;
+    right: 12px;
+    background: #e8ede8;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #555;
+    font-size: 11px;
+    transition: background 0.15s;
+}
+
+.buscador-clear:hover {
+    background: #c8dec8;
+    color: #007832;
+}
+
+.buscador-contador {
+    font-size: 13px;
+    font-weight: 600;
+    color: #007832;
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: right;
+}
+
+/* Sin resultados */
+.buscador-sin-resultados {
+    text-align: center;
+    padding: 3.5rem 1rem;
+    color: #aaa;
+}
+
+.buscador-sin-resultados i {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 12px;
+    color: #ccc;
+}
+
+.buscador-sin-resultados p {
+    font-size: 15px;
+    margin: 0;
+}
+
+/* Animación al ocultar/mostrar cards */
+.col-lg-4.oculto {
+    display: none !important;
+}
