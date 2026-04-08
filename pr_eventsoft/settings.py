@@ -154,7 +154,11 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 if EMAIL_PORT == 465:
     EMAIL_USE_TLS = False
     EMAIL_USE_SSL = True
+elif EMAIL_PORT in [587, 2525]:
+    EMAIL_USE_TLS = True
+    EMAIL_USE_SSL = False
 else:
+    # Por defecto para otros puertos
     EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
 
